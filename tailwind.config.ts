@@ -11,11 +11,6 @@ const config = {
 	],
 	prefix: '',
 	theme: {
-		container: {
-			center: true,
-			padding: '1rem',
-			screens: { '2xl': '1400px' },
-		},
 		extend: {
 			colors: {
 				forest: {
@@ -29,8 +24,9 @@ const config = {
 				},
 			},
 			fontFamily: {
-				sans: ['var(--font-atkinson-regular)', ...fontFamily.sans],
-				mono: ['var(--font-atkinson-bold)', ...fontFamily.mono],
+				sans: ['var(--font-montserrat)'],
+				mono: ['var(--font-cochin)'],
+				title: ['var(--font-guavine)'],
 			},
 			keyframes: {
 				'accordion-down': {
