@@ -1,5 +1,7 @@
+import { Clock } from 'lucide-react';
+
 import { RecipeSchema } from '@/types';
-import { cn } from '@/utils';
+import { IconProps, cn } from '@/utils';
 import { Icon } from './icon';
 
 export function RecipeItem({ recipe }: { recipe: RecipeSchema }) {
@@ -17,7 +19,10 @@ export function RecipeItem({ recipe }: { recipe: RecipeSchema }) {
 						{recipe.name}
 					</span>
 				</div>
-				<span className='text-xs md:text-sm font-bold text-neutral-600'>{`${recipe.time}'`}</span>
+				<div className='flex items-center justify-center'>
+					<Clock {...IconProps} size={14} />
+					<span className='text-xs md:text-sm font-bold text-neutral-600 ms-1'>{`${recipe.time}'`}</span>
+				</div>
 			</div>
 			<div className='text-sm md:text-base mt-2'>
 				<span className='font-semibold line-clamp-2 text-neutral-600'>

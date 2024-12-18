@@ -36,8 +36,8 @@ const guavine = localFont({
 });
 
 export const metadata: Metadata = {
-	title: 'Recipes',
-	description: 'Recipes App',
+	title: 'Cookbook',
+	description: 'Cookbook App',
 };
 
 export default function RootLayout({
