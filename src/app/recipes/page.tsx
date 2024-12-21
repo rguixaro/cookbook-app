@@ -1,0 +1,33 @@
+import { Suspense } from 'react';
+import { getTranslations } from 'next-intl/server';
+import { Loader } from 'lucide-react';
+
+import { RecipesFeed } from '@/components/recipes/feed';
+import { SearchRecipes } from '@/components/recipes/search';
+
+export default async function RecipesPage({
+	searchParams,
+}: {
+	searchParams?: Promise<{ search?: string }>;
+}) {
+	const searchParam = (await searchParams)?.search;
+	const t = await getTranslations('RecipesPage');
+
+	const LoadingSkeleton = () => {
+		return (
+			<div className='flex flex-col mt-5 justify-center items-center text-forest-200'>
+				<Loader size={18} className='animate-spin' />
+				<span className='font-bold mt-3'>{t('searching')}</span>
+			</div>
+		);
+	};
+
+	return (
+		<main className='flex flex-col items-center text-neutral-700 w-full h-full'>
+			<SearchRecipes />
+			<Suspense fallback={<LoadingSkeleton />}>
+				<RecipesFeed searchParam={searchParam} />
+			</Suspense>
+		</main>
+	);
+}
