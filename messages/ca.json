@@ -1,0 +1,85 @@
+{
+	"common": {
+		"return": "Tornar",
+		"recipes": "Receptes",
+		"page-not-found": "Pàgina no trobada",
+		"user-not-found": "Usuari no trobat"
+	},
+	"toasts": {
+		"recipe-created": "Recepta creada amb èxit.",
+		"recipe-saved": "Recepta guardada amb èxit.",
+		"recipe-deleted": "Recepta eliminada amb èxit.",
+		"error": "S'ha produït un error.",
+		"error-recipe-exists": "Ja existeix una recepta amb aquest nom."
+	},
+	"errors": {
+		"recipe-name-too-short": "El nom de la recepta és massa curt.",
+		"category-required": "Cal seleccionar una categoria.",
+		"time-invalid": "El temps ha de ser un número.",
+		"instructions-too-short": "Les instruccions de la recepta són massa curtes.",
+		"ingredients-required": "Cal afegir almenys un ingredient.",
+		"username-required": "El nom d'usuari és obligatori.",
+		"username-too-long": "El nom d'usuari no pot tenir més de 40 caràcters.",
+		"email-invalid": "L'adreça de correu electrònic no és vàlida."
+	},
+	"LoginPage": {
+		"login-to": "Accedeix al teu ",
+		"login-name": "Llibre de Receptes",
+		"login-text": "Inicia sessió per accedir a totes les teves receptes i crear-ne de noves.",
+		"login-error": "S'ha produït un error en iniciar sessió.",
+		"google-login": "Continuar amb Google"
+	},
+	"RecipesPage": {
+		"title": "Receptes",
+		"add": "Afegeix una recepta",
+		"search": "Cerca",
+		"searching": "Buscant receptes...",
+		"not-found": "Recepta no trobada",
+		"no-recipes": "No s'han trobat receptes",
+		"ingredients": "Ingredients",
+		"ingredients-add": "Afegeix un ingredient",
+		"instructions": "Instruccions",
+		"instructions-add": "Afegeix les instruccions de la recepta",
+		"recipe-name": "Nom de la recepta",
+		"categories": "Categories",
+		"time": "Temps",
+		"minutes": "minuts",
+		"create": "Crear",
+		"creating": "Creant recepta..."
+	},
+	"RecipeCategories": {
+		"pasta": "Pasta",
+		"meat": "Carn",
+		"fish": "Peix",
+		"vegetable": "Verdura",
+		"salad": "Amanida",
+		"soup": "Sopa",
+		"dessert": "Postres"
+	},
+	"ProfilePage": {
+		"title": "Perfil",
+		"description": "Aquí pots veure i modificar la teva informació personal.",
+		"name": "Nom",
+		"email": "Correu electrònic",
+		"email-hint": "L'adreça de correu electrònic està gestionada pel teu proveïdor OAuth.",
+		"email-unmatched": "L'adreça de correu no coincideix.",
+		"cancel": "Cancel·lar",
+		"save": "Desa",
+		"saving": "Desant...",
+		"delete": "Eliminar",
+		"deleting": "Eliminant...",
+		"share": "Compartir",
+		"account-delete": "Esborra el compte",
+		"account-delete-attention": "Aquesta acció no es pot desfer.",
+		"account-delete-text": "Això eliminarà permanentment el teu compte i totes les teves receptes.",
+		"account-delete-prompt": "Per confirmar-ho, escriu la teva adreça de correu:",
+		"account-deleting": "El teu compte s'està eliminant...",
+		"account-deleted": "El teu compte s'ha esborrat.",
+		"account-delete-error": "Hi ha hagut un error en esborrar el compte.",
+		"account-logout": "Tancar la sessió",
+		"account-logout-text": "Estàs segur que vols tancar la sessió?",
+		"account-logout-logged-out": "S'ha tancat la sessió.",
+		"account-logout-logging-out": "Tancant la sessió...",
+		"account-logout-error": "Hi ha hagut un error en tancar la sessió."
+	}
+}

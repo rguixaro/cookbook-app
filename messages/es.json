@@ -1,0 +1,85 @@
+{
+	"common": {
+		"return": "Volver",
+		"recipes": "Recetas",
+		"page-not-found": "Página no encontrada",
+		"user-not-found": "Usuario no encontrado"
+	},
+	"toasts": {
+		"recipe-created": "Receta creada con éxito.",
+		"recipe-saved": "Receta guardada con éxito.",
+		"recipe-deleted": "Receta eliminada con éxito.",
+		"error": "Se ha producido un error.",
+		"error-recipe-exists": "Ya existe una receta con este nombre."
+	},
+	"errors": {
+		"recipe-name-too-short": "El nombre de la receta es demasiado corto.",
+		"category-required": "Es necesario seleccionar una categoría.",
+		"time-invalid": "El tiempo debe ser un número.",
+		"instructions-too-short": "Las instrucciones de la receta son demasiado cortas.",
+		"ingredients-required": "Es necesario añadir al menos un ingrediente.",
+		"username-required": "El nombre de usuario es obligatorio.",
+		"username-too-long": "El nombre de usuario no puede tener más de 40 caracteres.",
+		"email-invalid": "La dirección de correo electrónico no es válida."
+	},
+	"LoginPage": {
+		"login-to": "Acceder a tu ",
+		"login-name": "Libro de Recetas",
+		"login-text": "Inicia sesión para acceder a todas tus recetas y crear nuevas.",
+		"login-error": "Se ha producido un error al iniciar sesión.",
+		"google-login": "Continuar con Google"
+	},
+	"RecipesPage": {
+		"title": "Recetas",
+		"add": "Añadir una receta",
+		"search": "Buscar",
+		"searching": "Buscando recetas...",
+		"not-found": "Receta no encontrada",
+		"no-recipes": "No se han encontrado recetas",
+		"ingredients": "Ingredientes",
+		"ingredients-add": "Añadir un ingrediente",
+		"instructions": "Instrucciones",
+		"instructions-add": "Añadir las instrucciones de la receta",
+		"recipe-name": "Nombre de la receta",
+		"categories": "Categorías",
+		"time": "Tiempo",
+		"minutes": "minutos",
+		"create": "Crear",
+		"creating": "Creando receta..."
+	},
+	"RecipeCategories": {
+		"pasta": "Pasta",
+		"meat": "Carne",
+		"fish": "Pescado",
+		"vegetable": "Verdura",
+		"salad": "Ensalada",
+		"soup": "Sopa",
+		"dessert": "Postre"
+	},
+	"ProfilePage": {
+		"title": "Perfil",
+		"description": "Aquí puedes ver y modificar tu información personal.",
+		"name": "Nombre",
+		"email": "Correo electrónico",
+		"email-hint": "La dirección de correo electrónico está gestionada por tu proveedor OAuth.",
+		"email-unmatched": "La dirección de correo no coincide.",
+		"cancel": "Cancelar",
+		"save": "Guardar",
+		"saving": "Guardando...",
+		"delete": "Eliminar",
+		"deleting": "Eliminando...",
+		"share": "Compartir",
+		"account-delete": "Eliminar la cuenta",
+		"account-delete-attention": "Esta acción no se puede deshacer.",
+		"account-delete-text": "Esto eliminará permanentemente tu cuenta y todas tus recetas.",
+		"account-delete-prompt": "Para confirmarlo, por favor escribe tu dirección de correo:",
+		"account-deleting": "Tu cuenta se está eliminando...",
+		"account-deleted": "Tu cuenta ha sido eliminada.",
+		"account-delete-error": "Se ha producido un error al eliminar tu cuenta.",
+		"account-logout": "Cerrar sesión",
+		"account-logout-text": "¿Estás seguro de que quieres cerrar la sesión?",
+		"account-logout-logging-out": "Cerrando la sesión...",
+		"account-logout-logged-out": "Se ha cerrado la sesión.",
+		"account-logout-error": "Se ha producido un error al cerrar la sesión."
+	}
+}
