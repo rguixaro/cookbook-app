@@ -21,13 +21,14 @@ export const IngredientSelector = ({
 
 	useEffect(() => {
 		if (values.length > 0) setValues(values);
-	}, [values]);
+	}, [values, setValues]);
 
 	function addIngredient(event?: React.KeyboardEvent<HTMLInputElement>) {
 		if (event && event.key !== 'Enter') return;
 		if (currIngredient === '') return;
 		setValues([...values, currIngredient]);
 		setCurrIngredient('');
+		event?.preventDefault();
 	}
 
 	return (
@@ -60,6 +61,7 @@ export const IngredientSelector = ({
 						{ingredient}
 					</span>
 					<button
+						type='button'
 						onClick={() =>
 							setValues(values.filter((_, i) => i !== index))
 						}>

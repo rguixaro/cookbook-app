@@ -46,7 +46,7 @@ export const SocialLogin = () => {
 					disabled={loading}
 					onClick={() => handleSocialLogin(sp.provider)}>
 					{sp.icon}
-					{/* @ts-ignore */}
+					{/* @ts-expect-error: Unnecessary message type */}
 					<span className='font-semibold'>{t(sp.name)}</span>
 				</button>
 			))}

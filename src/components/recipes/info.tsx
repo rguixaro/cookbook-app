@@ -38,8 +38,17 @@ export function Info({ enabled }: { enabled: boolean }) {
 			y: 0,
 			transition: { duration: 0.3, delay: 1, ease: 'easeInOut' },
 		},
-		bottom: { opacity: 1, y: 0 },
-		middle: { opacity: 1, bottom: 0, y: -middleHeight },
+		bottom: {
+			opacity: 1,
+			y: 0,
+			transition: { duration: 0.3, ease: 'easeInOut' },
+		},
+		middle: {
+			opacity: 1,
+			bottom: 0,
+			y: -middleHeight,
+			transition: { duration: 0.3, ease: 'easeInOut' },
+		},
 	};
 
 	/**
@@ -55,7 +64,7 @@ export function Info({ enabled }: { enabled: boolean }) {
 	useEffect(() => {
 		if (status === 'middle' && !enabled) setStatus('bottom');
 		else setStatus(enabled ? 'middle' : 'initial');
-	}, [enabled]);
+	}, [enabled, status]);
 
 	return (
 		<AnimatePresence initial={true}>

@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import { AlertTriangleIcon, LoaderIcon, LogOut, SaveIcon } from 'lucide-react';
