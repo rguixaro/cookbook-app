@@ -35,6 +35,7 @@ export const {
 				session.user.name = token.name;
 				session.user.email = token.email!;
 				session.user.isOAuth = token.isOAuth as boolean;
+				session.user.savedRecipes = token.savedRecipes as string[];
 			}
 
 			return session;
@@ -49,6 +50,7 @@ export const {
 			token.isOAuth = !!existingAccount;
 			token.name = existingUser.name;
 			token.email = existingUser.email;
+			token.savedRecipes = existingUser.savedRecipes;
 
 			return token;
 		},
