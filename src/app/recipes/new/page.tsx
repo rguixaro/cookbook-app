@@ -60,7 +60,7 @@ export default function NewRecipePage() {
 			toast.success(t_toasts('recipe-created'));
 			form.reset();
 			setIngredients([]);
-			router.replace('/recipes');
+			router.replace('/');
 		} catch (error) {
 			toast.error(t_toasts('error'));
 		} finally {

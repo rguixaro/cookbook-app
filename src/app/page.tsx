@@ -1,62 +1,33 @@
-'use client';
+import { Suspense } from 'react';
+import { getTranslations } from 'next-intl/server';
+import { Loader } from 'lucide-react';
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
+import { RecipesFeed } from '@/components/recipes/feed';
+import { SearchRecipes } from '@/components/recipes/search';
 
-import { useRecipesStore } from '@/providers/recipes-store-provider';
-import { getRecipes } from '@/services/api';
-import { RecipeItem } from '@/components/recipes/item';
-import { TypographyH4 } from '@/ui/typography';
-import { SearchInput } from '@/ui/search-input';
-import { RecipeSchema } from '@/types';
-import { cn } from '@/utils';
+export default async function RecipesPage({
+	searchParams,
+}: {
+	searchParams?: Promise<{ search?: string }>;
+}) {
+	const searchParam = (await searchParams)?.search;
+	const t = await getTranslations('RecipesPage');
 
-export default function Home() {
-	const [loading, setLoading] = useState<boolean>(false);
-	const [query, setQuery] = useState<string>('');
-
-	const { recipes, setRecipes } = useRecipesStore((state) => state);
-
-	const [data, setData] = useState<RecipeSchema[]>([]);
-
-	useEffect(() => {
-		if (!query) setData(recipes);
-		else
-			setData(
-				recipes.filter((recipe) =>
-					recipe.name.toLowerCase().includes(query.toLowerCase())
-				)
-			);
-	}, [query]);
-
-	useEffect(() => {
-		getRecipes().then((result) => {
-			if (result.error || !result.recipes) {
-				console.error(result.message);
-				return;
-			}
-			setRecipes(result.recipes);
-			setData(result.recipes);
-		});
-	}, []);
+	const LoadingSkeleton = () => {
+		return (
+			<div className='flex flex-col mt-5 justify-center items-center text-forest-200'>
+				<Loader size={18} className='animate-spin' />
+				<span className='font-bold mt-3'>{t('searching')}</span>
+			</div>
+		);
+	};
 
 	return (
-		<main className='flex flex-col items-center text-neutral-700 w-full'>
-			<div
-				className={cn(
-					'sticky top-24 bg-[#fefff2] w-full flex items-center justify-between'
-				)}>
-				<TypographyH4 className='ms-3'>RECIPES</TypographyH4>
-				<SearchInput value={query} onQuery={(query) => setQuery(query)} />
-			</div>
-			{data.map((recipe) => (
-				<Link
-					href={`/${recipe.slug}`}
-					key={recipe.id}
-					className='cursor-pointer'>
-					{RecipeItem({ recipe })}
-				</Link>
-			))}
+		<main className='flex flex-col items-center text-neutral-700 w-full h-full'>
+			<SearchRecipes />
+			<Suspense fallback={<LoadingSkeleton />}>
+				<RecipesFeed searchParam={searchParam} />
+			</Suspense>
 		</main>
 	);
 }
