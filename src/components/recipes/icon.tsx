@@ -1,9 +1,9 @@
 import { icons } from 'lucide-react';
 
-import { CategoryType } from '@/types';
+import { Categories } from '@/types';
 
 type IconProps = {
-	name: CategoryType;
+	name: Categories;
 	color?: string;
 	size?: number;
 };
@@ -15,11 +15,12 @@ const IconsByCategory = {
 	vegetable: 'Carrot',
 	salad: 'Salad',
 	soup: 'Soup',
-	desert: 'CakeSlice',
+	dessert: 'CakeSlice',
 };
 
 export const Icon = ({ name, color = '#789B84', size = 18 }: IconProps) => {
-	const iconName = IconsByCategory[name];
+	const iconName =
+		IconsByCategory[name.toLocaleLowerCase() as keyof typeof IconsByCategory];
 	const LucideIcon = icons[iconName as keyof typeof icons];
 
 	return <LucideIcon color={color} size={size} />;

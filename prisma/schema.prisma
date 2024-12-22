@@ -30,6 +30,7 @@ model Recipe {
     author              User?      @relation(references: [id], fields: [authorId], onDelete: Cascade)
     authorId            String     @db.ObjectId
 
+    @@unique([slug, authorId])
     @@index([authorId])
 }
 
@@ -71,7 +72,9 @@ model User {
     image               String?
     name                String?
     username            String?
+    emailVerified       DateTime?
     password            String?
+    savedRecipes        String[]
     accounts            Account[]
     sessions            Session[]
     recipes             Recipe[]
