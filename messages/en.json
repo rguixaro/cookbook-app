@@ -1,0 +1,66 @@
+{
+	"common": {
+		"return": "Return",
+		"recipes": "Recipes"
+	},
+	"toasts": {
+		"recipe-created": "Recipe created successfully.",
+		"recipe-saved": "Recipe saved successfully.",
+		"recipe-deleted": "Recipe deleted successfully.",
+		"error": "An error occurred.",
+		"error-recipe-exists": "A recipe with this name already exists."
+	},
+	"errors": {
+		"recipe-name-too-short": "Recipe name is too short.",
+		"category-required": "The category is required.",
+		"time-invalid": "Time must be a number.",
+		"instructions-too-short": "Recipe instructions are too short.",
+		"ingredients-required": "At least one ingredient is required.",
+		"username-required": "Username is required.",
+		"username-too-long": "Username cannot be longer than 40 characters.",
+		"email-invalid": "Invalid email address."
+	},
+	"RecipesPage": {
+		"title": "RECIPES",
+		"add": "Add a recipe",
+		"search": "Search",
+		"searching": "Searching recipes...",
+		"not-found": "Recipe not found",
+		"ingredients": "Ingredients",
+		"ingredients-add": "Add an ingredient",
+		"instructions": "Instructions",
+		"instructions-add": "Add the recipe instructions",
+		"recipe-name": "Recipe name",
+		"categories": "Categories",
+		"time": "Cooking time",
+		"minutes": "minutes",
+		"create": "Create",
+		"creating": "Creating recipe..."
+	},
+	"RecipeCategories": {
+		"pasta": "Pasta",
+		"meat": "Meat",
+		"fish": "Fish",
+		"vegetable": "Vegetable",
+		"salad": "Salad",
+		"soup": "Soup",
+		"dessert": "Dessert"
+	},
+	"ProfilePage": {
+		"title": "Profile",
+		"description": "Here you can view and modify your personal information.",
+		"name": "Name",
+		"email": "Email",
+		"email-hint": "Email address is managed by your OAuth provider.",
+		"cancel": "Cancelar",
+		"save": "Save",
+		"saving": "Saving...",
+		"delete": "Delete",
+		"deleting": "Deleting...",
+		"share": "Share",
+		"account-delete": "Delete account",
+		"account-delete-attention": "This action cannot be undone.",
+		"account-delete-text": "This will permanently delete your account and all your recipes.",
+		"account-delete-prompt": "To confirm, please typo your email address:"
+	}
+}
