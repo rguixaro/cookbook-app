@@ -2,7 +2,8 @@
 	"common": {
 		"return": "Tornar",
 		"recipes": "Receptes",
-		"not-found": "Pàgina no trobada"
+		"page-not-found": "Pàgina no trobada",
+		"user-not-found": "Usuari no trobat"
 	},
 	"toasts": {
 		"recipe-created": "Recepta creada amb èxit.",
@@ -29,11 +30,12 @@
 		"google-login": "Continuar amb Google"
 	},
 	"RecipesPage": {
-		"title": "RECEPTES",
+		"title": "Receptes",
 		"add": "Afegeix una recepta",
 		"search": "Cerca",
 		"searching": "Buscant receptes...",
 		"not-found": "Recepta no trobada",
+		"no-recipes": "No s'han trobat receptes",
 		"ingredients": "Ingredients",
 		"ingredients-add": "Afegeix un ingredient",
 		"instructions": "Instruccions",
