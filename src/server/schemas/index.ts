@@ -40,7 +40,6 @@ export const UpdateProfileSchema = z.object({
 	name: z.string().min(1, { message: 'username-required' }).max(40, {
 		message: 'username-too-long',
 	}),
-	username: z.string().optional(),
 	email: z.string().email({ message: 'email-invalid' }),
 });
 
