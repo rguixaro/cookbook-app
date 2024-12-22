@@ -54,3 +54,37 @@ export const getRecipeByAuthAndSlug = cache(
 		}
 	}
 );
+
+/**
+ * Get profile and recipes by user id.
+ * Auth required.
+ * @param userId User id
+ * @returns Promise<{ profile: { name: string, image: string } | null; recipes: Recipe[] }>
+ */
+export const getProfileAndRecipes = cache(
+	async (
+		userId: string
+	): Promise<{
+		profile: { name: string; image: string } | null;
+		recipes: Recipe[];
+	}> => {
+		const currentUser = await auth();
+
+		/** Not authenticated */
+		if (!currentUser) return { profile: null, recipes: [] };
+
+		try {
+			const profile = await db.user.findFirst({
+				where: { id: userId },
+				select: { image: true, name: true },
+			});
+			const recipes = await db.recipe.findMany({
+				where: { authorId: userId },
+			});
+
+			return { profile, recipes };
+		} catch (error) {
+			return { profile: null, recipes: [] };
+		}
+	}
+);
