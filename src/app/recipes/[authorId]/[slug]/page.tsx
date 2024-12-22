@@ -11,11 +11,14 @@ import { TypographyH4 } from '@/ui';
 
 export default async function RecipePage({
 	params,
+	searchParams,
 }: {
 	params: Promise<{ authorId: string; slug: string }>;
+	searchParams?: Promise<{ referred?: boolean }>;
 }) {
 	const session = await auth();
 	const { slug, authorId } = await params;
+	const isReferred = (await searchParams)?.referred;
 
 	const recipe = await getRecipeByAuthAndSlug(authorId, slug);
 	const t = await getTranslations('RecipesPage');
@@ -25,7 +28,7 @@ export default async function RecipePage({
 
 	return (
 		<div className='flex flex-col pt-2 my-2 text-center'>
-			<GoBack text={'recipes'}>
+			<GoBack text={'recipes'} to={isReferred ? `/profile/${authorId}` : '/'}>
 				{!isOwner && (
 					<SavedStatus initial={isSaved} recipeId={recipe?.id as string} />
 				)}

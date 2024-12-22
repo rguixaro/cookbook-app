@@ -3,7 +3,6 @@ import { type DefaultSession } from 'next-auth';
 
 export type ExtendedUser = DefaultSession['user'] & {
 	role: UserRole;
-	username?: string | undefined;
 	isOAuth: boolean;
 	savedRecipes: string[];
 };

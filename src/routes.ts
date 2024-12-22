@@ -15,7 +15,12 @@ export const AUTH_ROUTES: string[] = [
  * Routes that require authentication.
  * Auth required.
  */
-export const PROTECTED_ROUTES: string[] = ['/profile', '/recipes', '/recipes/new'];
+export const PROTECTED_ROUTES: string[] = [
+	'/',
+	'/profile',
+	'/recipes',
+	'/recipes/new',
+];
 
 /**
  * Recipes routes prefix.

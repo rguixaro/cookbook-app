@@ -2,7 +2,8 @@
 	"common": {
 		"return": "Volver",
 		"recipes": "Recetas",
-		"not-found": "Página no encontrada"
+		"page-not-found": "Página no encontrada",
+		"user-not-found": "Usuario no encontrado"
 	},
 	"toasts": {
 		"recipe-created": "Receta creada con éxito.",
@@ -29,11 +30,12 @@
 		"google-login": "Continuar con Google"
 	},
 	"RecipesPage": {
-		"title": "RECETAS",
+		"title": "Recetas",
 		"add": "Añadir una receta",
 		"search": "Buscar",
 		"searching": "Buscando recetas...",
 		"not-found": "Receta no encontrada",
+		"no-recipes": "No se han encontrado recetas",
 		"ingredients": "Ingredientes",
 		"ingredients-add": "Añadir un ingrediente",
 		"instructions": "Instrucciones",

@@ -10,7 +10,7 @@ export default async function NotFound() {
 	return (
 		<div className='mt-32 flex flex-col items-center justify-center text-forest-200'>
 			<FileQuestion size={24} />
-			<TypographyH4 className='mt-2 mb-5'>{t('page-not-found')}</TypographyH4>
+			<TypographyH4 className='mt-2 mb-5'>{t('user-not-found')}</TypographyH4>
 			<Link href='/' className='mt-5 underline font-medium'>
 				{t('return')}
 			</Link>
