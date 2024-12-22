@@ -90,7 +90,7 @@ const FormLabel = React.forwardRef<
 	React.ElementRef<typeof LabelPrimitive.Root>,
 	React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
 >(({ className, ...props }, ref) => {
-	const { error, formItemId } = useFormField();
+	const { formItemId } = useFormField();
 
 	return (
 		<Label
@@ -158,7 +158,7 @@ const FormMessage = React.forwardRef<
 			id={formMessageId}
 			className={cn('text-[0.8rem] font-medium text-red-500', className)}
 			{...props}>
-			{/* @ts-ignore */}
+			{/* @ts-expect-error: Unnecessary message type */}
 			{t(body)}
 		</p>
 	);

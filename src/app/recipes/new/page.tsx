@@ -52,7 +52,7 @@ export default function NewRecipePage() {
 			setLoading(true);
 			const { error, message } = await createRecipe(values);
 			if (error) {
-				/* @ts-ignore */
+				/* @ts-expect-error: Unnecessary message type */
 				toast.error(t_toasts(message || 'error'));
 				return;
 			}
@@ -71,7 +71,7 @@ export default function NewRecipePage() {
 	useEffect(() => {
 		if (ingredients.length > 0)
 			form.setValue('ingredients', ingredients as [string, ...string[]]);
-	}, [ingredients]);
+	}, [ingredients, form]);
 
 	function checkKeyDown(event: React.KeyboardEvent<HTMLFormElement>) {
 		if (event.key === 'Enter') event.preventDefault();

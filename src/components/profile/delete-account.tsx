@@ -70,7 +70,7 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 						<Input
 							type='email'
 							className='input'
-							onChange={(e: any) => setConfirmEmail(e.target.value)}
+							onChange={(e) => setConfirmEmail(e.target.value)}
 							placeholder={t('email')}
 							disabled={loading}
 						/>
