@@ -27,7 +27,7 @@ export const CategorySelector = ({ value, setValue }: CategorySelectorProps) => 
 						className={cn(
 							'relative snap-center flex flex-col min-w-[4.5rem] py-3 mx-1 bg-forest-200/15 rounded-2xl items-center justify-center shadow-sm',
 							'transition-all duration-400 hover:scale-[1.05] border-2 border-forest-200/15',
-							isActive && ' border-forest-200 '
+							isActive && 'border-forest-200 '
 						)}>
 						<Icon name={categoryName} size={24} />
 						<span className='text-xs text-forest-200/75 pt-3'>

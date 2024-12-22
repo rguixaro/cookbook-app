@@ -33,18 +33,18 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 	const handleDeleteAccount = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
 		if (confirmEmail !== props.email) {
-			toast.error('Email does not match.');
+			toast.error(t('email-unmatched'));
 			return;
 		}
 		setLoading(true);
 		toast.promise(deleteProfile, {
-			loading: 'Deleting account...',
-			description: 'Your account is being deleted.',
+			loading: t('deleting'),
+			description: t('account-deleting'),
 			success: () => {
 				setLoading(false);
-				return `Your account has been deleted.`;
+				return t('account-deleted');
 			},
-			error: 'Failed to delete account. Please try again or contact us.',
+			error: t('account-delete-error'),
 		});
 	};
 

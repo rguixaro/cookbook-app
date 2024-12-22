@@ -3,7 +3,7 @@
 import { use, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
-import { AlertTriangleIcon, LoaderIcon, SaveIcon } from 'lucide-react';
+import { AlertTriangleIcon, LoaderIcon, LogOut, SaveIcon } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { toast } from 'sonner';
 import type { z } from 'zod';
@@ -24,6 +24,7 @@ import {
 } from '@/ui';
 import { ProfileCard } from './card';
 import { DeleteAccount } from './delete-account';
+import { LogoutAccount } from './logout-account';
 
 interface UpdateAccountProps {
 	name: string;
@@ -77,7 +78,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 		return (
 			<button
 				onClick={handleCopy(`${url}/${props.email}`)}
-				className='bg-forest-200 text-white font-bold rounded-lg text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/80'>
+				className='bg-forest-200 text-white font-bold rounded-lg text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/80 shadow'>
 				<span>{t('share')}</span>
 			</button>
 		);
@@ -134,9 +135,23 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							</FormItem>
 						)}
 					/>
+					<DeleteAccount
+						email={props.email!}
+						trigger={
+							<Button
+								variant='destructive'
+								size='sm'
+								className='w-1/2'>
+								<span className='font-bold'>
+									{t('account-delete')}
+								</span>
+							</Button>
+						}
+					/>
 					<div className='flex items-center'>
 						<Button
 							type='submit'
+							className='w-full'
 							disabled={
 								loading || hookForm.getValues().name === props.name
 							}>
@@ -150,11 +165,11 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 					</div>
 				</form>
 			</Form>
-			<DeleteAccount
-				email={props.email!}
+			<LogoutAccount
 				trigger={
-					<Button variant='destructive' size='sm' className='w-1/2'>
-						<span className='font-bold'>{t('account-delete')}</span>
+					<Button variant='outline' size='sm' className='mt-20'>
+						<LogOut size={16} />
+						<span className='font-bold'>{t('account-logout')}</span>
 					</Button>
 				}
 			/>
