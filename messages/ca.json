@@ -52,6 +52,7 @@
 		"name": "Nom",
 		"email": "Correu electrònic",
 		"email-hint": "L'adreça de correu electrònic està gestionada pel teu proveïdor OAuth.",
+		"email-unmatched": "L'adreça de correu no coincideix.",
 		"cancel": "Cancel·lar",
 		"save": "Desa",
 		"saving": "Desant...",
@@ -61,6 +62,14 @@
 		"account-delete": "Esborra el compte",
 		"account-delete-attention": "Aquesta acció no es pot desfer.",
 		"account-delete-text": "Això eliminarà permanentment el teu compte i totes les teves receptes.",
-		"account-delete-prompt": "Per confirmar-ho, escriu la teva adreça de correu:"
+		"account-delete-prompt": "Per confirmar-ho, escriu la teva adreça de correu:",
+		"account-deleting": "El teu compte s'està eliminant...",
+		"account-deleted": "El teu compte s'ha esborrat.",
+		"account-delete-error": "Hi ha hagut un error en esborrar el compte.",
+		"account-logout": "Tancar la sessió",
+		"account-logout-text": "Estàs segur que vols tancar la sessió?",
+		"account-logout-logged-out": "S'ha tancat la sessió.",
+		"account-logout-logging-out": "Tancant la sessió...",
+		"account-logout-error": "Hi ha hagut un error en tancar la sessió."
 	}
 }

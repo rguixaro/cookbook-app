@@ -94,7 +94,7 @@ export default function NewRecipePage() {
 									<Input
 										{...field}
 										autoComplete='off'
-										className='rounded-2xl text-center'
+										className='rounded-2xl border-2 text-center py-5 bg-forest-200/15'
 										placeholder={t('recipe-name')}
 										disabled={loading}
 									/>
@@ -134,8 +134,10 @@ export default function NewRecipePage() {
 										<div className='bg-forest-200 p-2 flex items-center justify-center'>
 											<Clock color='#fff' size={24} />
 										</div>
-										<div className='flex px-5 w-full items-center justify-between'>
-											{t('time')}
+										<div className='flex px-5 w-full items-center rounded-r-2xl justify-between border-2 border-forest-200/15'>
+											<span className='font-semibold text-forest-200/75'>
+												{t('time')}
+											</span>
 											<FormField
 												control={form.control}
 												name='time'
@@ -210,6 +212,8 @@ export default function NewRecipePage() {
 								<FormControl>
 									<Textarea
 										{...field}
+										onKeyDown={(e) => e.stopPropagation()}
+										className='rounded-2xl border-2 bg-forest-200/15'
 										placeholder={t('instructions-add')}
 										disabled={loading}
 									/>

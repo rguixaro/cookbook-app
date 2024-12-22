@@ -36,13 +36,16 @@ export const IngredientSelector = ({
 				<div className='relative my-2'>
 					<button
 						type='button'
-						className='absolute left-2 top-[6px]'
+						className='absolute left-2 top-1/2 transform -translate-y-1/2'
 						onClick={() => addIngredient()}>
 						<Plus color={'#789B84'} size={24} />
 					</button>
 					<input
 						value={currIngredient}
-						className={cn(InputGlobalStyles, 'rounded-2xl ps-10')}
+						className={cn(
+							InputGlobalStyles,
+							'rounded-2xl ps-10 py-5 bg-forest-200/15 border-2'
+						)}
 						placeholder={t('ingredients-add')}
 						onChange={(e) => setCurrIngredient(e.currentTarget.value)}
 						onKeyDown={addIngredient}
@@ -53,7 +56,9 @@ export const IngredientSelector = ({
 				<div
 					key={index}
 					className='flex items-center justify-between bg-forest-200/15 rounded-2xl shadow-sm my-2 py-1 px-3'>
-					<span className='ms-1'>{ingredient}</span>
+					<span className='ms-1 py-1 text-forest-200/75'>
+						{ingredient}
+					</span>
 					<button
 						onClick={() =>
 							setValues(values.filter((_, i) => i !== index))

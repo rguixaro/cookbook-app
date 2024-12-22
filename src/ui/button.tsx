@@ -27,13 +27,8 @@ const buttonVariants = cva(
 				destructive:
 					'bg-red-500 text-neutral-50 shadow-sm hover:bg-red-500/90',
 				outline:
-					'border border-neutral-200 bg-white shadow-sm hover:bg-neutral-100 hover:text-neutral-900',
-				secondary:
-					'bg-neutral-200 text-neutral-900 shadow-sm hover:bg-neutral-100/80',
+					'bg-forest-200/15 border-2 border-forest-200/15 shadow-sm hover:bg-forest-200/60 text-neutral-600 shadow',
 				ghost: 'hover:bg-neutral-100 hover:text-neutral-900',
-				link: 'text-neutral-900 underline-offset-4 hover:underline',
-				expandIcon:
-					'group relative border border-neutral-200 bg-white shadow-sm hover:bg-neutral-100 hover:text-neutral-900',
 			},
 			size: {
 				default: 'h-9 px-4 py-2',

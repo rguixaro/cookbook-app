@@ -52,6 +52,7 @@
 		"name": "Name",
 		"email": "Email",
 		"email-hint": "Email address is managed by your OAuth provider.",
+		"email-unmatched": "The email address does not match.",
 		"cancel": "Cancelar",
 		"save": "Save",
 		"saving": "Saving...",
@@ -61,6 +62,14 @@
 		"account-delete": "Delete account",
 		"account-delete-attention": "This action cannot be undone.",
 		"account-delete-text": "This will permanently delete your account and all your recipes.",
-		"account-delete-prompt": "To confirm, please typo your email address:"
+		"account-delete-prompt": "To confirm, please typo your email address:",
+		"account-deleting": "Your account is being deleted...",
+		"account-deleted": "Your account has been deleted.",
+		"account-delete-error": "An error occurred while deleting your account.",
+		"account-logout": "Log out",
+		"account-logout-text": "Are you sure you want to log out?",
+		"account-logout-logged-out": "You have been logged out.",
+		"account-logout-logging-out": "Logging out...",
+		"account-logout-error": "An error occurred while logging out."
 	}
 }
