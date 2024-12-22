@@ -1,7 +1,8 @@
 {
 	"common": {
 		"return": "Volver",
-		"recipes": "Recetas"
+		"recipes": "Recetas",
+		"not-found": "Página no encontrada"
 	},
 	"toasts": {
 		"recipe-created": "Receta creada con éxito.",
@@ -19,6 +20,13 @@
 		"username-required": "El nombre de usuario es obligatorio.",
 		"username-too-long": "El nombre de usuario no puede tener más de 40 caracteres.",
 		"email-invalid": "La dirección de correo electrónico no es válida."
+	},
+	"LoginPage": {
+		"login-to": "Acceder a tu ",
+		"login-name": "Libro de Recetas",
+		"login-text": "Inicia sesión para acceder a todas tus recetas y crear nuevas.",
+		"login-error": "Se ha producido un error al iniciar sesión.",
+		"google-login": "Continuar con Google"
 	},
 	"RecipesPage": {
 		"title": "RECETAS",

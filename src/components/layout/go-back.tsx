@@ -11,11 +11,7 @@ interface GoBackProps {
 	children?: React.ReactNode;
 }
 
-export const GoBack = ({
-	to = '/recipes',
-	text = 'return',
-	children,
-}: GoBackProps) => {
+export const GoBack = ({ to = '/', text = 'return', children }: GoBackProps) => {
 	const t = useTranslations('common');
 
 	return (

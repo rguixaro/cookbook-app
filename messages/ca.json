@@ -1,7 +1,8 @@
 {
 	"common": {
 		"return": "Tornar",
-		"recipes": "Receptes"
+		"recipes": "Receptes",
+		"not-found": "Pàgina no trobada"
 	},
 	"toasts": {
 		"recipe-created": "Recepta creada amb èxit.",
@@ -19,6 +20,13 @@
 		"username-required": "El nom d'usuari és obligatori.",
 		"username-too-long": "El nom d'usuari no pot tenir més de 40 caràcters.",
 		"email-invalid": "L'adreça de correu electrònic no és vàlida."
+	},
+	"LoginPage": {
+		"login-to": "Accedeix al teu ",
+		"login-name": "Llibre de Receptes",
+		"login-text": "Inicia sessió per accedir a totes les teves receptes i crear-ne de noves.",
+		"login-error": "S'ha produït un error en iniciar sessió.",
+		"google-login": "Continuar amb Google"
 	},
 	"RecipesPage": {
 		"title": "RECEPTES",

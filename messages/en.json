@@ -1,7 +1,8 @@
 {
 	"common": {
 		"return": "Return",
-		"recipes": "Recipes"
+		"recipes": "Recipes",
+		"not-found": "Page not found"
 	},
 	"toasts": {
 		"recipe-created": "Recipe created successfully.",
@@ -19,6 +20,13 @@
 		"username-required": "Username is required.",
 		"username-too-long": "Username cannot be longer than 40 characters.",
 		"email-invalid": "Invalid email address."
+	},
+	"LoginPage": {
+		"login-to": "Sign in to your ",
+		"login-name": "Cookbook",
+		"login-text": "Sign in to access all your recipes and create new ones.",
+		"login-error": "An error occurred while signing in.",
+		"google-login": "Continue with Google"
 	},
 	"RecipesPage": {
 		"title": "RECIPES",
