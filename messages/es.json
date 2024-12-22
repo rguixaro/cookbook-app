@@ -52,6 +52,7 @@
 		"name": "Nombre",
 		"email": "Correo electrónico",
 		"email-hint": "La dirección de correo electrónico está gestionada por tu proveedor OAuth.",
+		"email-unmatched": "La dirección de correo no coincide.",
 		"cancel": "Cancelar",
 		"save": "Guardar",
 		"saving": "Guardando...",
@@ -61,6 +62,14 @@
 		"account-delete": "Eliminar la cuenta",
 		"account-delete-attention": "Esta acción no se puede deshacer.",
 		"account-delete-text": "Esto eliminará permanentemente tu cuenta y todas tus recetas.",
-		"account-delete-prompt": "Para confirmarlo, por favor escribe tu dirección de correo:"
+		"account-delete-prompt": "Para confirmarlo, por favor escribe tu dirección de correo:",
+		"account-deleting": "Tu cuenta se está eliminando...",
+		"account-deleted": "Tu cuenta ha sido eliminada.",
+		"account-delete-error": "Se ha producido un error al eliminar tu cuenta.",
+		"account-logout": "Cerrar sesión",
+		"account-logout-text": "¿Estás seguro de que quieres cerrar la sesión?",
+		"account-logout-logging-out": "Cerrando la sesión...",
+		"account-logout-logged-out": "Se ha cerrado la sesión.",
+		"account-logout-error": "Se ha producido un error al cerrar la sesión."
 	}
 }
