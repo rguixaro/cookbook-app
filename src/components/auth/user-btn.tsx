@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useSession } from 'next-auth/react';
+
 import { cn } from '@/utils';
 
 type UserButtonProps = React.HTMLAttributes<HTMLAnchorElement> & {
@@ -20,7 +22,13 @@ export function UserButton({ className }: UserButtonProps) {
 				'w-7 h-7 rounded overflow-hidden hover:opacity-80 transition-all duration-300 shadow z-10 border-2 border-forest-200 bg-forest-200',
 				className
 			)}>
-			<img src={session.user.image} referrerPolicy='no-referrer' />
+			<Image
+				src={session.user.image}
+				referrerPolicy='no-referrer'
+				alt='Profile image'
+				width={28}
+				height={28}
+			/>
 		</Link>
 	);
 }

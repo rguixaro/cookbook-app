@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
 import { Loader, User, Utensils } from 'lucide-react';
 
@@ -50,7 +51,13 @@ export default async function ProfilePage({
 				<div>
 					<div className='flex flex-col items-center justify-center space-y-3 mb-5'>
 						<div className='w-20 h-20 rounded-xl overflow-hidden shadow border-4 border-forest-200'>
-							<img src={profile?.image} referrerPolicy='no-referrer' />
+							<Image
+								src={profile?.image}
+								referrerPolicy='no-referrer'
+								alt='Profile image'
+								width={80}
+								height={80}
+							/>
 						</div>
 						<span className='font-bold text-lg md:text-xl'>
 							{profile.name}
