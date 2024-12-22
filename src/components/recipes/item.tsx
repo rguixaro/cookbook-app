@@ -18,11 +18,19 @@ const motions: Variants = {
 	},
 };
 
-export function ItemRecipe({ recipe }: { recipe: RecipeSchema }) {
+export function ItemRecipe({
+	recipe,
+	referred = false,
+}: {
+	recipe: RecipeSchema;
+	referred?: boolean;
+}) {
 	const t = useTranslations('RecipesPage');
 
 	return (
-		<Link href={`/recipes/${recipe.authorId}/${recipe.slug}`} className='w-full'>
+		<Link
+			href={`/recipes/${recipe.authorId}/${recipe.slug}${referred ? '?referred=true' : ''}`}
+			className='w-full'>
 			<motion.div
 				initial='offscreen'
 				whileInView='onscreen'

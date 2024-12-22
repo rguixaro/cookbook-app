@@ -13,7 +13,7 @@ import { cn } from '@/utils';
 
 type SearchState = 'visible' | 'hidden' | 'outlined';
 
-export const SearchRecipes = () => {
+export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) => {
 	const t = useTranslations('RecipesPage');
 
 	const searchParams = useSearchParams();
@@ -55,13 +55,15 @@ export const SearchRecipes = () => {
 
 	return (
 		<div className='sticky top-24 h-16 bg-[#fefff2] w-full flex items-center justify-between'>
-			<TypographyH4 className='ms-3'>{t('title')}</TypographyH4>
+			<TypographyH4 className='ms-3'>{t('title').toUpperCase()}</TypographyH4>
 			<div className='flex items-center'>
 				<div
 					className={cn(
 						'flex duration-300 transition-transform',
-						status !== 'hidden'
-							? 'translate-x-14 sm:translate-x-0'
+						withAvatar
+							? status !== 'hidden'
+								? 'translate-x-14 sm:translate-x-0'
+								: 'translate-x-8'
 							: 'translate-x-8'
 					)}>
 					<button
@@ -100,12 +102,14 @@ export const SearchRecipes = () => {
 						required
 					/>
 				</div>
-				<UserButton
-					className={cn(
-						status !== 'hidden' &&
-							'opacity-0 sm:opacity-100 translate-x-4 sm:translate-x-0 pointer-events-none sm:pointer-events-auto'
-					)}
-				/>
+				{withAvatar && (
+					<UserButton
+						className={cn(
+							status !== 'hidden' &&
+								'opacity-0 sm:opacity-100 translate-x-4 sm:translate-x-0 pointer-events-none sm:pointer-events-auto'
+						)}
+					/>
+				)}
 			</div>
 		</div>
 	);

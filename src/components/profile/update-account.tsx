@@ -27,8 +27,8 @@ import { DeleteAccount } from './delete-account';
 import { LogoutAccount } from './logout-account';
 
 interface UpdateAccountProps {
+	id: string;
 	name: string;
-	username: string;
 	email: string;
 }
 
@@ -44,7 +44,6 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 		resolver: zodResolver(UpdateProfileSchema),
 		defaultValues: {
 			name: props.name,
-			username: props.username,
 			email: props.email,
 		},
 	});
@@ -77,7 +76,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 	const ShareComponent = () => {
 		return (
 			<button
-				onClick={handleCopy(`${url}/${props.email}`)}
+				onClick={handleCopy(`${url}/profile/${props.id}`)}
 				className='bg-forest-200 text-white font-bold rounded-lg text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/80 shadow'>
 				<span>{t('share')}</span>
 			</button>
