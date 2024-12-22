@@ -1,20 +1,13 @@
 import type { Metadata } from 'next';
 import localFont from 'next/font/local';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale, getMessages } from 'next-intl/server';
+import { SessionProvider } from 'next-auth/react';
+
+import { ToasterProvider } from '@/providers';
+import { Header } from '@/components/layout/header';
 import '@/styles/globals.css';
-
-import { AuthStoreProvider } from '@/providers/auth-store-provider';
-import { RecipesStoreProvider } from '@/providers/recipes-store-provider';
-import { ToasterComponent } from '@/providers/toaster';
-import Header from '@/components/layout/header';
 import { cn } from '@/utils';
-
-const cochin = localFont({
-	variable: '--font-cochin',
-	src: '../fonts/cochin.otf',
-	weight: '100 900',
-	display: 'swap',
-	preload: true,
-});
 
 const montserrat = localFont({
 	variable: '--font-montserrat',
@@ -40,26 +33,29 @@ export const metadata: Metadata = {
 	description: 'Cookbook App',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
 	children,
 }: Readonly<{
 	children: React.ReactNode;
 }>) {
+	const locale = await getLocale();
+	const messages = await getMessages();
+
 	return (
-		<html lang='en' suppressHydrationWarning>
+		<html lang={locale} suppressHydrationWarning>
 			<body
 				className={cn(
-					`font-sans ${cochin.variable} ${montserrat.variable} ${guavine.variable} antialiased`,
+					`font-sans ${montserrat.variable} ${guavine.variable} antialiased`,
 					'bg-[#fefff2] selection:bg-forest-200/15 flex justify-center'
 				)}>
 				<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
-					<AuthStoreProvider>
-						<RecipesStoreProvider>
+					<SessionProvider>
+						<NextIntlClientProvider messages={messages}>
 							<Header />
 							{children}
-							<ToasterComponent />
-						</RecipesStoreProvider>
-					</AuthStoreProvider>
+							<ToasterProvider />
+						</NextIntlClientProvider>
+					</SessionProvider>
 				</div>
 			</body>
 		</html>

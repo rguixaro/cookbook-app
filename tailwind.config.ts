@@ -25,7 +25,6 @@ const config = {
 			},
 			fontFamily: {
 				sans: ['var(--font-montserrat)'],
-				mono: ['var(--font-cochin)'],
 				title: ['var(--font-guavine)'],
 			},
 			keyframes: {
