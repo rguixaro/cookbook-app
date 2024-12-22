@@ -1,16 +1,10 @@
-'use client';
+import { TypographyH1 } from '@/ui';
 
-import { useAuthStore } from '@/providers/auth-store-provider';
-
-import { TypographyH1 } from '@/ui/typography';
-
-const Header = () => {
-	const { isAuthenticated } = useAuthStore((state) => state);
-
+export const Header = () => {
 	return (
 		<a
 			href='/'
-			className='flex h-24 bg-[#fefff2] justify-center items-center sticky top-0 cursor-pointer border-b-4 border-forest-200'>
+			className='flex h-24 bg-[#fefff2] justify-center items-center sticky top-0 cursor-pointer border-b-4 border-forest-200 z-50'>
 			<div className='w-full text-center'>
 				<TypographyH1 className='font-title text-forest-200 pb-5'>
 					{'CookBook'}
@@ -19,5 +13,3 @@ const Header = () => {
 		</a>
 	);
 };
-
-export default Header;

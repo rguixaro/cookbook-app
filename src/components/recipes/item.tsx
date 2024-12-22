@@ -22,7 +22,7 @@ export function ItemRecipe({ recipe }: { recipe: RecipeSchema }) {
 	const t = useTranslations('RecipesPage');
 
 	return (
-		<Link href={`/${recipe.authorId}/${recipe.slug}`} className='w-full'>
+		<Link href={`/recipes/${recipe.authorId}/${recipe.slug}`} className='w-full'>
 			<motion.div
 				initial='offscreen'
 				whileInView='onscreen'
