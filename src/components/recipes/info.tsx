@@ -12,29 +12,46 @@ import { AddRecipe } from './add';
 /**
  * Header and Search bar height
  */
-const HeaderHeight = 101;
-const SearchHeight = 64;
-const NotFoundHeight = 128;
-const TopHeight = HeaderHeight + SearchHeight;
-const WindowHeight = window?.innerHeight;
-const MiddleHeight = WindowHeight - (2 * TopHeight + 5 + NotFoundHeight) - 25;
+const headerHeight = 101;
+const searchHeight = 64;
+const notFoundHeight = 128;
 
 export function Info({ enabled }: { enabled: boolean }) {
 	const t = useTranslations('RecipesPage');
 
 	const [status, setStatus] = useState<'bottom' | 'middle' | 'initial'>('initial');
 
+	/**
+	 * Y positions for the AddRecipe component
+	 */
+	const [windowHeight, setWindowHeight] = useState<number>(750);
+	const topHeight = headerHeight + searchHeight;
+	const middleHeight = windowHeight - (2 * topHeight + 5 + notFoundHeight) - 25;
+
+	/**
+	 * Motion variants for the AddRecipe component
+	 */
 	const variants = {
-		hidden: { opacity: 0, y: 25, bottom: WindowHeight / 8 },
+		hidden: { opacity: 0, y: 25, bottom: windowHeight / 8 },
 		initial: {
 			opacity: 1,
 			y: 0,
 			transition: { duration: 0.3, delay: 1, ease: 'easeInOut' },
 		},
 		bottom: { opacity: 1, y: 0 },
-		middle: { opacity: 1, bottom: 0, y: -MiddleHeight },
+		middle: { opacity: 1, bottom: 0, y: -middleHeight },
 	};
 
+	/**
+	 * Effect to set the window height
+	 */
+	useEffect(() => {
+		setWindowHeight(window.innerHeight);
+	}, []);
+
+	/**
+	 * Effect to change the status of the AddRecipe component
+	 */
 	useEffect(() => {
 		if (status === 'middle' && !enabled) setStatus('bottom');
 		else setStatus(enabled ? 'middle' : 'initial');
@@ -46,7 +63,7 @@ export function Info({ enabled }: { enabled: boolean }) {
 				<motion.div
 					key='not-found'
 					initial={{ opacity: 0, y: 0, scale: 0 }}
-					animate={{ opacity: 1, y: TopHeight, scale: 1 }}
+					animate={{ opacity: 1, y: topHeight, scale: 1 }}
 					exit={{ opacity: 0, y: 0, scale: 0 }}>
 					<div className='h-32 flex flex-col items-center justify-center text-forest-200'>
 						<TypographyH4>{t('not-found')}</TypographyH4>
