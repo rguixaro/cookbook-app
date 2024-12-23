@@ -1,21 +1,20 @@
 import Link from 'next/link';
+import { getTranslations } from 'next-intl/server';
+import { CircleX } from 'lucide-react';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/ui';
+import { TypographyH4 } from '@/ui';
 
-export default function AuthErrorPage() {
+export default async function AuthErrorPage() {
+	const t = await getTranslations('toasts');
+	const t_common = await getTranslations('common');
+
 	return (
-		<Card
-			className={'duration-300 animate-in fade-in-15 slide-in-from-bottom-3'}>
-			<CardHeader>
-				<CardTitle className='text-xl'>Something went wrong.</CardTitle>
-			</CardHeader>
-			<CardContent>
-				<Link
-					href='/auth'
-					className='opacity-75 transition-opacity duration-100 hover:text-black hover:opacity-100'>
-					<span>Back to login</span>
-				</Link>
-			</CardContent>
-		</Card>
+		<div className='mt-32 flex flex-col items-center justify-center text-forest-200'>
+			<CircleX size={48} />
+			<TypographyH4 className='mt-2 mb-5'>{t('error')}</TypographyH4>
+			<Link href='/' className='mt-5 underline font-medium'>
+				{t_common('return')}
+			</Link>
+		</div>
 	);
 }
