@@ -29,7 +29,7 @@ export const RecipesFeed = async ({
 	return (
 		<div className='w-full h-full flex flex-col items-center'>
 			{sortedRecipes?.map((recipe) => (
-				<ItemRecipe key={recipe.id} recipe={recipe} referred />
+				<ItemRecipe key={recipe.id} recipe={recipe} referred={referred} />
 			))}
 			{referred ? (
 				filteredRecipes?.length === 0 && (
