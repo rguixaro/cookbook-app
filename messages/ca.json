@@ -48,6 +48,7 @@
 		"creating": "Creant recepta..."
 	},
 	"RecipeCategories": {
+		"starter": "Entrant",
 		"pasta": "Pasta",
 		"meat": "Carn",
 		"fish": "Peix",
