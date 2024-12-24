@@ -1,4 +1,5 @@
 export const Categories = [
+	'Starter',
 	'Pasta',
 	'Meat',
 	'Fish',
