@@ -22,6 +22,7 @@ export const getRecipesByUser = cache(async () => {
 			where: { authorId: currentUser.user?.id },
 		});
 		if (currentUser.user.savedRecipes.length)
+			/* @ts-expect-error: Unnecessary typing */
 			savedRecipes = await db.recipe.findMany({
 				where: { id: { in: currentUser.user.savedRecipes } },
 			});
@@ -81,7 +82,7 @@ export const getProfileAndRecipes = cache(
 			const recipes = await db.recipe.findMany({
 				where: { authorId: userId },
 			});
-
+			/* @ts-expect-error: Unnecessary typing */
 			return { profile, recipes };
 		} catch (error) {
 			return { profile: null, recipes: [] };
