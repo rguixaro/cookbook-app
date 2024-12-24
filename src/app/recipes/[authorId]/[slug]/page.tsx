@@ -51,10 +51,12 @@ export default async function RecipePage({
 							<Icon name={recipe.category} />
 						</div>
 					</div>
-					<div className='flex items-center justify-center w-full mt-2'>
-						<Clock {...IconProps} />
-						<span className='text-xs md:text-sm font-bold text-neutral-600 ms-2 mr-5'>{`${recipe.time}'`}</span>
-					</div>
+					{recipe.time && (
+						<div className='flex items-center justify-center w-full mt-2'>
+							<Clock {...IconProps} />
+							<span className='text-xs md:text-sm font-bold text-neutral-600 ms-2 mr-5'>{`${recipe.time}'`}</span>
+						</div>
+					)}
 					<div className='text-sm md:text-base mt-5'>
 						<p className='font-semibold text-forest-200'>
 							{t('ingredients')}

@@ -48,6 +48,7 @@
 		"creating": "Creando receta..."
 	},
 	"RecipeCategories": {
+		"starter": "Entrante",
 		"pasta": "Pasta",
 		"meat": "Carne",
 		"fish": "Pescado",
