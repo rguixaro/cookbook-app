@@ -22,7 +22,7 @@ model Recipe {
     id                  String     @id @default(auto()) @map("_id") @db.ObjectId
     slug                String
     name                String
-    time                Int
+    time                Int?
     instructions        String
     ingredients         String[]
     createdAt           DateTime   @default(now())
