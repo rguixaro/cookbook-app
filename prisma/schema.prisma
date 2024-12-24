@@ -8,6 +8,7 @@ datasource db {
 }
 
 enum Category {
+    Starter
     Pasta
     Meat
     Fish

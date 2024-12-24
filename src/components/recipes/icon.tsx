@@ -9,6 +9,7 @@ type IconProps = {
 };
 
 const IconsByCategory = {
+	starter: 'Dessert',
 	pasta: 'UtensilsCrossed',
 	meat: 'Beef',
 	fish: 'FishSymbol',
