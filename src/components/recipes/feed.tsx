@@ -18,7 +18,9 @@ export const RecipesFeed = async ({
 
 	const filteredRecipes = data?.recipes.filter((recipe) => {
 		if (!searchParam) return true;
-		const matchRecipe = !searchParam || recipe.name.includes(searchParam);
+		const matchRecipe =
+			!searchParam ||
+			recipe.name.toLowerCase().includes(searchParam.toLowerCase());
 		return matchRecipe;
 	});
 
