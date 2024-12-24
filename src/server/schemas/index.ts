@@ -17,7 +17,7 @@ export const RecipeSchema = z.object({
 	id: z.string(),
 	slug: z.string(),
 	name: z.string(),
-	time: z.number(),
+	time: z.number().optional(),
 	instructions: z.string(),
 	ingredients: z.array(z.string()),
 	category: z.enum(Categories),
