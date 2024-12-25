@@ -8,10 +8,12 @@ import { TypographyH4 } from '@/ui';
 
 export const RecipesFeed = async ({
 	searchParam,
+	categoryParam,
 	userId,
 	referred = false,
 }: {
 	searchParam?: string;
+	categoryParam?: string;
 	userId?: string;
 	referred?: boolean;
 }) => {
@@ -19,11 +21,12 @@ export const RecipesFeed = async ({
 	const t = await getTranslations('RecipesPage');
 
 	const filteredRecipes = data?.recipes.filter((recipe) => {
-		if (!searchParam) return true;
-		const matchRecipe =
+		if (!searchParam && !categoryParam) return true;
+		else if (categoryParam && recipe.category !== categoryParam) return false;
+		return (
 			!searchParam ||
-			recipe.name.toLowerCase().includes(searchParam.toLowerCase());
-		return matchRecipe;
+			recipe.name.toLowerCase().includes(searchParam.toLowerCase())
+		);
 	});
 
 	const sortedRecipes = filteredRecipes?.sort((a, b) => {
@@ -38,6 +41,7 @@ export const RecipesFeed = async ({
 					recipe={recipe}
 					referred={referred}
 					query={searchParam}
+					category={categoryParam}
 				/>
 			))}
 			{referred ? (

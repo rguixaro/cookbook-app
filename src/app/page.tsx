@@ -8,9 +8,10 @@ import { SearchRecipes } from '@/components/recipes/search';
 export default async function RecipesPage({
 	searchParams,
 }: {
-	searchParams?: Promise<{ search?: string }>;
+	searchParams?: Promise<{ search?: string; category?: string }>;
 }) {
 	const searchParam = (await searchParams)?.search;
+	const categoryParam = (await searchParams)?.category;
 	const t = await getTranslations('RecipesPage');
 
 	const LoadingSkeleton = () => {
@@ -26,7 +27,10 @@ export default async function RecipesPage({
 		<main className='flex flex-col items-center text-neutral-700 w-full h-full'>
 			<SearchRecipes />
 			<Suspense fallback={<LoadingSkeleton />}>
-				<RecipesFeed searchParam={searchParam} />
+				<RecipesFeed
+					searchParam={searchParam}
+					categoryParam={categoryParam}
+				/>
 			</Suspense>
 		</main>
 	);
