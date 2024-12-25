@@ -42,6 +42,7 @@
 		"instructions-add": "Afegeix les instruccions de la recepta",
 		"recipe-name": "Nom de la recepta",
 		"categories": "Categories",
+		"categories-select": "Selecciona una categoria",
 		"time": "Temps",
 		"minutes": "minuts",
 		"create": "Crear",
