@@ -2,13 +2,13 @@ import { Suspense } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { getTranslations } from 'next-intl/server';
-import { Loader, User, Utensils } from 'lucide-react';
+import { Loader, User } from 'lucide-react';
 
-import { getProfileAndRecipes } from '@/server/queries';
+import { getProfileByUserId } from '@/server/queries';
 import { GoBack } from '@/components/layout/go-back';
-import { TypographyH4 } from '@/ui';
 import { SearchRecipes } from '@/components/recipes/search';
 import { RecipesFeed } from '@/components/recipes/feed';
+import { TypographyH4 } from '@/ui';
 
 export default async function ProfilePage({
 	params,
@@ -20,8 +20,7 @@ export default async function ProfilePage({
 	const { userId } = await params;
 	const searchParam = (await searchParams)?.search;
 
-	const { profile, recipes } = await getProfileAndRecipes(userId);
-
+	const { profile } = await getProfileByUserId(userId);
 	const t = await getTranslations('RecipesPage');
 	const t_common = await getTranslations('common');
 
@@ -63,19 +62,17 @@ export default async function ProfilePage({
 							{profile.name}
 						</span>
 					</div>
-					{!recipes.length ? (
-						<div className='h-32 mt-10 flex flex-col items-center justify-center text-forest-200'>
-							<TypographyH4>{t('no-recipes')}</TypographyH4>
-							<Utensils size={24} className='mt-2 mb-5' />
-						</div>
-					) : (
-						<div>
-							<SearchRecipes withAvatar={false} />
-							<Suspense fallback={<LoadingSkeleton />}>
-								<RecipesFeed referred searchParam={searchParam} />
-							</Suspense>
-						</div>
-					)}
+					<div>
+						<SearchRecipes withAvatar={false} />
+						<Suspense fallback={<LoadingSkeleton />}>
+							<RecipesFeed
+								referred
+								userId={userId}
+								searchParam={searchParam}
+							/>
+						</Suspense>
+					</div>
+					{/* )} */}
 				</div>
 			)}
 		</div>
