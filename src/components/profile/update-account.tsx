@@ -166,7 +166,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			</Form>
 			<LogoutAccount
 				trigger={
-					<Button variant='outline' size='sm' className='mt-20'>
+					<Button variant='outline' className='mt-20'>
 						<LogOut size={16} />
 						<span className='font-bold'>{t('account-logout')}</span>
 					</Button>
