@@ -24,6 +24,7 @@ interface CategoriesProps {
 
 export const Categories = ({ trigger, onSelect, selected }: CategoriesProps) => {
 	const t = useTranslations('RecipesPage');
+	const t_categories = useTranslations('RecipeCategories');
 
 	const [isOpen, setIsOpen] = useState(false);
 	function select(category: string) {
@@ -54,7 +55,10 @@ export const Categories = ({ trigger, onSelect, selected }: CategoriesProps) => 
 									'border-forest-200 bg-forest-200/30'
 							)}>
 							<Icon name={category} size={24} />
-							<span className='font-bold mt-2'>{category}</span>
+							<span className='font-bold mt-2'>
+								{/* @ts-expect-error: Unnecessary message type */}
+								{t_categories(category.toLowerCase())}
+							</span>
 						</Button>
 					))}
 				</div>

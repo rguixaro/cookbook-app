@@ -20,6 +20,7 @@ type SearchState = 'visible' | 'hidden' | 'outlined';
 
 export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) => {
 	const t = useTranslations('RecipesPage');
+	const t_categories = useTranslations('RecipeCategories');
 
 	const searchParams = useSearchParams();
 	const pathname = usePathname();
@@ -181,7 +182,8 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 										onClick={handleRemoveCategory}
 										className='flex items-center justify-center px-3 space-x-2'>
 										<span className='font-semibold text-sm md:text-base'>
-											{category}
+											{/* @ts-expect-error: Unnecessary message type */}
+											{t_categories(category.toLowerCase())}
 										</span>
 										<X size={14} className='mt-0.5' />
 									</button>
