@@ -15,7 +15,7 @@ export interface Recipe {
 	id: string;
 	slug: string;
 	name: string;
-	time: number | undefined;
+	time: number | null;
 	instructions: string;
 	ingredients: string[];
 	createdAt: Date;
