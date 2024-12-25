@@ -9,7 +9,10 @@
 		"lint": "next lint",
 		"db:generate": "prisma generate",
 		"db:push": "prisma db push",
-		"db:studio": "prisma studio"
+		"db:studio": "prisma studio",
+		"test:chrome": "npx playwright test --headed --browser=chromium",
+		"test:firefox": "npx playwright test --headed --browser=firefox",
+		"test:safari": "npx playwright test --headed --browser=webkit"
 	},
 	"dependencies": {
 		"@auth/core": "^0.37.4",
@@ -43,6 +46,7 @@
 	},
 	"devDependencies": {
 		"@eslint/eslintrc": "^3",
+		"@playwright/test": "^1.49.1",
 		"@tailwindcss/typography": "^0.5.15",
 		"@types/bcryptjs": "^2.4.6",
 		"@types/eslint": "^9.6.1",
