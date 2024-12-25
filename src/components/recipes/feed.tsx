@@ -35,7 +35,6 @@ export const RecipesFeed = async ({
 			{sortedRecipes?.map((recipe) => (
 				<ItemRecipe
 					key={recipe.id}
-					/* @ts-expect-error: Unnecessary typing */
 					recipe={recipe}
 					referred={referred}
 					query={searchParam}

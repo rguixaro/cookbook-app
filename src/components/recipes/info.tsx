@@ -75,7 +75,7 @@ export function Info({ enabled }: { enabled: boolean }) {
 					animate={{ opacity: 1, y: topHeight, scale: 1 }}
 					exit={{ opacity: 0, y: 0, scale: 0 }}>
 					<div className='h-32 flex flex-col items-center justify-center text-forest-200'>
-						<TypographyH4>{t('not-found')}</TypographyH4>
+						<TypographyH4>{t('no-recipes')}</TypographyH4>
 						<Utensils size={24} className='mt-2 mb-5' />
 					</div>
 				</motion.div>
