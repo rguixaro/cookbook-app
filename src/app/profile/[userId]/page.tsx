@@ -15,10 +15,11 @@ export default async function ProfilePage({
 	searchParams,
 }: {
 	params: Promise<{ userId: string }>;
-	searchParams?: Promise<{ search?: string }>;
+	searchParams?: Promise<{ search?: string; category?: string }>;
 }) {
 	const { userId } = await params;
 	const searchParam = (await searchParams)?.search;
+	const categoryParam = (await searchParams)?.category;
 
 	const { profile } = await getProfileByUserId(userId);
 	const t = await getTranslations('RecipesPage');
@@ -69,6 +70,7 @@ export default async function ProfilePage({
 								referred
 								userId={userId}
 								searchParam={searchParam}
+								categoryParam={categoryParam}
 							/>
 						</Suspense>
 					</div>

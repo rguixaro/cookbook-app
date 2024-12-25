@@ -13,7 +13,7 @@ import { AddRecipe } from './add';
  * Header and Search bar height
  */
 const headerHeight = 101;
-const searchHeight = 64;
+const searchHeight = 112;
 const notFoundHeight = 128;
 
 export function Info({ enabled }: { enabled: boolean }) {

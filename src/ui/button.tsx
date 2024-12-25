@@ -18,22 +18,22 @@ interface IconRefProps {
 export type ButtonIconProps = IconProps | IconRefProps;
 
 const buttonVariants = cva(
-	'inline-flex items-center space-x-3 justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-neutral-500',
+	'inline-flex items-center space-x-3 justify-center whitespace-nowrap rounded-2xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-neutral-500',
 	{
 		variants: {
 			variant: {
 				default:
-					'bg-forest-200 text-neutral-50 shadow hover:bg-neutral-800/90 ',
+					'bg-forest-200 text-neutral-50 shadow hover:bg-forest-200/90',
 				destructive:
 					'bg-red-500 text-neutral-50 shadow-sm hover:bg-red-500/90',
 				outline:
 					'bg-forest-200/15 border-2 border-forest-200/15 shadow-sm hover:bg-forest-200/60 text-neutral-600 shadow',
-				ghost: 'hover:bg-neutral-100 hover:text-neutral-900',
+				ghost: 'hover:bg-forest-200/15 hover:text-neutral-900',
 			},
 			size: {
 				default: 'h-9 px-4 py-2',
-				sm: 'h-8 rounded-md px-3 text-xs',
-				lg: 'h-12 rounded-md px-5',
+				sm: 'h-8 px-3 text-xs',
+				lg: 'h-12 px-5',
 				icon: 'h-9 w-9',
 			},
 		},

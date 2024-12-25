@@ -22,18 +22,22 @@ export function ItemRecipe({
 	recipe,
 	referred = false,
 	query,
+	category,
 }: {
 	recipe: RecipeSchema;
 	referred?: boolean;
 	query?: string;
+	category?: string;
 }) {
 	const t = useTranslations('RecipesPage');
 
 	const queryParams = referred
-		? `?referred=true${query ? `&query=${query}` : ''}`
+		? `?referred=true${query ? `&query=${query.trim()}` : ''}${category ? `&category=${category}` : ''}`
 		: query
-			? `?query=${query}`
-			: '';
+			? `?query=${query}${category ? `&category=${category}` : ''}`
+			: category
+				? `?category=${category}`
+				: '';
 
 	return (
 		<Link
@@ -47,7 +51,7 @@ export function ItemRecipe({
 				<div
 					className={cn(
 						'w-full my-2 py-3 px-2 flex flex-col items-start',
-						'border-2 border-forest-200 rounded-lg',
+						'border-4 border-forest-200/15 rounded-lg',
 						'transition-all duration-300 hover:bg-forest-200/15'
 					)}>
 					<div className='flex items-center justify-between w-full'>

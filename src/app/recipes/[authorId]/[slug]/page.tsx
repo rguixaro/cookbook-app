@@ -14,14 +14,20 @@ export default async function RecipePage({
 	searchParams,
 }: {
 	params: Promise<{ authorId: string; slug: string }>;
-	searchParams?: Promise<{ referred?: boolean; query?: string }>;
+	searchParams?: Promise<{
+		referred?: boolean;
+		query?: string;
+		category?: string;
+	}>;
 }) {
 	const session = await auth();
 	const { slug, authorId } = await params;
 	const isReferred = (await searchParams)?.referred;
 	const query = (await searchParams)?.query;
+	const category = (await searchParams)?.category;
 
-	const searchQuery = query ? `?search=${query}` : '';
+	const paramQuery = query ? `?search=${query}` : '';
+	const paramCategory = category ? `${query ? '&' : '?'}category=${category}` : '';
 
 	const recipe = await getRecipeByAuthAndSlug(authorId, slug);
 	const t = await getTranslations('RecipesPage');
@@ -35,8 +41,8 @@ export default async function RecipePage({
 				text={'recipes'}
 				to={
 					isReferred
-						? `/profile/${authorId}${searchQuery}`
-						: `/${searchQuery}`
+						? `/profile/${authorId}${paramQuery}${paramCategory}`
+						: `/${paramQuery}${paramCategory}`
 				}>
 				{!isOwner && (
 					<SavedStatus initial={isSaved} recipeId={recipe?.id as string} />

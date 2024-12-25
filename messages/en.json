@@ -42,6 +42,7 @@
 		"instructions-add": "Add the recipe instructions",
 		"recipe-name": "Recipe name",
 		"categories": "Categories",
+		"categories-select": "Select a category",
 		"time": "Cooking time",
 		"minutes": "minutes",
 		"create": "Create",

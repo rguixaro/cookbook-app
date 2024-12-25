@@ -22,7 +22,6 @@ export const getSingleRecipe = async (id: string): Promise<Recipe | null> => {
 	/** Not authenticated */
 	if (!currentUser) return null;
 
-	/* @ts-expect-error: Unnecessary typing */
 	return await db.recipe.findUnique({ where: { id } });
 };
 
