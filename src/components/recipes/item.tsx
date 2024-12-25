@@ -21,15 +21,23 @@ const motions: Variants = {
 export function ItemRecipe({
 	recipe,
 	referred = false,
+	query,
 }: {
 	recipe: RecipeSchema;
 	referred?: boolean;
+	query?: string;
 }) {
 	const t = useTranslations('RecipesPage');
 
+	const queryParams = referred
+		? `?referred=true${query ? `&query=${query}` : ''}`
+		: query
+			? `?query=${query}`
+			: '';
+
 	return (
 		<Link
-			href={`/recipes/${recipe.authorId}/${recipe.slug}${referred ? '?referred=true' : ''}`}
+			href={`/recipes/${recipe.authorId}/${recipe.slug}${queryParams}`}
 			className='w-full'>
 			<motion.div
 				initial='offscreen'

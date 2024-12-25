@@ -1,19 +1,21 @@
 import { getTranslations } from 'next-intl/server';
 import { Utensils } from 'lucide-react';
 
-import { getRecipesByUser } from '@/server/queries';
+import { getRecipesByUserId } from '@/server/queries';
 import { ItemRecipe } from '@/components/recipes/item';
 import { Info } from '@/components/recipes/info';
 import { TypographyH4 } from '@/ui';
 
 export const RecipesFeed = async ({
 	searchParam,
+	userId,
 	referred = false,
 }: {
 	searchParam?: string;
+	userId?: string;
 	referred?: boolean;
 }) => {
-	const data = await getRecipesByUser();
+	const data = await getRecipesByUserId(userId);
 	const t = await getTranslations('RecipesPage');
 
 	const filteredRecipes = data?.recipes.filter((recipe) => {
@@ -31,8 +33,12 @@ export const RecipesFeed = async ({
 	return (
 		<div className='w-full h-full flex flex-col items-center'>
 			{sortedRecipes?.map((recipe) => (
-				/* @ts-expect-error: Unnecessary typing */
-				<ItemRecipe key={recipe.id} recipe={recipe} referred={referred} />
+				<ItemRecipe
+					key={recipe.id}
+					recipe={recipe}
+					referred={referred}
+					query={searchParam}
+				/>
 			))}
 			{referred ? (
 				filteredRecipes?.length === 0 && (
