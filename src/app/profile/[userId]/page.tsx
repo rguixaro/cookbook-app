@@ -52,7 +52,7 @@ export default async function ProfilePage({
 					<div className='flex flex-col items-center justify-center space-y-3 mb-5'>
 						<div className='w-20 h-20 rounded-xl overflow-hidden shadow border-4 border-forest-200'>
 							<Image
-								src={profile?.image}
+								src={profile.image}
 								referrerPolicy='no-referrer'
 								alt='Profile image'
 								width={80}

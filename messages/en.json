@@ -46,7 +46,8 @@
 		"time": "Cooking time",
 		"minutes": "minutes",
 		"create": "Create",
-		"creating": "Creating recipe..."
+		"creating": "Creating recipe...",
+		"more-on": "More recipes on"
 	},
 	"RecipeCategories": {
 		"starter": "Starter",

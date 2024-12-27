@@ -1,11 +1,13 @@
 import { getTranslations } from 'next-intl/server';
 import { Clock, Utensils } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
 
 import { auth } from '@/auth';
-import { getRecipeByAuthAndSlug } from '@/server/queries';
+import { getRecipeByAuthAndSlug, getProfileByUserId } from '@/server/queries';
 import { GoBack } from '@/components/layout/go-back';
-import { Icon } from '@/components/recipes/icon';
 import { SavedStatus } from '@/components/recipes/saved';
+import { RecipeDownload } from '@/components/recipes/download';
 import { IconProps, cn } from '@/utils';
 import { TypographyH4 } from '@/ui';
 
@@ -21,6 +23,8 @@ export default async function RecipePage({
 	}>;
 }) {
 	const session = await auth();
+	if (!session) return null;
+
 	const { slug, authorId } = await params;
 	const isReferred = (await searchParams)?.referred;
 	const query = (await searchParams)?.query;
@@ -35,6 +39,23 @@ export default async function RecipePage({
 	const isOwner = session?.user?.id === recipe?.authorId;
 	const isSaved = session?.user?.savedRecipes.includes(recipe?.id as string);
 
+	const author = await getAuthor();
+
+	async function getAuthor(): Promise<{
+		name: string;
+		image: string;
+	}> {
+		if (!isOwner) {
+			const { profile } = await getProfileByUserId(authorId);
+			if (!profile) return { name: '', image: '' };
+			return profile;
+		} else
+			return {
+				name: session?.user?.name as string,
+				image: session?.user?.image as string,
+			};
+	}
+
 	return (
 		<div className='flex flex-col pt-2 my-2 text-center'>
 			<GoBack
@@ -44,9 +65,15 @@ export default async function RecipePage({
 						? `/profile/${authorId}${paramQuery}${paramCategory}`
 						: `/${paramQuery}${paramCategory}`
 				}>
-				{!isOwner && (
-					<SavedStatus initial={isSaved} recipeId={recipe?.id as string} />
-				)}
+				<div className='flex space-x-3'>
+					<RecipeDownload recipe={recipe} author={author} />
+					{!isOwner && (
+						<SavedStatus
+							initial={isSaved}
+							recipeId={recipe?.id as string}
+						/>
+					)}
+				</div>
 			</GoBack>
 			{!recipe ? (
 				<div className='h-32 mt-10 flex flex-col items-center justify-center text-forest-200'>
@@ -56,16 +83,11 @@ export default async function RecipePage({
 			) : (
 				<div
 					className={cn(
-						'w-full mb-2 py-2 px-2 flex flex-col items-center justify-center '
+						'w-full my-2 py-2 px-2 flex flex-col items-center justify-center '
 					)}>
-					<div className='flex items-center justify-center w-full'>
-						<div className='flex items-center space-x-2'>
-							<span className='text-base md:text-lg text-forest-200 font-bold'>
-								{recipe.name}
-							</span>
-							<Icon name={recipe.category} />
-						</div>
-					</div>
+					<span className='text-lg md:text-xl text-forest-300 font-bold'>
+						{recipe.name}
+					</span>
 					{recipe.time && (
 						<div className='flex items-center justify-center w-full mt-2'>
 							<Clock {...IconProps} />
@@ -91,6 +113,23 @@ export default async function RecipePage({
 						<span className='font-normal text-justify'>
 							{recipe.instructions}
 						</span>
+					</div>
+					<div className='mt-5'>
+						<Link href={`/profile/${authorId}`}>
+							<div className='flex flex-col items-center justify-center space-y-2'>
+								<Image
+									src={author.image}
+									referrerPolicy='no-referrer'
+									alt='Profile image'
+									width={32}
+									height={32}
+									className='rounded-lg border-2 border-forest-200'
+								/>
+								<span className='font-semibold text-forest-200 text-sm'>
+									{` @${author.name}`}
+								</span>
+							</div>
+						</Link>
 					</div>
 				</div>
 			)}

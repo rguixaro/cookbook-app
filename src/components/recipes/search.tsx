@@ -156,7 +156,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 				onSelect={handleSelect}
 				selected={category}
 				trigger={
-					<div className='flex w-full space-x-3'>
+					<div className='flex w-fit space-x-3'>
 						<Button variant={'default'} size={'sm'}>
 							<span className='text-base md:text-lg font-bold'>
 								{t('categories')}
