@@ -46,7 +46,8 @@
 		"time": "Tiempo",
 		"minutes": "minutos",
 		"create": "Crear",
-		"creating": "Creando receta..."
+		"creating": "Creando receta...",
+		"more-on": "Más recetas en"
 	},
 	"RecipeCategories": {
 		"starter": "Entrante",
