@@ -69,6 +69,61 @@ export const createRecipe = async (
 	return { error: false };
 };
 
+/**
+ * Update an existing recipe.
+ * Auth required.
+ * @param values {z.infer<typeof CreateRecipeSchema>}
+ * @returns Promise<createRecipeResult>
+ */
+export const updateRecipe = async (
+	id: string,
+	userId: string,
+	values: z.infer<typeof CreateRecipeSchema>
+): Promise<createRecipeResult> => {
+	const currentUser = await auth();
+
+	/** Not authenticated */
+	if (!currentUser)
+		return { error: true, message: 'Not authenticated. Please login again.' };
+
+	try {
+		// The recipe belongs to the user
+		const recipe = await db.recipe.findFirst({
+			where: { id, authorId: userId },
+		});
+
+		if (!recipe) return { error: true, message: 'Recipe not found.' };
+
+		await db.recipe.update({
+			where: { id },
+			data: {
+				...values,
+				slug: values.name.trim().toLowerCase().replace(/\s+/g, '-'),
+				instructions: formatLongSentence(values.instructions),
+			},
+		});
+	} catch (e) {
+		if (e instanceof Prisma.PrismaClientKnownRequestError) {
+			if (e.code === 'P2002') {
+				return { error: true, message: 'error-recipe-exists' };
+			}
+		}
+		return { error: true, message: 'error' };
+	}
+
+	revalidatePath('/');
+	revalidatePath('/recipes');
+
+	return { error: false };
+};
+
+/**
+ * Save or unsave recipe.
+ * Auth required.
+ * @param id {string}
+ * @param isSaved {boolean} - true if recipe is saved, false if unsaved
+ * @returns Promise<{ error: boolean; message?: string }>
+ */
 export const saveRecipe = async (
 	id: string,
 	isSaved: boolean
