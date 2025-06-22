@@ -1,5 +1,5 @@
 import { getTranslations } from 'next-intl/server';
-import { Clock, Utensils } from 'lucide-react';
+import { Clock, NotebookPen, Utensils } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 
@@ -67,11 +67,17 @@ export default async function RecipePage({
 				}>
 				<div className='flex space-x-3'>
 					<RecipeDownload recipe={recipe} author={author} />
-					{!isOwner && (
+					{!isOwner ? (
 						<SavedStatus
 							initial={isSaved}
 							recipeId={recipe?.id as string}
 						/>
+					) : (
+						<Link
+							href={`/recipes/edit/${recipe?.authorId}/${recipe?.slug}`}
+							className='hover:bg-forest-200/15 p-1 rounded-lg transition-colors duration-300'>
+							<NotebookPen size={24} className='text-forest-200' />
+						</Link>
 					)}
 				</div>
 			</GoBack>
