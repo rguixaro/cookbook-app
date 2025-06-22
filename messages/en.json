@@ -7,6 +7,7 @@
 	},
 	"toasts": {
 		"recipe-created": "Recipe created successfully.",
+		"recipe-updated": "Recipe updated successfully.",
 		"recipe-saved": "Recipe saved successfully.",
 		"recipe-deleted": "Recipe deleted successfully.",
 		"error": "An error occurred.",
@@ -47,6 +48,8 @@
 		"minutes": "minutes",
 		"create": "Create",
 		"creating": "Creating recipe...",
+		"update": "Update",
+		"updating": "Updating recipe...",
 		"more-on": "More recipes on"
 	},
 	"RecipeCategories": {
