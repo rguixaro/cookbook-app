@@ -1,24 +1,24 @@
-import * as React from 'react';
-import type { LucideIcon } from 'lucide-react';
-import { Slot, Slottable } from '@radix-ui/react-slot';
-import { cva, type VariantProps } from 'class-variance-authority';
+import * as React from 'react'
+import type { LucideIcon } from 'lucide-react'
+import { Slot, Slottable } from '@radix-ui/react-slot'
+import { cva, type VariantProps } from 'class-variance-authority'
 
-import { cn } from '@/utils';
+import { cn } from '@/utils'
 
 interface IconProps {
-	Icon: LucideIcon;
-	iconPlacement: 'left' | 'right';
+	Icon: LucideIcon
+	iconPlacement: 'left' | 'right'
 }
 
 interface IconRefProps {
-	Icon?: never;
-	iconPlacement?: undefined;
+	Icon?: never
+	iconPlacement?: undefined
 }
 
-export type ButtonIconProps = IconProps | IconRefProps;
+export type ButtonIconProps = IconProps | IconRefProps
 
 const buttonVariants = cva(
-	'inline-flex items-center space-x-3 justify-center whitespace-nowrap rounded-2xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-neutral-500',
+	'inline-flex items-center space-x-3 justify-center whitespace-nowrap rounded text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-neutral-500',
 	{
 		variants: {
 			variant: {
@@ -42,12 +42,12 @@ const buttonVariants = cva(
 			size: 'default',
 		},
 	}
-);
+)
 
 export interface ButtonProps
 	extends React.ButtonHTMLAttributes<HTMLButtonElement>,
 		VariantProps<typeof buttonVariants> {
-	asChild?: boolean;
+	asChild?: boolean
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps & ButtonIconProps>(
@@ -55,7 +55,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps & ButtonIconProps
 		{ className, variant, size, asChild = false, Icon, iconPlacement, ...props },
 		ref
 	) => {
-		const Comp = asChild ? Slot : 'button';
+		const Comp = asChild ? Slot : 'button'
 		return (
 			<Comp
 				className={cn(buttonVariants({ variant, size, className }))}
@@ -73,9 +73,9 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps & ButtonIconProps
 					</div>
 				)}
 			</Comp>
-		);
+		)
 	}
-);
-Button.displayName = 'Button';
+)
+Button.displayName = 'Button'
 
-export { Button, buttonVariants };
+export { Button, buttonVariants }

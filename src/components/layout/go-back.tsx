@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
+import Link from 'next/link'
+import { useTranslations } from 'next-intl'
 
-import { cn } from '@/utils';
+import { cn } from '@/utils'
 
 interface GoBackProps {
-	to?: string;
-	text?: string;
-	children?: React.ReactNode;
+	to?: string
+	text?: string
+	children?: React.ReactNode
 }
 
 export const GoBack = ({ to = '/', text = 'return', children }: GoBackProps) => {
-	const t = useTranslations('common');
+	const t = useTranslations('common')
 
 	return (
 		<div className='w-full flex justify-between items-center'>
@@ -31,7 +31,7 @@ export const GoBack = ({ to = '/', text = 'return', children }: GoBackProps) => 
 					strokeWidth='2.5'
 					strokeLinecap='round'
 					strokeLinejoin='round'
-					className='stroke-current group-hover:stroke-forest-200'>
+					className='stroke-forest-200'>
 					<line
 						x1='5'
 						y1='12'
@@ -49,5 +49,5 @@ export const GoBack = ({ to = '/', text = 'return', children }: GoBackProps) => 
 			</Link>
 			{children}
 		</div>
-	);
-};
+	)
+}

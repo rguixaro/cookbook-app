@@ -1,32 +1,32 @@
-'use client';
+'use client'
 
-import { useCallback, useRef } from 'react';
-import { useTranslations } from 'next-intl';
-import Image from 'next/image';
-import { ArrowDownToLine, Clock } from 'lucide-react';
-import { toPng } from 'html-to-image';
-import { toast } from 'sonner';
+import { useCallback, useRef } from 'react'
+import { useTranslations } from 'next-intl'
+import Image from 'next/image'
+import { ArrowDownToLine, Clock } from 'lucide-react'
+import { toPng } from 'html-to-image'
+import { toast } from 'sonner'
 
-import { Recipe } from '@/types';
-import { TypographyH1, TypographyH4 } from '@/ui';
-import { cn, IconProps } from '@/utils';
+import { Recipe } from '@/types'
+import { TypographyH1, TypographyH4 } from '@/ui'
+import { cn, IconProps } from '@/utils'
 
 export const RecipeDownload = ({
 	recipe,
 	author,
 }: {
-	recipe: Recipe | null;
+	recipe: Recipe | null
 	author: {
-		name: string;
-		image: string;
-	};
+		name: string
+		image: string
+	}
 }) => {
-	const t = useTranslations('RecipesPage');
-	const t_toasts = useTranslations('toasts');
-	const ref = useRef<HTMLDivElement>(null);
+	const t = useTranslations('RecipesPage')
+	const t_toasts = useTranslations('toasts')
+	const ref = useRef<HTMLDivElement>(null)
 
 	const onButtonClick = useCallback(() => {
-		if (ref.current === null || !recipe) return;
+		if (ref.current === null || !recipe) return
 
 		toPng(ref.current, {
 			cacheBust: true,
@@ -35,22 +35,22 @@ export const RecipeDownload = ({
 			width: 384,
 		})
 			.then((dataUrl) => {
-				const link = document.createElement('a');
-				link.download = `${recipe.slug}.png`;
-				link.href = dataUrl;
-				link.click();
+				const link = document.createElement('a')
+				link.download = `${recipe.slug}.png`
+				link.href = dataUrl
+				link.click()
 			})
 			.catch((_err) => {
-				toast.error(t_toasts('error'));
-			});
-	}, [ref, recipe]);
+				toast.error(t_toasts('error'))
+			})
+	}, [ref, recipe])
 
-	if (!recipe) return null;
+	if (!recipe) return null
 
 	return (
 		<button
 			onClick={onButtonClick}
-			className='hover:bg-forest-200/15 p-1 rounded-lg transition-colors duration-300'>
+			className='hover:bg-forest-200/15 p-1 rounded transition-colors duration-300'>
 			<ArrowDownToLine size={24} className='text-forest-200' />
 			<div className='absolute opacity-0 pointer-events-none w-96'>
 				<div
@@ -102,7 +102,7 @@ export const RecipeDownload = ({
 									alt='Profile image'
 									width={32}
 									height={32}
-									className='rounded-lg border-2 border-forest-200'
+									className='rounded border-2 border-forest-200'
 								/>
 								<span className='font-semibold text-forest-200 text-sm'>
 									{` @${author.name}`}
@@ -119,5 +119,5 @@ export const RecipeDownload = ({
 				</div>
 			</div>
 		</button>
-	);
-};
+	)
+}

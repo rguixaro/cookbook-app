@@ -1,39 +1,39 @@
-'use client';
+'use client'
 
-import { useRef, useState } from 'react';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useDebouncedCallback } from 'use-debounce';
-import { AnimatePresence } from 'motion/react';
-import * as motion from 'motion/react-client';
-import { useTranslations } from 'next-intl';
-import { X } from 'lucide-react';
+import { useRef, useState } from 'react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useDebouncedCallback } from 'use-debounce'
+import { AnimatePresence } from 'motion/react'
+import * as motion from 'motion/react-client'
+import { useTranslations } from 'next-intl'
+import { X } from 'lucide-react'
 
-import { useDebounce } from '@/hooks';
-import { UserButton } from '@/components/auth';
-import { SearchIcon } from '@/components/icons';
-import { Categories as CategoriesType } from '@/types';
-import { Button, TypographyH4 } from '@/ui';
-import { cn } from '@/utils';
-import { Categories } from './categories';
+import { useDebounce } from '@/hooks'
+import { UserButton } from '@/components/auth'
+import { SearchIcon } from '@/components/icons'
+import { Categories as CategoriesType } from '@/types'
+import { Button, TypographyH4 } from '@/ui'
+import { cn } from '@/utils'
+import { Categories } from './categories'
 
-type SearchState = 'visible' | 'hidden' | 'outlined';
+type SearchState = 'visible' | 'hidden' | 'outlined'
 
 export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) => {
-	const t = useTranslations('RecipesPage');
-	const t_categories = useTranslations('RecipeCategories');
+	const t = useTranslations('RecipesPage')
+	const t_categories = useTranslations('RecipeCategories')
 
-	const searchParams = useSearchParams();
-	const pathname = usePathname();
-	const router = useRouter();
+	const searchParams = useSearchParams()
+	const pathname = usePathname()
+	const router = useRouter()
 
-	const inputRef = useRef<HTMLInputElement>(null);
+	const inputRef = useRef<HTMLInputElement>(null)
 
-	const [status, setStatus] = useState<SearchState>('hidden');
-	const debouncedStatus = useDebounce(status, 100);
+	const [status, setStatus] = useState<SearchState>('hidden')
+	const debouncedStatus = useDebounce(status, 100)
 
 	const [category, setCategory] = useState<CategoriesType | null>(
 		searchParams.get('category')?.toString() || null
-	);
+	)
 
 	/**
 	 * Handle the search input
@@ -41,52 +41,52 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 	 */
 	const handleSearch = useDebouncedCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const params = new URLSearchParams(searchParams);
-			if (e.target.value) params.set('search', e.target.value);
-			else params.delete('search');
+			const params = new URLSearchParams(searchParams)
+			if (e.target.value) params.set('search', e.target.value)
+			else params.delete('search')
 
-			router.replace(`${pathname}?${params.toString()}`);
+			router.replace(`${pathname}?${params.toString()}`)
 		},
 		300
-	);
+	)
 
 	/**
 	 * Handle the category selection
 	 * @param category
 	 */
 	const handleSelect = useDebouncedCallback((category: string) => {
-		const params = new URLSearchParams(searchParams);
+		const params = new URLSearchParams(searchParams)
 		if (category) {
-			params.set('category', category);
-			setCategory(category);
+			params.set('category', category)
+			setCategory(category)
 		} else {
-			params.delete('category');
-			setCategory(null);
+			params.delete('category')
+			setCategory(null)
 		}
-		router.replace(`${pathname}?${params.toString()}`);
-	}, 300);
+		router.replace(`${pathname}?${params.toString()}`)
+	}, 300)
 
 	const handleRemoveCategory = (e: React.MouseEvent<HTMLElement>) => {
-		e.preventDefault();
-		const params = new URLSearchParams(searchParams);
-		params.delete('category');
-		setCategory(null);
-		router.replace(`${pathname}?${params.toString()}`);
-	};
+		e.preventDefault()
+		const params = new URLSearchParams(searchParams)
+		params.delete('category')
+		setCategory(null)
+		router.replace(`${pathname}?${params.toString()}`)
+	}
 
 	/**
 	 * Change the status of the search input
 	 */
 	const onStatusChange = () => {
-		const value = inputRef.current?.value;
+		const value = inputRef.current?.value
 		if (debouncedStatus === 'visible')
-			setStatus(value != '' ? 'outlined' : 'hidden');
-		else if (debouncedStatus === 'outlined' && value) setStatus('hidden');
+			setStatus(value != '' ? 'outlined' : 'hidden')
+		else if (debouncedStatus === 'outlined' && value) setStatus('hidden')
 		else {
-			setStatus('visible');
-			inputRef?.current?.focus();
+			setStatus('visible')
+			inputRef?.current?.focus()
 		}
-	};
+	}
 
 	return (
 		<div className='sticky top-24 h-28 bg-[#fefff2] w-full'>
@@ -177,7 +177,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 										x: -100,
 										transition: { duration: 0.5, delay: 0.1 },
 									}}
-									className='bg-forest-200/80 rounded-full text-white flex items-center'>
+									className='bg-forest-200/80 rounded text-white flex items-center'>
 									<button
 										onClick={handleRemoveCategory}
 										className='flex items-center justify-center px-3 space-x-2'>
@@ -194,5 +194,5 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 				}
 			/>
 		</div>
-	);
-};
+	)
+}

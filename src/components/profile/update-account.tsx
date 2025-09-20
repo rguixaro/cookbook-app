@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useTranslations } from 'next-intl';
-import { AlertTriangleIcon, LoaderIcon, LogOut, SaveIcon } from 'lucide-react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
-import type { z } from 'zod';
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
+import { AlertTriangleIcon, LoaderIcon, LogOut, SaveIcon } from 'lucide-react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'sonner'
+import type { z } from 'zod'
 
-import { updateProfile } from '@/server/actions';
-import { UpdateProfileSchema } from '@/server/schemas';
-import { useCopyToClipboard } from '@/hooks';
+import { updateProfile } from '@/server/actions'
+import { UpdateProfileSchema } from '@/server/schemas'
+import { useCopyToClipboard } from '@/hooks'
 import {
 	Button,
 	Input,
@@ -21,24 +21,24 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from '@/ui';
-import { ProfileCard } from './card';
-import { DeleteAccount } from './delete-account';
-import { LogoutAccount } from './logout-account';
+} from '@/ui'
+import { ProfileCard } from './card'
+import { DeleteAccount } from './delete-account'
+import { LogoutAccount } from './logout-account'
 
 interface UpdateAccountProps {
-	id: string;
-	name: string;
-	email: string;
+	id: string
+	name: string
+	email: string
 }
 
 export const UpdateAccount = (props: UpdateAccountProps) => {
-	const t = useTranslations('ProfilePage');
-	const url = 'https://cookbook.rguixaro.dev';
+	const t = useTranslations('ProfilePage')
+	const url = 'https://cookbook.rguixaro.dev'
 
-	const { copy } = useCopyToClipboard();
+	const { copy } = useCopyToClipboard()
 
-	const [loading, setLoading] = useState<boolean>(false);
+	const [loading, setLoading] = useState<boolean>(false)
 
 	const hookForm = useForm<z.infer<typeof UpdateProfileSchema>>({
 		resolver: zodResolver(UpdateProfileSchema),
@@ -46,42 +46,42 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			name: props.name,
 			email: props.email,
 		},
-	});
+	})
 
 	const onSubmit = async (values: z.infer<typeof UpdateProfileSchema>) => {
 		try {
-			setLoading(true);
-			await updateProfile(values);
-			toast.success('Profile updated successfully.');
+			setLoading(true)
+			await updateProfile(values)
+			toast.success('Profile updated successfully.')
 		} catch (error) {
-			toast.error('An unexpected error has occurred. Please try again later.');
+			toast.error('An unexpected error has occurred. Please try again later.')
 		} finally {
-			setLoading(false);
+			setLoading(false)
 		}
-	};
+	}
 
 	const handleCopy = (text: string) => () => {
 		copy(text)
 			.then(() => {
-				toast.success('Link copied to clipboard');
+				toast.success('Link copied to clipboard')
 			})
 			.catch((error) => {
 				toast.error(
 					'An unexpected error has occurred. Please try again later.',
 					{ description: error }
-				);
-			});
-	};
+				)
+			})
+	}
 
 	const ShareComponent = () => {
 		return (
 			<button
 				onClick={handleCopy(`${url}/profile/${props.id}`)}
-				className='bg-forest-200 text-white font-bold rounded-lg text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/80 shadow'>
+				className='bg-forest-200 text-white font-bold rounded text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/80 shadow'>
 				<span>{t('share')}</span>
 			</button>
-		);
-	};
+		)
+	}
 
 	return (
 		<ProfileCard
@@ -173,5 +173,5 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 				}
 			/>
 		</ProfileCard>
-	);
-};
+	)
+}

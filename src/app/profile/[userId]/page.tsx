@@ -1,29 +1,29 @@
-import { Suspense } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { getTranslations } from 'next-intl/server';
-import { Loader, User } from 'lucide-react';
+import { Suspense } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { getTranslations } from 'next-intl/server'
+import { Loader, User } from 'lucide-react'
 
-import { getProfileByUserId } from '@/server/queries';
-import { GoBack } from '@/components/layout/go-back';
-import { SearchRecipes } from '@/components/recipes/search';
-import { RecipesFeed } from '@/components/recipes/feed';
-import { TypographyH4 } from '@/ui';
+import { getProfileByUserId } from '@/server/queries'
+import { GoBack } from '@/components/layout/go-back'
+import { SearchRecipes } from '@/components/recipes/search'
+import { RecipesFeed } from '@/components/recipes/feed'
+import { TypographyH4 } from '@/ui'
 
 export default async function ProfilePage({
 	params,
 	searchParams,
 }: {
-	params: Promise<{ userId: string }>;
-	searchParams?: Promise<{ search?: string; category?: string }>;
+	params: Promise<{ userId: string }>
+	searchParams?: Promise<{ search?: string; category?: string }>
 }) {
-	const { userId } = await params;
-	const searchParam = (await searchParams)?.search;
-	const categoryParam = (await searchParams)?.category;
+	const { userId } = await params
+	const searchParam = (await searchParams)?.search
+	const categoryParam = (await searchParams)?.category
 
-	const { profile } = await getProfileByUserId(userId);
-	const t = await getTranslations('RecipesPage');
-	const t_common = await getTranslations('common');
+	const { profile } = await getProfileByUserId(userId)
+	const t = await getTranslations('RecipesPage')
+	const t_common = await getTranslations('common')
 
 	const LoadingSkeleton = () => {
 		return (
@@ -31,8 +31,8 @@ export default async function ProfilePage({
 				<Loader size={18} className='animate-spin' />
 				<span className='font-bold mt-3'>{t('searching')}</span>
 			</div>
-		);
-	};
+		)
+	}
 
 	return (
 		<div className='flex flex-col pt-2 my-2 text-neutral-700'>
@@ -50,7 +50,7 @@ export default async function ProfilePage({
 			) : (
 				<div>
 					<div className='flex flex-col items-center justify-center space-y-3 mb-5'>
-						<div className='w-20 h-20 rounded-xl overflow-hidden shadow border-4 border-forest-200'>
+						<div className='w-20 h-20 rounded overflow-hidden shadow border-4 border-forest-200'>
 							<Image
 								src={profile.image}
 								referrerPolicy='no-referrer'
@@ -78,5 +78,5 @@ export default async function ProfilePage({
 				</div>
 			)}
 		</div>
-	);
+	)
 }

@@ -1,59 +1,59 @@
-import { getTranslations } from 'next-intl/server';
-import { Clock, NotebookPen, Utensils } from 'lucide-react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { getTranslations } from 'next-intl/server'
+import { Clock, NotebookPen, Utensils } from 'lucide-react'
+import Image from 'next/image'
+import Link from 'next/link'
 
-import { auth } from '@/auth';
-import { getRecipeByAuthAndSlug, getProfileByUserId } from '@/server/queries';
-import { GoBack } from '@/components/layout/go-back';
-import { SavedStatus } from '@/components/recipes/saved';
-import { RecipeDownload } from '@/components/recipes/download';
-import { IconProps, cn } from '@/utils';
-import { TypographyH4 } from '@/ui';
+import { auth } from '@/auth'
+import { getRecipeByAuthAndSlug, getProfileByUserId } from '@/server/queries'
+import { GoBack } from '@/components/layout/go-back'
+import { SavedStatus } from '@/components/recipes/saved'
+import { RecipeDownload } from '@/components/recipes/download'
+import { IconProps, cn } from '@/utils'
+import { TypographyH4 } from '@/ui'
 
 export default async function RecipePage({
 	params,
 	searchParams,
 }: {
-	params: Promise<{ authorId: string; slug: string }>;
+	params: Promise<{ authorId: string; slug: string }>
 	searchParams?: Promise<{
-		referred?: boolean;
-		query?: string;
-		category?: string;
-	}>;
+		referred?: boolean
+		query?: string
+		category?: string
+	}>
 }) {
-	const session = await auth();
-	if (!session) return null;
+	const session = await auth()
+	if (!session) return null
 
-	const { slug, authorId } = await params;
-	const isReferred = (await searchParams)?.referred;
-	const query = (await searchParams)?.query;
-	const category = (await searchParams)?.category;
+	const { slug, authorId } = await params
+	const isReferred = (await searchParams)?.referred
+	const query = (await searchParams)?.query
+	const category = (await searchParams)?.category
 
-	const paramQuery = query ? `?search=${query}` : '';
-	const paramCategory = category ? `${query ? '&' : '?'}category=${category}` : '';
+	const paramQuery = query ? `?search=${query}` : ''
+	const paramCategory = category ? `${query ? '&' : '?'}category=${category}` : ''
 
-	const recipe = await getRecipeByAuthAndSlug(authorId, slug);
-	const t = await getTranslations('RecipesPage');
+	const recipe = await getRecipeByAuthAndSlug(authorId, slug)
+	const t = await getTranslations('RecipesPage')
 
-	const isOwner = session?.user?.id === recipe?.authorId;
-	const isSaved = session?.user?.savedRecipes.includes(recipe?.id as string);
+	const isOwner = session?.user?.id === recipe?.authorId
+	const isSaved = session?.user?.savedRecipes.includes(recipe?.id as string)
 
-	const author = await getAuthor();
+	const author = await getAuthor()
 
 	async function getAuthor(): Promise<{
-		name: string;
-		image: string;
+		name: string
+		image: string
 	}> {
 		if (!isOwner) {
-			const { profile } = await getProfileByUserId(authorId);
-			if (!profile) return { name: '', image: '' };
-			return profile;
+			const { profile } = await getProfileByUserId(authorId)
+			if (!profile) return { name: '', image: '' }
+			return profile
 		} else
 			return {
 				name: session?.user?.name as string,
 				image: session?.user?.image as string,
-			};
+			}
 	}
 
 	return (
@@ -75,7 +75,7 @@ export default async function RecipePage({
 					) : (
 						<Link
 							href={`/recipes/edit/${recipe?.authorId}/${recipe?.slug}`}
-							className='hover:bg-forest-200/15 p-1 rounded-lg transition-colors duration-300'>
+							className='hover:bg-forest-200/15 p-1 rounded transition-colors duration-300'>
 							<NotebookPen size={24} className='text-forest-200' />
 						</Link>
 					)}
@@ -129,7 +129,7 @@ export default async function RecipePage({
 									alt='Profile image'
 									width={32}
 									height={32}
-									className='rounded-lg border-2 border-forest-200'
+									className='rounded border-2 border-forest-200'
 								/>
 								<span className='font-semibold text-forest-200 text-sm'>
 									{` @${author.name}`}
@@ -140,5 +140,5 @@ export default async function RecipePage({
 				</div>
 			)}
 		</div>
-	);
+	)
 }

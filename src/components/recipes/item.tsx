@@ -1,13 +1,13 @@
-'use client';
+'use client'
 
-import Link from 'next/link';
-import { useTranslations } from 'next-intl';
-import { Clock } from 'lucide-react';
-import { motion, Variants } from 'framer-motion';
+import Link from 'next/link'
+import { useTranslations } from 'next-intl'
+import { Clock } from 'lucide-react'
+import { motion, Variants } from 'framer-motion'
 
-import { RecipeSchema } from '@/server/schemas';
-import { IconProps, cn } from '@/utils';
-import { Icon } from './icon';
+import { RecipeSchema } from '@/server/schemas'
+import { IconProps, cn } from '@/utils'
+import { Icon } from './icon'
 
 const motions: Variants = {
 	offscreen: { opacity: 0, y: 75 },
@@ -16,7 +16,7 @@ const motions: Variants = {
 		y: 0,
 		transition: { type: 'spring', bounce: 0.2, duration: 0.8 },
 	},
-};
+}
 
 export function ItemRecipe({
 	recipe,
@@ -24,12 +24,12 @@ export function ItemRecipe({
 	query,
 	category,
 }: {
-	recipe: RecipeSchema;
-	referred?: boolean;
-	query?: string;
-	category?: string;
+	recipe: RecipeSchema
+	referred?: boolean
+	query?: string
+	category?: string
 }) {
-	const t = useTranslations('RecipesPage');
+	const t = useTranslations('RecipesPage')
 
 	const queryParams = referred
 		? `?referred=true${query ? `&query=${query.trim()}` : ''}${category ? `&category=${category}` : ''}`
@@ -37,7 +37,7 @@ export function ItemRecipe({
 			? `?query=${query}${category ? `&category=${category}` : ''}`
 			: category
 				? `?category=${category}`
-				: '';
+				: ''
 
 	return (
 		<Link
@@ -51,7 +51,7 @@ export function ItemRecipe({
 				<div
 					className={cn(
 						'w-full my-2 py-3 px-2 flex flex-col items-start',
-						'border-4 border-forest-200/15 rounded-lg',
+						'border-4 border-forest-200/15 rounded',
 						'transition-all duration-300 hover:bg-forest-200/15'
 					)}>
 					<div className='flex items-center justify-between w-full'>
@@ -79,5 +79,5 @@ export function ItemRecipe({
 				</div>
 			</motion.div>
 		</Link>
-	);
+	)
 }
