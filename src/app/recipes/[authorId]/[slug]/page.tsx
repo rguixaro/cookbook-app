@@ -11,6 +11,7 @@ import { RecipeDownload } from '@/components/recipes/download'
 import { IconProps, cn } from '@/utils'
 import { TypographyH4 } from '@/ui'
 import { RecipeShare } from '@/components/recipes/share'
+import { SyncProfileName } from '@/components/profile/profile-name-bridge'
 
 export default async function RecipePage({
 	params,
@@ -59,6 +60,7 @@ export default async function RecipePage({
 
 	return (
 		<div className='flex flex-col pt-2 my-2 text-center'>
+			<SyncProfileName name={author.name} />
 			<GoBack
 				text={'recipes'}
 				to={
@@ -91,7 +93,7 @@ export default async function RecipePage({
 			) : (
 				<div
 					className={cn(
-						'w-full my-2 p-5 flex flex-col items-center justify-center bg-forest-200/15 rounded-lg border-4 border-forest-400/15'
+						'w-full mb-2 mt-5 p-5 flex flex-col items-center justify-center bg-forest-200/15 rounded-lg border-4 border-forest-400/15'
 					)}>
 					<span className='text-lg md:text-xl text-forest-300 font-bold'>
 						{recipe.name}

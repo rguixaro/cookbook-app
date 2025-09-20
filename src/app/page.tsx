@@ -4,6 +4,7 @@ import { Loader } from 'lucide-react'
 
 import { RecipesFeed } from '@/components/recipes/feed'
 import { SearchRecipes } from '@/components/recipes/search'
+import { Header } from '@/components/layout/header'
 
 export default async function RecipesPage({
 	searchParams,

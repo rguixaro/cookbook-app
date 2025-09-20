@@ -56,8 +56,13 @@ export const RecipeDownload = ({
 				<div
 					ref={ref}
 					className='w-full flex flex-col items-center justify-center'>
-					<div className='w-4/5 text-center h-24 border-b-4 border-forest-300'>
+					<div className='w-4/5 text-center h-36 border-b-4 border-forest-300'>
 						<TypographyH1 className='font-title text-forest-300 pb-5'>
+							{author.name ? (
+								<span className='text-4xl text-forest-200'>
+									{`${author.name}'s `}
+								</span>
+							) : null}
 							{'CookBook'}
 						</TypographyH1>
 					</div>
