@@ -1,18 +1,18 @@
-import { Suspense } from 'react';
-import { getTranslations } from 'next-intl/server';
-import { Loader } from 'lucide-react';
+import { Suspense } from 'react'
+import { getTranslations } from 'next-intl/server'
+import { Loader } from 'lucide-react'
 
-import { RecipesFeed } from '@/components/recipes/feed';
-import { SearchRecipes } from '@/components/recipes/search';
+import { RecipesFeed } from '@/components/recipes/feed'
+import { SearchRecipes } from '@/components/recipes/search'
 
 export default async function RecipesPage({
 	searchParams,
 }: {
-	searchParams?: Promise<{ search?: string; category?: string }>;
+	searchParams?: Promise<{ search?: string; category?: string }>
 }) {
-	const searchParam = (await searchParams)?.search;
-	const categoryParam = (await searchParams)?.category;
-	const t = await getTranslations('RecipesPage');
+	const searchParam = (await searchParams)?.search
+	const categoryParam = (await searchParams)?.category
+	const t = await getTranslations('RecipesPage')
 
 	const LoadingSkeleton = () => {
 		return (
@@ -20,11 +20,11 @@ export default async function RecipesPage({
 				<Loader size={18} className='animate-spin' />
 				<span className='font-bold mt-3'>{t('searching')}</span>
 			</div>
-		);
-	};
+		)
+	}
 
 	return (
-		<main className='flex flex-col items-center text-neutral-700 w-full h-full'>
+		<main className='flex flex-col items-center text-forest-400 w-full h-full'>
 			<SearchRecipes />
 			<Suspense fallback={<LoadingSkeleton />}>
 				<RecipesFeed
@@ -33,5 +33,5 @@ export default async function RecipesPage({
 				/>
 			</Suspense>
 		</main>
-	);
+	)
 }

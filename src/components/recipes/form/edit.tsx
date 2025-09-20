@@ -95,7 +95,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	}
 
 	return (
-		<div className='flex flex-col pt-2 my-2 text-neutral-700 w-full z-0'>
+		<div className='flex flex-col pt-2 my-2 text-forest-400 w-full z-0'>
 			<GoBack text={'recipes'} />
 			<Form {...form}>
 				<form

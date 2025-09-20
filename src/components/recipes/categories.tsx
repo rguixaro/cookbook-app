@@ -37,10 +37,10 @@ export const Categories = ({ trigger, onSelect, selected }: CategoriesProps) => 
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent className='md:w-fit flex flex-col items-center text-center'>
 				<DialogHeader>
-					<DialogTitle className='text-center'>
+					<DialogTitle className='text-center text-forest-400'>
 						<span className='font-bold'>{t('categories')}</span>
 					</DialogTitle>
-					<DialogDescription className='text-center'>
+					<DialogDescription className='text-center text-forest-400'>
 						<span className='font-medium'>{t('categories-select')}</span>
 					</DialogDescription>
 				</DialogHeader>

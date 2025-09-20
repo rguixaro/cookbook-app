@@ -35,7 +35,7 @@ export default async function ProfilePage({
 	}
 
 	return (
-		<div className='flex flex-col pt-2 my-2 text-neutral-700'>
+		<div className='flex flex-col pt-2 my-2 text-forest-400'>
 			<GoBack />
 			{!profile ? (
 				<div className='mt-32 flex flex-col items-center justify-center text-forest-200'>

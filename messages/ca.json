@@ -10,6 +10,8 @@
 		"recipe-updated": "Recepta actualitzada amb èxit.",
 		"recipe-saved": "Recepta guardada amb èxit.",
 		"recipe-deleted": "Recepta eliminada amb èxit.",
+		"recipe-link-copied": "Enllaç de la recepta copiat al porta-retalls.",
+		"account-link-copied": "Enllaç del perfil copiat al porta-retalls.",
 		"error": "S'ha produït un error.",
 		"error-recipe-exists": "Ja existeix una recepta amb aquest nom."
 	},
@@ -44,7 +46,7 @@
 		"recipe-name": "Nom de la recepta",
 		"categories": "Categories",
 		"categories-select": "Selecciona una categoria",
-		"time": "Temps",
+		"time": "Temps de preparació",
 		"minutes": "minuts",
 		"create": "Crear",
 		"creating": "Creant recepta...",

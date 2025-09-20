@@ -51,7 +51,7 @@ export function ItemRecipe({
 				<div
 					className={cn(
 						'w-full my-2 py-3 px-2 flex flex-col items-start',
-						'border-4 border-forest-200/15 rounded',
+						'bg-forest-200/15 border-4 border-forest-200/15 rounded-lg',
 						'transition-all duration-300 hover:bg-forest-200/15'
 					)}>
 					<div className='flex items-center justify-between w-full'>
@@ -63,15 +63,15 @@ export function ItemRecipe({
 						</div>
 						{recipe.time && (
 							<div className='flex items-center justify-center'>
-								<Clock {...IconProps} size={14} />
-								<span className='text-xs md:text-sm font-bold text-neutral-600 ms-1'>{`${recipe.time}'`}</span>
+								<Clock {...IconProps} size={14} color='#3D6C5F' />
+								<span className='text-xs md:text-sm text-forest-400 ms-1'>{`${recipe.time}'`}</span>
 							</div>
 						)}
 					</div>
 					<div className='text-sm md:text-base mt-2'>
-						<span className='font-semibold line-clamp-2 text-neutral-600'>
+						<span className='font-semibold line-clamp-2 text-forest-300'>
 							{`${t('instructions')}: `}
-							<span className='font-normal text-justify'>
+							<span className='font-normal text-justify text-forest-400'>
 								{recipe.instructions}
 							</span>
 						</span>

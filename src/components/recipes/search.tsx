@@ -91,7 +91,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 	return (
 		<div className='sticky top-24 h-28 bg-[#fefff2] w-full'>
 			<div className='w-full flex items-center justify-between mb-2'>
-				<TypographyH4 className='ms-3'>
+				<TypographyH4 className='ms-3 text-forest-300'>
 					{t('title').toUpperCase()}
 				</TypographyH4>
 				<div className='flex items-center'>

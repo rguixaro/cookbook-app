@@ -10,6 +10,7 @@ import { SavedStatus } from '@/components/recipes/saved'
 import { RecipeDownload } from '@/components/recipes/download'
 import { IconProps, cn } from '@/utils'
 import { TypographyH4 } from '@/ui'
+import { RecipeShare } from '@/components/recipes/share'
 
 export default async function RecipePage({
 	params,
@@ -66,6 +67,7 @@ export default async function RecipePage({
 						: `/${paramQuery}${paramCategory}`
 				}>
 				<div className='flex space-x-3'>
+					<RecipeShare recipe={recipe} />
 					<RecipeDownload recipe={recipe} author={author} />
 					{!isOwner ? (
 						<SavedStatus
@@ -89,38 +91,49 @@ export default async function RecipePage({
 			) : (
 				<div
 					className={cn(
-						'w-full my-2 py-2 px-2 flex flex-col items-center justify-center '
+						'w-full my-2 p-5 flex flex-col items-center justify-center bg-forest-200/15 rounded-lg border-4 border-forest-400/15'
 					)}>
 					<span className='text-lg md:text-xl text-forest-300 font-bold'>
 						{recipe.name}
 					</span>
+					<div className='h-1 w-2/4 mt-3 mb-7 bg-forest-300/75' />
 					{recipe.time && (
-						<div className='flex items-center justify-center w-full mt-2'>
-							<Clock {...IconProps} />
-							<span className='text-xs md:text-sm font-bold text-neutral-600 ms-2 mr-5'>{`${recipe.time}'`}</span>
+						<div className='flex flex-col items-center w-full'>
+							<div className='flex items-center'>
+								<p className='font-semibold text-forest-300'>
+									{t('time').toUpperCase()}
+								</p>
+								<span className='text-xs md:text-sm text-forest-400 ms-5 mr-1'>{`${recipe.time}'`}</span>
+								<Clock {...IconProps} color='#3D6C5F' />
+							</div>
+							<div className='h-0.5 w-3/4 my-3 bg-forest-300/15' />{' '}
 						</div>
 					)}
-					<div className='text-sm md:text-base mt-5'>
-						<p className='font-semibold text-forest-200'>
-							{t('ingredients')}
+					<div className='text-sm md:text-base'>
+						<p className='font-semibold text-forest-300'>
+							{t('ingredients').toUpperCase()}
 						</p>
 						<span className='font-normal'>
 							{recipe.ingredients.map((ingredient, index) => (
-								<div key={index} className='font-normal'>
+								<div
+									key={index}
+									className='font-normal text-forest-400'>
 									{ingredient}
 								</div>
 							))}
 						</span>
 					</div>
-					<div className='text-sm md:text-base mt-5'>
-						<p className='font-semibold text-forest-200'>
-							{t('instructions')}
+					<div className='h-0.5 w-3/4 my-3 bg-forest-300/15' />
+					<div className='text-sm md:text-base'>
+						<p className='font-semibold text-forest-300'>
+							{t('instructions').toUpperCase()}
 						</p>
-						<span className='font-normal text-justify'>
+						<span className='font-normal text-justify text-forest-400'>
 							{recipe.instructions}
 						</span>
 					</div>
-					<div className='mt-5'>
+					<div className='h-1 w-2/4 mt-7 bg-forest-300/75' />
+					<div className='mt-3'>
 						<Link href={`/profile/${authorId}`}>
 							<div className='flex flex-col items-center justify-center space-y-2'>
 								<Image

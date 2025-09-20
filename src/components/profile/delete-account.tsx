@@ -1,11 +1,11 @@
-'use client';
+'use client'
 
-import { useState, type ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
-import { LoaderIcon } from 'lucide-react';
-import { toast } from 'sonner';
+import { useState, type ReactNode } from 'react'
+import { useTranslations } from 'next-intl'
+import { LoaderIcon } from 'lucide-react'
+import { toast } from 'sonner'
 
-import { deleteProfile } from '@/server/actions';
+import { deleteProfile } from '@/server/actions'
 import {
 	Input,
 	Dialog,
@@ -17,36 +17,36 @@ import {
 	DialogTitle,
 	DialogTrigger,
 	Button,
-} from '@/ui';
+} from '@/ui'
 
 interface DeleteAccountProps {
-	trigger: ReactNode;
-	email: string;
+	trigger: ReactNode
+	email: string
 }
 
 export const DeleteAccount = (props: DeleteAccountProps) => {
-	const t = useTranslations('ProfilePage');
+	const t = useTranslations('ProfilePage')
 
-	const [confirmEmail, setConfirmEmail] = useState<string>('');
-	const [loading, setLoading] = useState<boolean>(false);
+	const [confirmEmail, setConfirmEmail] = useState<string>('')
+	const [loading, setLoading] = useState<boolean>(false)
 
 	const handleDeleteAccount = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault();
+		e.preventDefault()
 		if (confirmEmail !== props.email) {
-			toast.error(t('email-unmatched'));
-			return;
+			toast.error(t('email-unmatched'))
+			return
 		}
-		setLoading(true);
+		setLoading(true)
 		toast.promise(deleteProfile, {
 			loading: t('deleting'),
 			description: t('account-deleting'),
 			success: () => {
-				setLoading(false);
-				return t('account-deleted');
+				setLoading(false)
+				return t('account-deleted')
 			},
 			error: t('account-delete-error'),
-		});
-	};
+		})
+	}
 
 	return (
 		<Dialog>
@@ -62,7 +62,7 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 					</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleDeleteAccount}>
-					<div className='flex flex-col space-y-3 text-neutral-700'>
+					<div className='flex flex-col space-y-3 text-forest-400'>
 						<p className='text-sm text-center'>
 							{t('account-delete-prompt')}{' '}
 							<span className='font-semibold'>{props.email}</span>
@@ -97,5 +97,5 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 				</form>
 			</DialogContent>
 		</Dialog>
-	);
-};
+	)
+}

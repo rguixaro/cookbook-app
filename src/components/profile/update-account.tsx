@@ -22,6 +22,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from '@/ui'
+import { SITE_URL } from '@/utils'
 import { ProfileCard } from './card'
 import { DeleteAccount } from './delete-account'
 import { LogoutAccount } from './logout-account'
@@ -34,7 +35,7 @@ interface UpdateAccountProps {
 
 export const UpdateAccount = (props: UpdateAccountProps) => {
 	const t = useTranslations('ProfilePage')
-	const url = 'https://cookbook.rguixaro.dev'
+	const t_toasts = useTranslations('toasts')
 
 	const { copy } = useCopyToClipboard()
 
@@ -63,7 +64,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 	const handleCopy = (text: string) => () => {
 		copy(text)
 			.then(() => {
-				toast.success('Link copied to clipboard')
+				toast.success(t_toasts('account-link-copied'))
 			})
 			.catch((error) => {
 				toast.error(
@@ -76,7 +77,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 	const ShareComponent = () => {
 		return (
 			<button
-				onClick={handleCopy(`${url}/profile/${props.id}`)}
+				onClick={handleCopy(`${SITE_URL}/profile/${props.id}`)}
 				className='bg-forest-200 text-white font-bold rounded text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/80 shadow'>
 				<span>{t('share')}</span>
 			</button>
@@ -91,7 +92,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			<Form {...hookForm}>
 				<form
 					onSubmit={hookForm.handleSubmit(onSubmit)}
-					className='space-y-5 mb-5 text-neutral-700'>
+					className='space-y-5 mb-5 text-forest-400'>
 					<FormField
 						control={hookForm.control}
 						name='name'
@@ -126,7 +127,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 										disabled
 									/>
 								</FormControl>
-								<FormDescription className='flex items-center gap-2 pl-1'>
+								<FormDescription className='flex items-center gap-2 pl-1 text-forest-400'>
 									<AlertTriangleIcon size={24} />
 									<span>{t('email-hint')}</span>
 								</FormDescription>
@@ -167,8 +168,10 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			<LogoutAccount
 				trigger={
 					<Button variant='outline' className='mt-20'>
-						<LogOut size={16} />
-						<span className='font-bold'>{t('account-logout')}</span>
+						<LogOut size={16} color='#3D6C5F' />
+						<span className='font-semibold text-forest-400'>
+							{t('account-logout')}
+						</span>
 					</Button>
 				}
 			/>
