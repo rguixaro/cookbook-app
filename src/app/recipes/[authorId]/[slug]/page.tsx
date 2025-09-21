@@ -68,7 +68,7 @@ export default async function RecipePage({
 				text={'recipes'}
 				to={
 					isReferred
-						? `/profile/${authorId}${paramQuery}${paramCategory}`
+						? `/authors/${authorId}${paramQuery}${paramCategory}`
 						: `/${paramQuery}${paramCategory}`
 				}>
 				<div className='flex space-x-3'>
@@ -135,7 +135,7 @@ export default async function RecipePage({
 					</div>
 					<div className='h-1 w-2/4 mt-7 bg-forest-300/75' />
 					<div className='mt-3'>
-						<Link href={`/profile/${authorId}`}>
+						<Link href={`/authors/${authorId}`}>
 							<div className='flex flex-col items-center justify-center space-y-2'>
 								<Image
 									src={author.image}

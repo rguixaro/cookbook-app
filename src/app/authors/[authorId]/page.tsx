@@ -10,18 +10,18 @@ import { RecipesFeed, SearchRecipes } from '@/components/recipes'
 import { SyncAuthorName } from '@/components/profile'
 import { TypographyH4 } from '@/ui'
 
-export default async function ProfilePage({
+export default async function AuthorPage({
 	params,
 	searchParams,
 }: {
-	params: Promise<{ userId: string }>
+	params: Promise<{ authorId: string }>
 	searchParams?: Promise<{ search?: string; category?: string }>
 }) {
-	const { userId } = await params
+	const { authorId } = await params
 	const searchParam = (await searchParams)?.search
 	const categoryParam = (await searchParams)?.category
 
-	const { profile } = await getProfileByUserId(userId)
+	const { profile } = await getProfileByUserId(authorId)
 	const t = await getTranslations('RecipesPage')
 	const t_common = await getTranslations('common')
 
@@ -41,7 +41,7 @@ export default async function ProfilePage({
 				<div className='mt-32 flex flex-col items-center justify-center text-forest-200'>
 					<User size={24} />
 					<TypographyH4 className='mt-2 mb-5'>
-						{t_common('user-not-found')}
+						{t_common('author-not-found')}
 					</TypographyH4>
 					<Link href='/' className='mt-5 underline font-medium'>
 						{t_common('return')}
@@ -69,7 +69,7 @@ export default async function ProfilePage({
 						<Suspense fallback={<LoadingSkeleton />}>
 							<RecipesFeed
 								referred
-								userId={userId}
+								userId={authorId}
 								searchParam={searchParam}
 								categoryParam={categoryParam}
 							/>
