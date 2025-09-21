@@ -48,6 +48,7 @@ export const UpdateProfileSchema = z.object({
 		message: 'username-too-long',
 	}),
 	email: z.string().email({ message: 'email-invalid' }),
+	isPrivate: z.boolean().optional(),
 })
 
 export type UpdateProfileInput = z.TypeOf<typeof UpdateProfileSchema>

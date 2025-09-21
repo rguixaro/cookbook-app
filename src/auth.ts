@@ -1,13 +1,13 @@
-import { PrismaAdapter } from '@auth/prisma-adapter';
-import type { Adapter } from 'next-auth/adapters';
-import NextAuth from 'next-auth';
+import { PrismaAdapter } from '@auth/prisma-adapter'
+import type { Adapter } from 'next-auth/adapters'
+import NextAuth from 'next-auth'
 
-import AuthConfig from '@/auth.config';
-import { db } from '@/server/db';
-import { getUserById, getAccountByUserId } from '@/server/utils';
-import { env } from './env.mjs';
+import AuthConfig from '@/auth.config'
+import { db } from '@/server/db'
+import { getUserById, getAccountByUserId } from '@/server/utils'
+import { env } from './env.mjs'
 
-const { AUTH_SECRET } = env;
+const { AUTH_SECRET } = env
 
 /**
  * NextAuth configuration
@@ -26,34 +26,36 @@ export const {
 	pages: { signIn: '/auth', error: '/auth/error' },
 	callbacks: {
 		async signIn() {
-			return true;
+			return true
 		},
 		async session({ token, session }) {
-			if (token.sub && session.user) session.user.id = token.sub;
+			if (token.sub && session.user) session.user.id = token.sub
 
 			if (session.user) {
-				session.user.name = token.name;
-				session.user.email = token.email!;
-				session.user.isOAuth = token.isOAuth as boolean;
-				session.user.savedRecipes = token.savedRecipes as string[];
+				session.user.name = token.name
+				session.user.email = token.email!
+				session.user.isOAuth = token.isOAuth as boolean
+				session.user.savedRecipes = token.savedRecipes as string[]
+				session.user.isPrivate = token.isPrivate as boolean
 			}
 
-			return session;
+			return session
 		},
 		async jwt({ token }) {
-			if (!token.sub) return token;
-			const existingUser = await getUserById(token.sub);
+			if (!token.sub) return token
+			const existingUser = await getUserById(token.sub)
 
-			if (!existingUser) return token;
-			const existingAccount = await getAccountByUserId(existingUser.id);
+			if (!existingUser) return token
+			const existingAccount = await getAccountByUserId(existingUser.id)
 
-			token.isOAuth = !!existingAccount;
-			token.name = existingUser.name;
-			token.email = existingUser.email;
-			token.savedRecipes = existingUser.savedRecipes;
+			token.isOAuth = !!existingAccount
+			token.name = existingUser.name
+			token.email = existingUser.email
+			token.savedRecipes = existingUser.savedRecipes
+			token.isPrivate = existingUser.isPrivate
 
-			return token;
+			return token
 		},
 	},
 	...AuthConfig,
-});
+})
