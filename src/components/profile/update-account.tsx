@@ -1,16 +1,16 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useTranslations } from 'next-intl';
-import { AlertTriangleIcon, LoaderIcon, LogOut, SaveIcon } from 'lucide-react';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { toast } from 'sonner';
-import type { z } from 'zod';
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { useTranslations } from 'next-intl'
+import { AlertTriangleIcon, LoaderIcon, LogOut, SaveIcon } from 'lucide-react'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { toast } from 'sonner'
+import type { z } from 'zod'
 
-import { updateProfile } from '@/server/actions';
-import { UpdateProfileSchema } from '@/server/schemas';
-import { useCopyToClipboard } from '@/hooks';
+import { updateProfile } from '@/server/actions'
+import { UpdateProfileSchema } from '@/server/schemas'
+import { useCopyToClipboard } from '@/hooks'
 import {
 	Button,
 	Input,
@@ -21,67 +21,70 @@ import {
 	FormItem,
 	FormLabel,
 	FormMessage,
-} from '@/ui';
-import { ProfileCard } from './card';
-import { DeleteAccount } from './delete-account';
-import { LogoutAccount } from './logout-account';
+} from '@/ui'
+import { SITE_URL } from '@/utils'
+import { ProfileCard } from './card'
+import { DeleteAccount } from './delete-account'
+import { LogoutAccount } from './logout-account'
 
 interface UpdateAccountProps {
-	id: string;
-	name: string;
-	email: string;
+	id: string
+	name: string
+	email: string
+	isPrivate: boolean
 }
 
 export const UpdateAccount = (props: UpdateAccountProps) => {
-	const t = useTranslations('ProfilePage');
-	const url = 'https://cookbook.rguixaro.dev';
+	const t = useTranslations('ProfilePage')
+	const t_toasts = useTranslations('toasts')
 
-	const { copy } = useCopyToClipboard();
+	const { copy } = useCopyToClipboard()
 
-	const [loading, setLoading] = useState<boolean>(false);
+	const [loading, setLoading] = useState<boolean>(false)
 
 	const hookForm = useForm<z.infer<typeof UpdateProfileSchema>>({
 		resolver: zodResolver(UpdateProfileSchema),
 		defaultValues: {
 			name: props.name,
 			email: props.email,
+			isPrivate: props.isPrivate,
 		},
-	});
+	})
 
 	const onSubmit = async (values: z.infer<typeof UpdateProfileSchema>) => {
 		try {
-			setLoading(true);
-			await updateProfile(values);
-			toast.success('Profile updated successfully.');
+			setLoading(true)
+			await updateProfile(values)
+			toast.success('Profile updated successfully.')
 		} catch (error) {
-			toast.error('An unexpected error has occurred. Please try again later.');
+			toast.error('An unexpected error has occurred. Please try again later.')
 		} finally {
-			setLoading(false);
+			setLoading(false)
 		}
-	};
+	}
 
 	const handleCopy = (text: string) => () => {
 		copy(text)
 			.then(() => {
-				toast.success('Link copied to clipboard');
+				toast.success(t_toasts('account-link-copied'))
 			})
 			.catch((error) => {
 				toast.error(
 					'An unexpected error has occurred. Please try again later.',
 					{ description: error }
-				);
-			});
-	};
+				)
+			})
+	}
 
 	const ShareComponent = () => {
 		return (
 			<button
-				onClick={handleCopy(`${url}/profile/${props.id}`)}
-				className='bg-forest-200 text-white font-bold rounded-lg text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/80 shadow'>
+				onClick={handleCopy(`${SITE_URL}/authors/${props.id}`)}
+				className='bg-forest-200 text-white font-bold rounded text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/75 shadow'>
 				<span>{t('share')}</span>
 			</button>
-		);
-	};
+		)
+	}
 
 	return (
 		<ProfileCard
@@ -91,7 +94,49 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			<Form {...hookForm}>
 				<form
 					onSubmit={hookForm.handleSubmit(onSubmit)}
-					className='space-y-5 mb-5 text-neutral-700'>
+					className='space-y-5 mb-5 text-forest-400'>
+					<FormField
+						control={hookForm.control}
+						name='isPrivate'
+						render={({ field }) => (
+							<FormItem className='space-y-1'>
+								<FormLabel className='font-semibold'>
+									{t('private')}
+								</FormLabel>
+								<FormDescription className='text-sm opacity-70 mb-2'>
+									{t('private-description')}
+								</FormDescription>
+								<FormControl className='space-y-2'>
+									<label className='relative inline-flex items-center cursor-pointer'>
+										<input
+											type='checkbox'
+											className='sr-only'
+											disabled={loading}
+											checked={!!field.value}
+											onChange={(e) =>
+												field.onChange(e.target.checked)
+											}
+										/>
+										<span
+											className={`w-11 h-6 rounded-full transition-colors ${
+												field.value
+													? 'bg-forest-400'
+													: 'bg-forest-200/50'
+											}`}
+										/>
+										<span
+											className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
+												field.value
+													? 'translate-x-5'
+													: 'translate-x-0'
+											}`}
+										/>
+									</label>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 					<FormField
 						control={hookForm.control}
 						name='name'
@@ -126,7 +171,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 										disabled
 									/>
 								</FormControl>
-								<FormDescription className='flex items-center gap-2 pl-1'>
+								<FormDescription className='flex items-center gap-2 pl-1 text-forest-400'>
 									<AlertTriangleIcon size={24} />
 									<span>{t('email-hint')}</span>
 								</FormDescription>
@@ -152,7 +197,10 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							type='submit'
 							className='w-full'
 							disabled={
-								loading || hookForm.getValues().name === props.name
+								loading ||
+								(hookForm.getValues().name === props.name &&
+									hookForm.getValues().isPrivate ===
+										props.isPrivate)
 							}>
 							{loading ? (
 								<LoaderIcon size={16} className='animate-spin' />
@@ -167,11 +215,13 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			<LogoutAccount
 				trigger={
 					<Button variant='outline' className='mt-20'>
-						<LogOut size={16} />
-						<span className='font-bold'>{t('account-logout')}</span>
+						<LogOut size={16} color='#3D6C5F' />
+						<span className='font-semibold text-forest-400'>
+							{t('account-logout')}
+						</span>
 					</Button>
 				}
 			/>
 		</ProfileCard>
-	);
-};
+	)
+}

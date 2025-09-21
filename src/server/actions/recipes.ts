@@ -1,14 +1,14 @@
-'use server';
+'use server'
 
-import { Prisma } from '@prisma/client';
-import { revalidatePath } from 'next/cache';
-import type { z } from 'zod';
+import { Prisma } from '@prisma/client'
+import { revalidatePath } from 'next/cache'
+import type { z } from 'zod'
 
-import { auth } from '@/auth';
-import { db } from '@/server/db';
-import type { CreateRecipeSchema } from '@/server/schemas';
-import { Recipe } from '@/types';
-import { formatLongSentence } from '../utils';
+import { auth } from '@/auth'
+import { db } from '@/server/db'
+import type { CreateRecipeSchema } from '@/server/schemas'
+import { formatLongSentence, slugify } from '@/server/utils'
+import { Recipe } from '@/types'
 
 /**
  * Get single recipe data.
@@ -17,17 +17,17 @@ import { formatLongSentence } from '../utils';
  * @returns Promise<Recipe | null>
  */
 export const getSingleRecipe = async (id: string): Promise<Recipe | null> => {
-	const currentUser = await auth();
+	const currentUser = await auth()
 
 	/** Not authenticated */
-	if (!currentUser) return null;
+	if (!currentUser) return null
 
-	return await db.recipe.findUnique({ where: { id } });
-};
+	return await db.recipe.findUnique({ where: { id } })
+}
 
 interface createRecipeResult {
-	error: boolean;
-	message?: string;
+	error: boolean
+	message?: string
 }
 
 /**
@@ -39,35 +39,35 @@ interface createRecipeResult {
 export const createRecipe = async (
 	values: z.infer<typeof CreateRecipeSchema>
 ): Promise<createRecipeResult> => {
-	const currentUser = await auth();
+	const currentUser = await auth()
 
 	/** Not authenticated */
 	if (!currentUser)
-		return { error: true, message: 'Not authenticated. Please login again.' };
+		return { error: true, message: 'Not authenticated. Please login again.' }
 
 	try {
 		await db.recipe.create({
 			data: {
 				...values,
 				authorId: currentUser.user?.id,
-				slug: values.name.trim().replace(' ', '-').toLowerCase(),
+				slug: slugify(values.name),
 				instructions: formatLongSentence(values.instructions),
 			},
-		});
+		})
 	} catch (e) {
 		if (e instanceof Prisma.PrismaClientKnownRequestError) {
 			if (e.code === 'P2002') {
-				return { error: true, message: 'error-recipe-exists' };
+				return { error: true, message: 'error-recipe-exists' }
 			}
 		}
-		return { error: true, message: 'error' };
+		return { error: true, message: 'error' }
 	}
 
-	revalidatePath('/');
-	revalidatePath('/recipes');
+	revalidatePath('/')
+	revalidatePath('/recipes')
 
-	return { error: false };
-};
+	return { error: false }
+}
 
 /**
  * Update an existing recipe.
@@ -80,42 +80,42 @@ export const updateRecipe = async (
 	userId: string,
 	values: z.infer<typeof CreateRecipeSchema>
 ): Promise<createRecipeResult> => {
-	const currentUser = await auth();
+	const currentUser = await auth()
 
 	/** Not authenticated */
 	if (!currentUser)
-		return { error: true, message: 'Not authenticated. Please login again.' };
+		return { error: true, message: 'Not authenticated. Please login again.' }
 
 	try {
 		// The recipe belongs to the user
 		const recipe = await db.recipe.findFirst({
 			where: { id, authorId: userId },
-		});
+		})
 
-		if (!recipe) return { error: true, message: 'Recipe not found.' };
+		if (!recipe) return { error: true, message: 'Recipe not found.' }
 
 		await db.recipe.update({
 			where: { id },
 			data: {
 				...values,
-				slug: values.name.trim().toLowerCase().replace(/\s+/g, '-'),
+				slug: slugify(values.name),
 				instructions: formatLongSentence(values.instructions),
 			},
-		});
+		})
 	} catch (e) {
 		if (e instanceof Prisma.PrismaClientKnownRequestError) {
 			if (e.code === 'P2002') {
-				return { error: true, message: 'error-recipe-exists' };
+				return { error: true, message: 'error-recipe-exists' }
 			}
 		}
-		return { error: true, message: 'error' };
+		return { error: true, message: 'error' }
 	}
 
-	revalidatePath('/');
-	revalidatePath('/recipes');
+	revalidatePath('/')
+	revalidatePath('/recipes')
 
-	return { error: false };
-};
+	return { error: false }
+}
 
 /**
  * Save or unsave recipe.
@@ -128,10 +128,10 @@ export const saveRecipe = async (
 	id: string,
 	isSaved: boolean
 ): Promise<{ error: boolean }> => {
-	const currentUser = await auth();
+	const currentUser = await auth()
 
 	/** Not authenticated */
-	if (!currentUser) return { error: true };
+	if (!currentUser) return { error: true }
 	if (isSaved)
 		await db.user.update({
 			where: { id: currentUser.user?.id },
@@ -140,15 +140,15 @@ export const saveRecipe = async (
 					set: currentUser.user?.savedRecipes.filter((r) => r !== id),
 				},
 			},
-		});
+		})
 	else
 		await db.user.update({
 			where: { id: currentUser.user?.id },
 			data: { savedRecipes: { push: id } },
-		});
+		})
 
-	return { error: false };
-};
+	return { error: false }
+}
 
 /**
  * Delete recipe.
@@ -157,14 +157,14 @@ export const saveRecipe = async (
  * @returns Promise<{ error: boolean }>
  */
 export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
-	const currentUser = await auth();
+	const currentUser = await auth()
 
 	/** Not authenticated */
-	if (!currentUser) return { error: true };
+	if (!currentUser) return { error: true }
 
-	await db.recipe.delete({ where: { id: id, authorId: currentUser.user?.id } });
+	await db.recipe.delete({ where: { id: id, authorId: currentUser.user?.id } })
 
-	revalidatePath('/recipes');
+	revalidatePath('/recipes')
 
-	return { error: false };
-};
+	return { error: false }
+}

@@ -3,13 +3,19 @@
 		"return": "Tornar",
 		"recipes": "Receptes",
 		"page-not-found": "Pàgina no trobada",
-		"user-not-found": "Usuari no trobat"
+		"user-not-found": "Usuari no trobat",
+		"author-not-found": "Autor no trobat",
+		"no-recipes": "No s'han trobat receptes",
+		"no-authors": "No s'han trobat autors",
+		"start-author-search": "Comença a escriure el nom d'un autor per veure les seves receptes"
 	},
 	"toasts": {
 		"recipe-created": "Recepta creada amb èxit.",
 		"recipe-updated": "Recepta actualitzada amb èxit.",
 		"recipe-saved": "Recepta guardada amb èxit.",
 		"recipe-deleted": "Recepta eliminada amb èxit.",
+		"recipe-link-copied": "Enllaç de la recepta copiat al porta-retalls.",
+		"account-link-copied": "Enllaç del perfil copiat al porta-retalls.",
 		"error": "S'ha produït un error.",
 		"error-recipe-exists": "Ja existeix una recepta amb aquest nom."
 	},
@@ -36,15 +42,14 @@
 		"search": "Cerca",
 		"searching": "Buscant receptes...",
 		"not-found": "Recepta no trobada",
-		"no-recipes": "No s'han trobat receptes",
 		"ingredients": "Ingredients",
 		"ingredients-add": "Afegeix un ingredient",
 		"instructions": "Instruccions",
 		"instructions-add": "Afegeix les instruccions de la recepta",
 		"recipe-name": "Nom de la recepta",
-		"categories": "Categories",
+		"categories": "Categoria",
 		"categories-select": "Selecciona una categoria",
-		"time": "Temps",
+		"time": "Temps de preparació",
 		"minutes": "minuts",
 		"create": "Crear",
 		"creating": "Creant recepta...",
@@ -65,6 +70,8 @@
 	"ProfilePage": {
 		"title": "Perfil",
 		"description": "Aquí pots veure i modificar la teva informació personal.",
+		"private": "Perfil private",
+		"private-description": "Activa aquesta opció per fer que el teu perfil i les teves receptes siguin visibles només per a tu.",
 		"name": "Nom",
 		"email": "Correu electrònic",
 		"email-hint": "L'adreça de correu electrònic està gestionada pel teu proveïdor OAuth.",
@@ -87,5 +94,10 @@
 		"account-logout-logged-out": "S'ha tancat la sessió.",
 		"account-logout-logging-out": "Tancant la sessió...",
 		"account-logout-error": "Hi ha hagut un error en tancar la sessió."
+	},
+	"AuthorsPage": {
+		"search": "Cerca",
+		"searching": "Buscant autors...",
+		"not-found": "Autor no trobat"
 	}
 }

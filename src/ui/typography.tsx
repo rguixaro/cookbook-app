@@ -1,6 +1,6 @@
-import { forwardRef } from 'react';
+import { forwardRef } from 'react'
 
-import { cn } from '@/utils';
+import { cn } from '@/utils'
 
 export const TypographyH1 = forwardRef<
 	HTMLHeadingElement,
@@ -10,15 +10,15 @@ export const TypographyH1 = forwardRef<
 		<h1
 			ref={ref}
 			className={cn(
-				'mt-6 text-5xl font-bold tracking-tight lg:text-6xl',
+				'mt-6 text-4xl font-bold tracking-tight lg:text-5xl',
 				className
 			)}
 			{...props}
 		/>
-	);
-});
+	)
+})
 
-TypographyH1.displayName = 'TypographyH1';
+TypographyH1.displayName = 'TypographyH1'
 
 export const TypographyH2 = forwardRef<
 	HTMLHeadingElement,
@@ -33,10 +33,10 @@ export const TypographyH2 = forwardRef<
 			)}
 			{...props}
 		/>
-	);
-});
+	)
+})
 
-TypographyH2.displayName = 'TypographyH2';
+TypographyH2.displayName = 'TypographyH2'
 
 export const TypographyH3 = forwardRef<
 	HTMLHeadingElement,
@@ -51,10 +51,10 @@ export const TypographyH3 = forwardRef<
 			)}
 			{...props}
 		/>
-	);
-});
+	)
+})
 
-TypographyH3.displayName = 'TypographyH3';
+TypographyH3.displayName = 'TypographyH3'
 
 export const TypographyH4 = forwardRef<
 	HTMLHeadingElement,
@@ -69,10 +69,28 @@ export const TypographyH4 = forwardRef<
 			)}
 			{...props}
 		/>
-	);
-});
+	)
+})
 
-TypographyH4.displayName = 'TypographyH4';
+TypographyH4.displayName = 'TypographyH4'
+
+export const TypographyH5 = forwardRef<
+	HTMLHeadingElement,
+	React.ComponentPropsWithoutRef<'h5'>
+>(({ className, ...props }, ref) => {
+	return (
+		<h4
+			ref={ref}
+			className={cn(
+				'my-2 text-lg font-semibold tracking-tight lg:text-xl',
+				className
+			)}
+			{...props}
+		/>
+	)
+})
+
+TypographyH5.displayName = 'TypographyH5'
 
 export const TypographyP = forwardRef<
 	HTMLParagraphElement,
@@ -87,10 +105,10 @@ export const TypographyP = forwardRef<
 			)}
 			{...props}
 		/>
-	);
-});
+	)
+})
 
-TypographyP.displayName = 'TypographyP';
+TypographyP.displayName = 'TypographyP'
 
 export const TypographyListUl = forwardRef<
 	HTMLUListElement,
@@ -102,10 +120,10 @@ export const TypographyListUl = forwardRef<
 			className={cn('my-6 list-disc [&>li]:mt-2', className)}
 			{...props}
 		/>
-	);
-});
+	)
+})
 
-TypographyListUl.displayName = 'TypographyListUl';
+TypographyListUl.displayName = 'TypographyListUl'
 
 export const TypographyListOl = forwardRef<
 	HTMLOListElement,
@@ -117,7 +135,7 @@ export const TypographyListOl = forwardRef<
 			className={cn('my-6 list-decimal [&>li]:mt-2', className)}
 			{...props}
 		/>
-	);
-});
+	)
+})
 
-TypographyListOl.displayName = 'TypographyListOl';
+TypographyListOl.displayName = 'TypographyListOl'

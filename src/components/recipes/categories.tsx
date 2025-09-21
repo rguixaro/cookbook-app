@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import { useState, ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
+import { useState, ReactNode } from 'react'
+import { useTranslations } from 'next-intl'
 
-import { Categories as CategoriesList } from '@/server/schemas';
+import { Categories as CategoriesList } from '@/server/schemas'
 import {
 	Dialog,
 	DialogContent,
@@ -12,24 +12,24 @@ import {
 	DialogTitle,
 	DialogTrigger,
 	Button,
-} from '@/ui';
-import { Icon } from './icon';
-import { cn } from '@/utils';
+} from '@/ui'
+import { Icon } from './icon'
+import { cn } from '@/utils'
 
 interface CategoriesProps {
-	trigger: ReactNode;
-	selected: string | null;
-	onSelect: (category: string) => void;
+	trigger: ReactNode
+	selected: string | null
+	onSelect: (category: string) => void
 }
 
 export const Categories = ({ trigger, onSelect, selected }: CategoriesProps) => {
-	const t = useTranslations('RecipesPage');
-	const t_categories = useTranslations('RecipeCategories');
+	const t = useTranslations('RecipesPage')
+	const t_categories = useTranslations('RecipeCategories')
 
-	const [isOpen, setIsOpen] = useState(false);
+	const [isOpen, setIsOpen] = useState(false)
 	function select(category: string) {
-		onSelect(category);
-		setIsOpen(false);
+		onSelect(category)
+		setIsOpen(false)
 	}
 
 	return (
@@ -37,10 +37,10 @@ export const Categories = ({ trigger, onSelect, selected }: CategoriesProps) => 
 			<DialogTrigger asChild>{trigger}</DialogTrigger>
 			<DialogContent className='md:w-fit flex flex-col items-center text-center'>
 				<DialogHeader>
-					<DialogTitle className='text-center'>
+					<DialogTitle className='text-center text-forest-400'>
 						<span className='font-bold'>{t('categories')}</span>
 					</DialogTitle>
-					<DialogDescription className='text-center'>
+					<DialogDescription className='text-center text-forest-400'>
 						<span className='font-medium'>{t('categories-select')}</span>
 					</DialogDescription>
 				</DialogHeader>
@@ -50,7 +50,7 @@ export const Categories = ({ trigger, onSelect, selected }: CategoriesProps) => 
 							key={category}
 							onClick={() => select(category)}
 							className={cn(
-								'w-full h-20 max-w-40 flex flex-col items-start space-x-0 bg-forest-200/15 text-forest-200 rounded-2xl border-2 border-forest-200/15 hover:bg-forest-200/30',
+								'w-full h-20 max-w-40 flex flex-col items-start space-x-0 bg-forest-200/15 text-forest-200 rounded border-2 border-forest-200/15 hover:bg-forest-200/30',
 								selected === category &&
 									'border-forest-200 bg-forest-200/30'
 							)}>
@@ -64,5 +64,5 @@ export const Categories = ({ trigger, onSelect, selected }: CategoriesProps) => 
 				</div>
 			</DialogContent>
 		</Dialog>
-	);
-};
+	)
+}

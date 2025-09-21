@@ -1,23 +1,23 @@
-import Link from 'next/link';
-import { getTranslations } from 'next-intl/server';
-import { FileQuestion } from 'lucide-react';
+import Link from 'next/link'
+import { getTranslations } from 'next-intl/server'
+import { FileQuestion } from 'lucide-react'
 
-import { auth } from '@/auth';
-import { getRecipeByAuthAndSlug } from '@/server/queries';
-import { EditRecipe } from '@/components/recipes/form/edit';
-import { TypographyH4 } from '@/ui';
+import { auth } from '@/auth'
+import { getRecipeByAuthAndSlug } from '@/server/queries'
+import { EditRecipe } from '@/components/recipes/form'
+import { TypographyH4 } from '@/ui'
 
 export default async function EditRecipePage({
 	params,
 }: {
-	params: Promise<{ authorId: string; slug: string }>;
+	params: Promise<{ authorId: string; slug: string }>
 }) {
-	const session = await auth();
-	if (!session) return null;
+	const session = await auth()
+	if (!session) return null
 
-	const { slug, authorId } = await params;
-	const recipe = await getRecipeByAuthAndSlug(authorId, slug);
-	const t = await getTranslations('common');
+	const { slug, authorId } = await params
+	const recipe = await getRecipeByAuthAndSlug(authorId, slug)
+	const t = await getTranslations('common')
 
 	if (!recipe) {
 		return (
@@ -30,8 +30,8 @@ export default async function EditRecipePage({
 					{t('return')}
 				</Link>
 			</div>
-		);
+		)
 	}
 
-	return <EditRecipe userId={session.user.id!} recipe={recipe} />;
+	return <EditRecipe userId={session.user.id!} recipe={recipe} />
 }

@@ -1,13 +1,14 @@
-import type { Metadata } from 'next';
-import localFont from 'next/font/local';
-import { NextIntlClientProvider } from 'next-intl';
-import { getLocale, getMessages } from 'next-intl/server';
-import { SessionProvider } from 'next-auth/react';
+import type { Metadata } from 'next'
+import localFont from 'next/font/local'
+import { NextIntlClientProvider } from 'next-intl'
+import { getLocale, getMessages } from 'next-intl/server'
+import { SessionProvider } from 'next-auth/react'
 
-import { ToasterProvider } from '@/providers';
-import { Header } from '@/components/layout/header';
-import '@/styles/globals.css';
-import { cn } from '@/utils';
+import { auth } from '@/auth'
+import { ToasterProvider, ProfileProvider } from '@/providers'
+import { Header } from '@/components/layout/header'
+import '@/styles/globals.css'
+import { cn } from '@/utils'
 
 const montserrat = localFont({
 	variable: '--font-montserrat',
@@ -18,7 +19,7 @@ const montserrat = localFont({
 		{ path: '../fonts/montserrat-bold.ttf', weight: '700' },
 		{ path: '../fonts/montserrat-extrabold.ttf', weight: '800' },
 	],
-});
+})
 
 const guavine = localFont({
 	variable: '--font-guavine',
@@ -26,20 +27,23 @@ const guavine = localFont({
 	weight: '400',
 	display: 'swap',
 	preload: true,
-});
+})
 
 export const metadata: Metadata = {
 	title: 'CookBook',
 	description: 'CookBook App',
-};
+}
 
 export default async function RootLayout({
 	children,
 }: Readonly<{
-	children: React.ReactNode;
+	children: React.ReactNode
 }>) {
-	const locale = await getLocale();
-	const messages = await getMessages();
+	const locale = await getLocale()
+	const messages = await getMessages()
+
+	const session = await auth()
+	const userName = session?.user.name
 
 	return (
 		<html lang={locale} suppressHydrationWarning>
@@ -51,13 +55,15 @@ export default async function RootLayout({
 				<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
 					<SessionProvider>
 						<NextIntlClientProvider messages={messages}>
-							<Header />
-							{children}
-							<ToasterProvider />
+							<ProfileProvider initialName={userName || ''}>
+								<Header />
+								{children}
+								<ToasterProvider />
+							</ProfileProvider>
 						</NextIntlClientProvider>
 					</SessionProvider>
 				</div>
 			</body>
 		</html>
-	);
+	)
 }

@@ -2,16 +2,16 @@ import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { Loader } from 'lucide-react'
 
-import { RecipesFeed, SearchRecipes } from '@/components/recipes'
+import { GoBack } from '@/components/layout'
+import { AuthorsFeed, SearchAuthors } from '@/components/authors'
 
-export default async function RecipesPage({
+export default async function AuthorsPage({
 	searchParams,
 }: {
 	searchParams?: Promise<{ search?: string; category?: string }>
 }) {
 	const searchParam = (await searchParams)?.search
-	const categoryParam = (await searchParams)?.category
-	const t = await getTranslations('RecipesPage')
+	const t = await getTranslations('AuthorsPage')
 
 	const LoadingSkeleton = () => {
 		return (
@@ -23,14 +23,12 @@ export default async function RecipesPage({
 	}
 
 	return (
-		<main className='flex flex-col items-center text-forest-400 w-full h-full'>
-			<SearchRecipes />
+		<div className='mt-5 duration-500 animate-in fade-in-5 slide-in-from-bottom-2'>
+			<GoBack />
+			<SearchAuthors />
 			<Suspense fallback={<LoadingSkeleton />}>
-				<RecipesFeed
-					searchParam={searchParam}
-					categoryParam={categoryParam}
-				/>
+				<AuthorsFeed searchParam={searchParam} />
 			</Suspense>
-		</main>
+		</div>
 	)
 }
