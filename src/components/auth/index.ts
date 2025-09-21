@@ -1,2 +1,1 @@
-export * from './social-login';
-export * from './user-btn';
+export * from './social-login'
