@@ -3,7 +3,11 @@
 		"return": "Return",
 		"recipes": "Recipes",
 		"page-not-found": "Page not found",
-		"user-not-found": "User not found"
+		"user-not-found": "User not found",
+		"author-not-found": "Author not found",
+		"no-recipes": "No recipes found",
+		"no-authors": "No authors found",
+		"start-author-search": "Start typing an author's name to see their recipes"
 	},
 	"toasts": {
 		"recipe-created": "Recipe created successfully.",
@@ -38,13 +42,12 @@
 		"search": "Search",
 		"searching": "Searching recipes...",
 		"not-found": "Recipe not found",
-		"no-recipes": "No recipes found",
 		"ingredients": "Ingredients",
 		"ingredients-add": "Add an ingredient",
 		"instructions": "Instructions",
 		"instructions-add": "Add the recipe instructions",
 		"recipe-name": "Recipe name",
-		"categories": "Categories",
+		"categories": "Category",
 		"categories-select": "Select a category",
 		"time": "Cooking time",
 		"minutes": "minutes",
@@ -89,5 +92,10 @@
 		"account-logout-logged-out": "You have been logged out.",
 		"account-logout-logging-out": "Logging out...",
 		"account-logout-error": "An error occurred while logging out."
+	},
+	"AuthorsPage": {
+		"search": "Search",
+		"searching": "Searching authors...",
+		"not-found": "Author not found"
 	}
 }

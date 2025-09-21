@@ -3,7 +3,11 @@
 		"return": "Volver",
 		"recipes": "Recetas",
 		"page-not-found": "Página no encontrada",
-		"user-not-found": "Usuario no encontrado"
+		"user-not-found": "Usuario no encontrado",
+		"author-not-found": "Autor no encontrado",
+		"no-recipes": "No se han encontrado recetas",
+		"no-authors": "No se han encontrado autores",
+		"start-author-search": "Comienza a escribir el nombre de un autor para consultar sus recetas"
 	},
 	"toasts": {
 		"recipe-created": "Receta creada con éxito.",
@@ -38,13 +42,12 @@
 		"search": "Buscar",
 		"searching": "Buscando recetas...",
 		"not-found": "Receta no encontrada",
-		"no-recipes": "No se han encontrado recetas",
 		"ingredients": "Ingredientes",
 		"ingredients-add": "Añadir un ingrediente",
 		"instructions": "Instrucciones",
 		"instructions-add": "Añadir las instrucciones de la receta",
 		"recipe-name": "Nombre de la receta",
-		"categories": "Categorías",
+		"categories": "Categoría",
 		"categories-select": "Selecciona una categoría",
 		"time": "Tiempo de preparación",
 		"minutes": "minutos",
@@ -89,5 +92,10 @@
 		"account-logout-logging-out": "Cerrando la sesión...",
 		"account-logout-logged-out": "Se ha cerrado la sesión.",
 		"account-logout-error": "Se ha producido un error al cerrar la sesión."
+	},
+	"AuthorsPage": {
+		"search": "Buscar",
+		"searching": "Buscando autores...",
+		"not-found": "Autor no encontrado"
 	}
 }
