@@ -74,6 +74,24 @@ export const TypographyH4 = forwardRef<
 
 TypographyH4.displayName = 'TypographyH4'
 
+export const TypographyH5 = forwardRef<
+	HTMLHeadingElement,
+	React.ComponentPropsWithoutRef<'h5'>
+>(({ className, ...props }, ref) => {
+	return (
+		<h4
+			ref={ref}
+			className={cn(
+				'my-2 text-lg font-semibold tracking-tight lg:text-xl',
+				className
+			)}
+			{...props}
+		/>
+	)
+})
+
+TypographyH5.displayName = 'TypographyH5'
+
 export const TypographyP = forwardRef<
 	HTMLParagraphElement,
 	React.ComponentPropsWithoutRef<'p'>
