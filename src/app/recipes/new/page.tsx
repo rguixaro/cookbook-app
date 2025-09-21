@@ -11,7 +11,7 @@ import { type z } from 'zod'
 
 import { Categories, CreateRecipeSchema } from '@/server/schemas'
 import { createRecipe } from '@/server/actions'
-import { GoBack } from '@/components/layout/go-back'
+import { GoBack } from '@/components/layout'
 import { CategorySelector, IngredientSelector } from '@/components/recipes/form'
 import {
 	Form,

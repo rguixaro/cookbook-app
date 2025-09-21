@@ -1,17 +1,20 @@
 import { getTranslations } from 'next-intl/server'
-import { Clock, NotebookPen, Utensils } from 'lucide-react'
+import { Clock, Utensils } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
 import { auth } from '@/auth'
 import { getRecipeByAuthAndSlug, getProfileByUserId } from '@/server/queries'
-import { GoBack } from '@/components/layout/go-back'
-import { SavedStatus } from '@/components/recipes/saved'
-import { RecipeDownload } from '@/components/recipes/download'
-import { IconProps, cn } from '@/utils'
+import { GoBack } from '@/components/layout'
+import { SyncAuthorName } from '@/components/profile'
+import {
+	RecipeDownload,
+	RecipeEdit,
+	RecipeShare,
+	SavedStatus,
+} from '@/components/recipes'
 import { TypographyH4 } from '@/ui'
-import { RecipeShare } from '@/components/recipes/share'
-import { SyncProfileName } from '@/components/profile/profile-name-bridge'
+import { IconProps, cn } from '@/utils'
 
 export default async function RecipePage({
 	params,
@@ -60,7 +63,7 @@ export default async function RecipePage({
 
 	return (
 		<div className='flex flex-col pt-2 my-2 text-center'>
-			<SyncProfileName name={author.name} />
+			<SyncAuthorName name={author.name} />
 			<GoBack
 				text={'recipes'}
 				to={
@@ -77,11 +80,7 @@ export default async function RecipePage({
 							recipeId={recipe?.id as string}
 						/>
 					) : (
-						<Link
-							href={`/recipes/edit/${recipe?.authorId}/${recipe?.slug}`}
-							className='hover:bg-forest-200/15 p-1 rounded transition-colors duration-300'>
-							<NotebookPen size={24} className='text-forest-200' />
-						</Link>
+						<RecipeEdit recipe={recipe} />
 					)}
 				</div>
 			</GoBack>

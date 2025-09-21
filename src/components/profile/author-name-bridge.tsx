@@ -3,7 +3,7 @@
 import { useEffect } from 'react'
 import { useProfileContext } from '@/providers'
 
-export function SyncProfileName({ name }: { name: string }) {
+export function SyncAuthorName({ name }: { name: string }) {
 	const { setAuthorName } = useProfileContext()
 
 	useEffect(() => {

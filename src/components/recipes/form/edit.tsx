@@ -11,7 +11,7 @@ import { type z } from 'zod'
 
 import { Categories, CreateRecipeSchema } from '@/server/schemas'
 import { updateRecipe } from '@/server/actions'
-import { GoBack } from '@/components/layout/go-back'
+import { GoBack } from '@/components/layout'
 import { CategorySelector, IngredientSelector } from '@/components/recipes/form'
 import {
 	Form,
@@ -83,7 +83,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 
 	useEffect(() => {
 		if (props.recipe.time) form.setValue('time', props.recipe.time)
-	}, [props.recipe.time])
+	}, [props.recipe.time, form])
 
 	useEffect(() => {
 		if (ingredients.length > 0)

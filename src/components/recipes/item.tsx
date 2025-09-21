@@ -50,7 +50,7 @@ export function ItemRecipe({
 				viewport={{ once: true, amount: 0.01 }}>
 				<div
 					className={cn(
-						'w-full mb-2 mt-5 py-3 px-2 flex flex-col items-start',
+						'w-full my-2 py-3 px-2 flex flex-col items-start',
 						'bg-forest-200/15 border-4 border-forest-200/15 rounded-lg',
 						'transition-all duration-300 hover:bg-forest-200/15'
 					)}>

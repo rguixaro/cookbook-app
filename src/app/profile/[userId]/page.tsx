@@ -5,11 +5,10 @@ import { getTranslations } from 'next-intl/server'
 import { Loader, User } from 'lucide-react'
 
 import { getProfileByUserId } from '@/server/queries'
-import { GoBack } from '@/components/layout/go-back'
-import { SearchRecipes } from '@/components/recipes/search'
-import { RecipesFeed } from '@/components/recipes/feed'
+import { GoBack } from '@/components/layout'
+import { RecipesFeed, SearchRecipes } from '@/components/recipes'
+import { SyncAuthorName } from '@/components/profile'
 import { TypographyH4 } from '@/ui'
-import { SyncProfileName } from '@/components/profile/profile-name-bridge'
 
 export default async function ProfilePage({
 	params,
@@ -50,7 +49,7 @@ export default async function ProfilePage({
 				</div>
 			) : (
 				<div>
-					<SyncProfileName name={profile.name} />
+					<SyncAuthorName name={profile.name} />
 					<div className='flex flex-col items-center justify-center space-y-3 mb-5'>
 						<div className='w-20 h-20 rounded overflow-hidden shadow border-4 border-forest-200'>
 							<Image

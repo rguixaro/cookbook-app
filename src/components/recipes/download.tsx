@@ -43,7 +43,7 @@ export const RecipeDownload = ({
 			.catch((_err) => {
 				toast.error(t_toasts('error'))
 			})
-	}, [ref, recipe])
+	}, [ref, recipe, t_toasts])
 
 	if (!recipe) return null
 

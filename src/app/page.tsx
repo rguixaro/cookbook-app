@@ -2,9 +2,7 @@ import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
 import { Loader } from 'lucide-react'
 
-import { RecipesFeed } from '@/components/recipes/feed'
-import { SearchRecipes } from '@/components/recipes/search'
-import { Header } from '@/components/layout/header'
+import { RecipesFeed, SearchRecipes } from '@/components/recipes'
 
 export default async function RecipesPage({
 	searchParams,
