@@ -56,7 +56,6 @@ export const Categories = ({ trigger, onSelect, selected }: CategoriesProps) => 
 							)}>
 							<Icon name={category} size={24} />
 							<span className='font-bold mt-2'>
-								{/* @ts-expect-error: Unnecessary message type */}
 								{t_categories(category.toLowerCase())}
 							</span>
 						</Button>

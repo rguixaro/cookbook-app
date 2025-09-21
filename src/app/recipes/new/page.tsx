@@ -52,7 +52,6 @@ export default function NewRecipePage() {
 			setLoading(true)
 			const { error, message } = await createRecipe(values)
 			if (error) {
-				/* @ts-expect-error: Unnecessary message type */
 				toast.error(t_toasts(message || 'error'))
 				return
 			}

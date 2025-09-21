@@ -31,7 +31,6 @@ export const CategorySelector = ({ value, setValue }: CategorySelectorProps) => 
 						)}>
 						<Icon name={categoryName} size={24} />
 						<span className='text-xs text-forest-200/75 pt-3'>
-							{/* @ts-expect-error: Unnecessary message type */}
 							{t(categoryName.toLowerCase())}
 						</span>
 						<div
