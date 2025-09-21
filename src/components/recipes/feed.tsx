@@ -20,13 +20,22 @@ export const RecipesFeed = async ({
 	const data = await getRecipesByUserId(userId)
 	const t = await getTranslations('RecipesPage')
 
+	const normalize = (str = '') =>
+		str
+			.toLowerCase()
+			.normalize('NFD')
+			.replace(/[\u0300-\u036f]/g, '')
+			.trim()
+			.replace(/\s+/g, ' ')
+
 	const filteredRecipes = data?.recipes.filter((recipe) => {
 		if (!searchParam && !categoryParam) return true
-		else if (categoryParam && recipe.category !== categoryParam) return false
-		return (
-			!searchParam ||
-			recipe.name.toLowerCase().includes(searchParam.toLowerCase())
-		)
+		if (categoryParam && recipe.category !== categoryParam) return false
+
+		const query = normalize(searchParam || '')
+		const name = normalize(recipe.name)
+
+		return !query || name.includes(query)
 	})
 
 	const sortedRecipes = filteredRecipes?.sort((a, b) => {

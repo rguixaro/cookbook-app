@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useDebouncedCallback } from 'use-debounce'
 import { AnimatePresence } from 'motion/react'
@@ -66,6 +66,10 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 		router.replace(`${pathname}?${params.toString()}`)
 	}, 300)
 
+	/**
+	 * Handle removing the selected category
+	 * @param e Remove the selected category
+	 */
 	const handleRemoveCategory = (e: React.MouseEvent<HTMLElement>) => {
 		e.preventDefault()
 		const params = new URLSearchParams(searchParams)
@@ -79,14 +83,32 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 	 */
 	const onStatusChange = () => {
 		const value = inputRef.current?.value
-		if (debouncedStatus === 'visible')
-			setStatus(value != '' ? 'outlined' : 'hidden')
-		else if (debouncedStatus === 'outlined' && value) setStatus('hidden')
-		else {
+		if (status === 'hidden') {
 			setStatus('visible')
-			inputRef?.current?.focus()
+			inputRef.current?.focus()
+		} else if (status === 'visible') {
+			setStatus(value ? 'outlined' : 'hidden')
+		} else if (status === 'outlined') {
+			if (!value) setStatus('hidden')
 		}
 	}
+
+	/**
+	 * Handle onBlur event
+	 */
+	const onBlur = () => {
+		const value = inputRef.current?.value
+		if (!value) setStatus('hidden')
+	}
+
+	/**
+	 * If there is a search param, set the status to outlined
+	 */
+	useEffect(() => {
+		if (searchParams.get('search')) {
+			setStatus('outlined')
+		}
+	}, [searchParams])
 
 	return (
 		<div className='sticky top-24 h-28 bg-[#fefff2] w-full'>
@@ -126,16 +148,16 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 							type='search'
 							ref={inputRef}
 							placeholder={t('search')}
-							onBlur={onStatusChange}
+							onBlur={onBlur}
 							defaultValue={searchParams.get('search')?.toString()}
 							onChange={handleSearch}
 							id='default-search'
 							className={cn(
 								'relative block w-0 py-1.5 right-7 px-2 ps-8 text-sm z-10 bg-forest-200/15 text-forest-200 font-medium placeholder-forest-200/80 border-[1px]',
 								'transition-all duration-500 border-l-[5px] border-forest-200 rounded-[5px] focus:outline-none focus:ring-1 focus:ring-forest-200',
-								status === 'visible'
+								debouncedStatus === 'visible'
 									? 'w-32 md:w-52 pointer-events-auto'
-									: status === 'outlined'
+									: debouncedStatus === 'outlined'
 										? 'w-32 md:w-52 focus:ring-0'
 										: 'opacity-0 pointer-events-none'
 							)}
