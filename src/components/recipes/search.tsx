@@ -6,13 +6,12 @@ import { useDebouncedCallback } from 'use-debounce'
 import { AnimatePresence } from 'motion/react'
 import * as motion from 'motion/react-client'
 import { useTranslations } from 'next-intl'
-import { X } from 'lucide-react'
+import { Search, X } from 'lucide-react'
 
 import { useDebounce } from '@/hooks'
-import { UserButton } from '@/components/auth'
-import { SearchIcon } from '@/components/icons'
+import { UserButton, SocialButton, SearchButton } from '@/components/layout'
 import { Categories as CategoriesType } from '@/types'
-import { Button, TypographyH4 } from '@/ui'
+import { Button } from '@/ui'
 import { cn } from '@/utils'
 import { Categories } from './categories'
 
@@ -31,9 +30,19 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 	const [status, setStatus] = useState<SearchState>('hidden')
 	const debouncedStatus = useDebounce(status, 100)
 
+	const [inputValue, setInputValue] = useState(
+		searchParams.get('search')?.toString() || ''
+	)
+
 	const [category, setCategory] = useState<CategoriesType | null>(
 		searchParams.get('category')?.toString() || null
 	)
+
+	const tCategory = (category?: string) => {
+		if (!category) return ''
+		// @ts-expect-error: Unnecessary message type
+		return t_categories(category.toLowerCase())
+	}
 
 	/**
 	 * Handle the search input
@@ -111,110 +120,119 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 	}, [searchParams])
 
 	return (
-		<div className='sticky top-24 h-28 bg-[#fefff2] w-full'>
-			<div className='w-full flex items-center justify-between mb-2'>
-				<TypographyH4 className='ms-3 text-forest-300'>
-					{t('title').toUpperCase()}
-				</TypographyH4>
-				<div className='flex items-center'>
-					<div
+		<div className='w-full flex flex-col my-2'>
+			<div className='w-full flex items-end justify-between mb-2'>
+				<div
+					className={cn(
+						'h-8 flex duration-1000 transition-transform relative',
+						debouncedStatus !== 'hidden'
+							? 'translate-x-[2px]'
+							: 'translate-x-0'
+					)}>
+					<input
+						type='text'
+						ref={inputRef}
+						placeholder={t('search')}
+						onBlur={onBlur}
+						value={inputValue}
+						onChange={(e) => {
+							setInputValue(e.target.value)
+							handleSearch(e)
+						}}
 						className={cn(
-							'flex duration-300 transition-transform',
-							withAvatar
-								? status !== 'hidden'
-									? 'translate-x-14 sm:translate-x-0'
-									: 'translate-x-8'
-								: 'translate-x-8'
+							'relative block w-0 h-8 text-sm z-10 bg-forest-200/15 text-forest-200 font-medium placeholder-forest-200/75',
+							'transition-all duration-500 border-l-[5px] border-forest-200 rounded-[5px] focus:outline-none ring-1 ring-forest-200 ps-9 pe-3',
+							debouncedStatus === 'hidden'
+								? 'opacity-0 pointer-events-none'
+								: 'w-full pointer-events-auto'
+						)}
+						required
+					/>
+					<SearchButton
+						onClick={onStatusChange}
+						className={cn(
+							'absolute top-1/2 -translate-y-1/2 transition-transform',
+							debouncedStatus !== 'hidden'
+								? 'translate-x-1 bg-forest-200/15'
+								: 'translate-x-0'
+						)}
+						iconClassName={cn(
+							debouncedStatus === 'visible' && 'rotate-90',
+							debouncedStatus === 'hidden'
+								? 'text-forest-200'
+								: 'text-forest-300'
+						)}
+					/>
+					<button
+						type='button'
+						onClick={() => {
+							setInputValue('')
+							if (inputRef.current) {
+								inputRef.current.value = ''
+								handleSearch({
+									target: inputRef.current,
+								} as React.ChangeEvent<HTMLInputElement>)
+							}
+							onStatusChange()
+						}}
+						className={cn(
+							'absolute top-1/2 right-0 -translate-y-1/2 z-30 text-forest-300 transition-all duration-200 ease-in-out',
+							inputValue
+								? 'opacity-100 -translate-x-2'
+								: 'opacity-0 translate-x-2 pointer-events-none'
 						)}>
-						<button
-							onClick={onStatusChange}
-							className={cn(
-								'flex items-center z-40 transition-opacity duration-300',
-								status === 'outlined' ? '' : 'opacity-100'
-							)}>
-							<SearchIcon
-								className={cn(
-									'w-4 h-4 transition-transform duration-300',
-									status === 'visible'
-										? 'transform rotate-90'
-										: '',
-									status === 'hidden'
-										? 'text-forest-200'
-										: 'text-forest-300'
-								)}
-							/>
-						</button>
-						<input
-							type='search'
-							ref={inputRef}
-							placeholder={t('search')}
-							onBlur={onBlur}
-							defaultValue={searchParams.get('search')?.toString()}
-							onChange={handleSearch}
-							id='default-search'
-							className={cn(
-								'relative block w-0 py-1.5 right-7 px-2 ps-8 text-sm z-10 bg-forest-200/15 text-forest-200 font-medium placeholder-forest-200/80 border-[1px]',
-								'transition-all duration-500 border-l-[5px] border-forest-200 rounded-[5px] focus:outline-none focus:ring-1 focus:ring-forest-200',
-								debouncedStatus === 'visible'
-									? 'w-32 md:w-52 pointer-events-auto'
-									: debouncedStatus === 'outlined'
-										? 'w-32 md:w-52 focus:ring-0'
-										: 'opacity-0 pointer-events-none'
-							)}
-							required
-						/>
+						<X className='w-4 h-4' />
+					</button>
+				</div>
+				{withAvatar && (
+					<div className='flex flex-row'>
+						<SocialButton />
+						<UserButton />
 					</div>
-					{withAvatar && (
-						<UserButton
-							className={cn(
-								status !== 'hidden' &&
-									'opacity-0 sm:opacity-100 translate-x-4 sm:translate-x-0 pointer-events-none sm:pointer-events-auto'
-							)}
-						/>
-					)}
+				)}
+			</div>
+			<div className='flex flex-col ms-[2px]'>
+				<div className='flex space-x-2'>
+					<Categories
+						onSelect={handleSelect}
+						selected={category}
+						trigger={
+							<Button size={'sm'}>
+								<span className='text-base md:text-lg font-bold'>
+									{t('categories')}
+								</span>
+							</Button>
+						}
+					/>
+					<AnimatePresence>
+						{category && (
+							<motion.div
+								key='selected-category'
+								initial={{ opacity: 0, x: -25 }}
+								animate={{
+									opacity: 1,
+									x: 0,
+									transition: { duration: 0.3 },
+								}}
+								exit={{
+									opacity: 0,
+									x: -25,
+									transition: { duration: 0.3 },
+								}}
+								className='bg-forest-200/75 rounded text-white flex items-center'>
+								<button
+									onClick={handleRemoveCategory}
+									className='flex items-center justify-center px-3 space-x-2'>
+									<span className='font-semibold text-sm md:text-base'>
+										{tCategory(category)}
+									</span>
+									<X size={14} className='mt-0.5' />
+								</button>
+							</motion.div>
+						)}
+					</AnimatePresence>
 				</div>
 			</div>
-			<Categories
-				onSelect={handleSelect}
-				selected={category}
-				trigger={
-					<div className='flex w-fit space-x-3'>
-						<Button variant={'default'} size={'sm'}>
-							<span className='text-base md:text-lg font-bold'>
-								{t('categories')}
-							</span>
-						</Button>
-						<AnimatePresence>
-							{category && (
-								<motion.div
-									key='selected-category'
-									initial={{ opacity: 0, x: -100 }}
-									animate={{
-										opacity: 1,
-										x: 0,
-										transition: { duration: 0.5, delay: 0.1 },
-									}}
-									exit={{
-										opacity: 0,
-										x: -100,
-										transition: { duration: 0.5, delay: 0.1 },
-									}}
-									className='bg-forest-200/80 rounded text-white flex items-center'>
-									<button
-										onClick={handleRemoveCategory}
-										className='flex items-center justify-center px-3 space-x-2'>
-										<span className='font-semibold text-sm md:text-base'>
-											{/* @ts-expect-error: Unnecessary message type */}
-											{t_categories(category.toLowerCase())}
-										</span>
-										<X size={14} className='mt-0.5' />
-									</button>
-								</motion.div>
-							)}
-						</AnimatePresence>
-					</div>
-				}
-			/>
 		</div>
 	)
 }

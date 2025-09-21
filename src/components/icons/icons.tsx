@@ -1,23 +1,6 @@
 interface SharedLogoProps extends React.SVGProps<SVGSVGElement> {
-	className?: string;
+	className?: string
 }
-
-export const SearchIcon = (props: SharedLogoProps) => (
-	<svg
-		aria-hidden='true'
-		xmlns='http://www.w3.org/2000/svg'
-		fill='none'
-		viewBox='0 0 20 20'
-		{...props}>
-		<path
-			stroke='currentColor'
-			strokeLinecap='round'
-			strokeLinejoin='round'
-			strokeWidth='2'
-			d='m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z'
-		/>
-	</svg>
-);
 
 export const GoogleLogo = (props: SharedLogoProps) => (
 	<svg
@@ -38,7 +21,7 @@ export const GoogleLogo = (props: SharedLogoProps) => (
 			fill='#EB4335'
 			d='M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251'></path>
 	</svg>
-);
+)
 export const BookmarkIcon = ({ filled = false }: { filled?: boolean }) => (
 	<svg
 		xmlns='http://www.w3.org/2000/svg'
@@ -55,4 +38,4 @@ export const BookmarkIcon = ({ filled = false }: { filled?: boolean }) => (
 			d='m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z'
 		/>
 	</svg>
-);
+)

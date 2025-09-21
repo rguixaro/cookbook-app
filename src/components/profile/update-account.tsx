@@ -77,8 +77,8 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 	const ShareComponent = () => {
 		return (
 			<button
-				onClick={handleCopy(`${SITE_URL}/profile/${props.id}`)}
-				className='bg-forest-200 text-white font-bold rounded text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/80 shadow'>
+				onClick={handleCopy(`${SITE_URL}/authors/${props.id}`)}
+				className='bg-forest-200 text-white font-bold rounded text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/75 shadow'>
 				<span>{t('share')}</span>
 			</button>
 		)

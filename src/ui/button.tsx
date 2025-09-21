@@ -27,7 +27,7 @@ const buttonVariants = cva(
 				destructive:
 					'bg-red-500 text-neutral-50 shadow-sm hover:bg-red-500/90',
 				outline:
-					'bg-forest-200/15 border-2 border-forest-200/15 shadow-sm hover:bg-forest-200/60 text-neutral-600 shadow',
+					'bg-forest-200/15 border-2 border-forest-200/15 shadow-sm hover:bg-forest-200/60 text-forest-400 shadow',
 				ghost: 'hover:bg-forest-200/15 hover:text-neutral-900',
 			},
 			size: {
