@@ -36,7 +36,7 @@
 		"negotiator": "^1.0.0",
 		"next": "^15.5.3",
 		"next-auth": "5.0.0-beta.29",
-		"next-intl": "^3.26.2",
+		"next-intl": "^4.3.9",
 		"react": "^19.0.0-rc",
 		"react-dom": "^19.0.0-rc",
 		"react-hook-form": "7.51.3",
