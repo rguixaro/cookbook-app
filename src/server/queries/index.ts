@@ -2,7 +2,6 @@ import { cache } from 'react'
 
 import { auth } from '@/auth'
 import { db } from '@/server/db'
-import { Recipe } from '@/types'
 import { RecipeSchema } from '../schemas'
 
 /**
@@ -74,7 +73,7 @@ export const getProfileByUserId = cache(
 
 		try {
 			const profile = await db.user.findFirst({
-				where: { id: userId },
+				where: { id: userId, isPrivate: false },
 				select: { image: true, name: true },
 			})
 			return { profile }
@@ -104,6 +103,7 @@ export const getAuthorsByName = cache(async (name: string) => {
 		const authors = await db.user.findMany({
 			where: {
 				id: { not: userId },
+				isPrivate: false,
 				name: {
 					contains: name,
 					mode: 'insensitive',
@@ -112,6 +112,7 @@ export const getAuthorsByName = cache(async (name: string) => {
 			select: {
 				id: true,
 				name: true,
+				isPrivate: true,
 				_count: {
 					select: {
 						recipes: true,

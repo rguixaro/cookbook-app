@@ -18,14 +18,21 @@ export const SearchAuthors = () => {
 	const inputRef = useRef<HTMLInputElement>(null)
 	const [value, setValue] = useState('')
 
+	// Debounce the search value
 	const debouncedValue = useDebounce(value, 200)
 
+	// Initialize input from URL on mount
 	useEffect(() => {
-		setValue(searchParams.get('search') || '')
+		const initialValue = searchParams.get('search') || ''
+		setValue(initialValue)
 	}, [searchParams])
 
 	// Update URL when debounced value changes
 	useEffect(() => {
+		// Skip if value didn't change
+		const currentSearch = searchParams.get('search') || ''
+		if (debouncedValue === currentSearch) return
+
 		const params = new URLSearchParams(searchParams)
 
 		if (debouncedValue.length >= 2) {

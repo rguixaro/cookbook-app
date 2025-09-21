@@ -70,6 +70,8 @@
 	"ProfilePage": {
 		"title": "Perfil",
 		"description": "Aquí pots veure i modificar la teva informació personal.",
+		"private": "Perfil private",
+		"private-description": "Activa aquesta opció per fer que el teu perfil i les teves receptes siguin visibles només per a tu.",
 		"name": "Nom",
 		"email": "Correu electrònic",
 		"email-hint": "L'adreça de correu electrònic està gestionada pel teu proveïdor OAuth.",

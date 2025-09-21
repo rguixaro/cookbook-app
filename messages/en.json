@@ -70,6 +70,8 @@
 	"ProfilePage": {
 		"title": "Profile",
 		"description": "Here you can view and modify your personal information.",
+		"private": "Private profile",
+		"private-description": "Enable this option to make your profile and recipes visible only to you.",
 		"name": "Name",
 		"email": "Email",
 		"email-hint": "Email address is managed by your OAuth provider.",

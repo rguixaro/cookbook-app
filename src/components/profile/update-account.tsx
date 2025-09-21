@@ -31,6 +31,7 @@ interface UpdateAccountProps {
 	id: string
 	name: string
 	email: string
+	isPrivate: boolean
 }
 
 export const UpdateAccount = (props: UpdateAccountProps) => {
@@ -46,6 +47,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 		defaultValues: {
 			name: props.name,
 			email: props.email,
+			isPrivate: props.isPrivate,
 		},
 	})
 
@@ -93,6 +95,48 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 				<form
 					onSubmit={hookForm.handleSubmit(onSubmit)}
 					className='space-y-5 mb-5 text-forest-400'>
+					<FormField
+						control={hookForm.control}
+						name='isPrivate'
+						render={({ field }) => (
+							<FormItem className='space-y-1'>
+								<FormLabel className='font-semibold'>
+									{t('private')}
+								</FormLabel>
+								<FormDescription className='text-sm opacity-70 mb-2'>
+									{t('private-description')}
+								</FormDescription>
+								<FormControl className='space-y-2'>
+									<label className='relative inline-flex items-center cursor-pointer'>
+										<input
+											type='checkbox'
+											className='sr-only'
+											disabled={loading}
+											checked={!!field.value}
+											onChange={(e) =>
+												field.onChange(e.target.checked)
+											}
+										/>
+										<span
+											className={`w-11 h-6 rounded-full transition-colors ${
+												field.value
+													? 'bg-forest-400'
+													: 'bg-forest-200/50'
+											}`}
+										/>
+										<span
+											className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
+												field.value
+													? 'translate-x-5'
+													: 'translate-x-0'
+											}`}
+										/>
+									</label>
+								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
 					<FormField
 						control={hookForm.control}
 						name='name'
@@ -153,7 +197,10 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							type='submit'
 							className='w-full'
 							disabled={
-								loading || hookForm.getValues().name === props.name
+								loading ||
+								(hookForm.getValues().name === props.name &&
+									hookForm.getValues().isPrivate ===
+										props.isPrivate)
 							}>
 							{loading ? (
 								<LoaderIcon size={16} className='animate-spin' />
