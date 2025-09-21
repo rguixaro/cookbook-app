@@ -10,6 +10,8 @@
 		"recipe-updated": "Recipe updated successfully.",
 		"recipe-saved": "Recipe saved successfully.",
 		"recipe-deleted": "Recipe deleted successfully.",
+		"recipe-link-copied": "Recipe link copied to clipboard.",
+		"account-link-copied": "Profile link copied to clipboard.",
 		"error": "An error occurred.",
 		"error-recipe-exists": "A recipe with this name already exists."
 	},

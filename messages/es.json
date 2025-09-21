@@ -10,6 +10,8 @@
 		"recipe-updated": "Receta editada con éxito.",
 		"recipe-saved": "Receta guardada con éxito.",
 		"recipe-deleted": "Receta eliminada con éxito.",
+		"recipe-link-copied": "Enlace de la receta copiado al portapapeles.",
+		"account-link-copied": "Enlace del perfil copiado al portapapeles.",
 		"error": "Se ha producido un error.",
 		"error-recipe-exists": "Ya existe una receta con este nombre."
 	},
@@ -44,7 +46,7 @@
 		"recipe-name": "Nombre de la receta",
 		"categories": "Categorías",
 		"categories-select": "Selecciona una categoría",
-		"time": "Tiempo",
+		"time": "Tiempo de preparación",
 		"minutes": "minutos",
 		"create": "Crear",
 		"creating": "Creando receta...",

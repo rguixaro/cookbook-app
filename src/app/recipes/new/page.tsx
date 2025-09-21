@@ -1,18 +1,18 @@
-'use client';
+'use client'
 
-import { useEffect, useState } from 'react';
-import { useTranslations } from 'next-intl';
-import { useForm } from 'react-hook-form';
-import { useRouter } from 'next/navigation';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Clock, LoaderIcon } from 'lucide-react';
-import { toast } from 'sonner';
-import { type z } from 'zod';
+import { useEffect, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { useForm } from 'react-hook-form'
+import { useRouter } from 'next/navigation'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Clock, LoaderIcon } from 'lucide-react'
+import { toast } from 'sonner'
+import { type z } from 'zod'
 
-import { Categories, CreateRecipeSchema } from '@/server/schemas';
-import { createRecipe } from '@/server/actions';
-import { GoBack } from '@/components/layout/go-back';
-import { CategorySelector, IngredientSelector } from '@/components/recipes/form';
+import { Categories, CreateRecipeSchema } from '@/server/schemas'
+import { createRecipe } from '@/server/actions'
+import { GoBack } from '@/components/layout'
+import { CategorySelector, IngredientSelector } from '@/components/recipes/form'
 import {
 	Form,
 	FormControl,
@@ -22,14 +22,14 @@ import {
 	FormMessage,
 	Input,
 	Textarea,
-} from '@/ui';
+} from '@/ui'
 
 export default function NewRecipePage() {
-	const t = useTranslations('RecipesPage');
-	const t_toasts = useTranslations('toasts');
-	const router = useRouter();
+	const t = useTranslations('RecipesPage')
+	const t_toasts = useTranslations('toasts')
+	const router = useRouter()
 
-	const [loading, setLoading] = useState<boolean>(false);
+	const [loading, setLoading] = useState<boolean>(false)
 
 	const form = useForm<z.infer<typeof CreateRecipeSchema>>({
 		resolver: zodResolver(CreateRecipeSchema),
@@ -39,9 +39,9 @@ export default function NewRecipePage() {
 			time: undefined,
 			instructions: '',
 		},
-	});
+	})
 
-	const [ingredients, setIngredients] = useState<string[]>([]);
+	const [ingredients, setIngredients] = useState<string[]>([])
 
 	/**
 	 * onSubmit form handler
@@ -49,36 +49,36 @@ export default function NewRecipePage() {
 	 */
 	const onSubmit = async (values: z.infer<typeof CreateRecipeSchema>) => {
 		try {
-			setLoading(true);
-			const { error, message } = await createRecipe(values);
+			setLoading(true)
+			const { error, message } = await createRecipe(values)
 			if (error) {
 				/* @ts-expect-error: Unnecessary message type */
-				toast.error(t_toasts(message || 'error'));
-				return;
+				toast.error(t_toasts(message || 'error'))
+				return
 			}
 
-			toast.success(t_toasts('recipe-created'));
-			form.reset();
-			setIngredients([]);
-			router.replace('/');
+			toast.success(t_toasts('recipe-created'))
+			form.reset()
+			setIngredients([])
+			router.replace('/')
 		} catch (error) {
-			toast.error(t_toasts('error'));
+			toast.error(t_toasts('error'))
 		} finally {
-			setLoading(false);
+			setLoading(false)
 		}
-	};
+	}
 
 	useEffect(() => {
 		if (ingredients.length > 0)
-			form.setValue('ingredients', ingredients as [string, ...string[]]);
-	}, [ingredients, form]);
+			form.setValue('ingredients', ingredients as [string, ...string[]])
+	}, [ingredients, form])
 
 	function checkKeyDown(event: React.KeyboardEvent<HTMLFormElement>) {
-		if (event.key === 'Enter') event.preventDefault();
+		if (event.key === 'Enter') event.preventDefault()
 	}
 
 	return (
-		<div className='flex flex-col pt-2 my-2 text-neutral-700 w-full z-0'>
+		<div className='flex flex-col pt-2 my-2 text-forest-400 w-full z-0'>
 			<GoBack text={'recipes'} />
 			<Form {...form}>
 				<form
@@ -94,7 +94,7 @@ export default function NewRecipePage() {
 									<Input
 										{...field}
 										autoComplete='off'
-										className='rounded-2xl border-2 text-center py-5 bg-forest-200/15'
+										className='rounded border-2 text-center py-5 bg-forest-200/15'
 										placeholder={t('recipe-name')}
 										disabled={loading}
 									/>
@@ -130,11 +130,11 @@ export default function NewRecipePage() {
 						render={() => (
 							<FormItem className='my-5'>
 								<FormControl>
-									<div className='flex my-5 bg-forest-200/15 rounded-2xl overflow-hidden shadow-sm'>
+									<div className='flex my-5 bg-forest-200/15 rounded overflow-hidden shadow-sm'>
 										<div className='bg-forest-200 p-2 flex items-center justify-center'>
 											<Clock color='#fff' size={24} />
 										</div>
-										<div className='flex px-5 w-full items-center rounded-r-2xl justify-between border-2 border-forest-200/15'>
+										<div className='flex px-5 w-full items-center rounded-r justify-between border-2 border-forest-200/15'>
 											<span className='font-semibold text-forest-200/75'>
 												{t('time')}
 											</span>
@@ -169,7 +169,7 @@ export default function NewRecipePage() {
 																	)}
 																	autoComplete='off'
 																	type='number'
-																	className='rounded-2xl border-none shadow-none focus-visible:ring-0 text-right'
+																	className='rounded border-none shadow-none focus-visible:ring-0 text-right'
 																	placeholder={t(
 																		'minutes'
 																	)}
@@ -179,7 +179,7 @@ export default function NewRecipePage() {
 																/>
 															</FormControl>
 														</FormItem>
-													);
+													)
 												}}
 											/>
 										</div>
@@ -213,7 +213,7 @@ export default function NewRecipePage() {
 									<Textarea
 										{...field}
 										onKeyDown={(e) => e.stopPropagation()}
-										className='rounded-2xl border-2 bg-forest-200/15'
+										className='rounded border-2 bg-forest-200/15 text-forest-400 placeholder:text-forest-200'
 										placeholder={t('instructions-add')}
 										disabled={loading}
 									/>
@@ -226,7 +226,7 @@ export default function NewRecipePage() {
 						<button
 							type='submit'
 							disabled={loading}
-							className='bg-forest-200 p-2 px-5 rounded-2xl shadow text-white'>
+							className='bg-forest-200 p-2 px-5 rounded shadow text-white'>
 							<div className='flex items-center space-x-3'>
 								{loading && (
 									<LoaderIcon size={16} className='animate-spin' />
@@ -240,5 +240,5 @@ export default function NewRecipePage() {
 				</form>
 			</Form>
 		</div>
-	);
+	)
 }
