@@ -65,7 +65,6 @@ export const EditRecipe = (props: EditRecipeProps) => {
 				values
 			)
 			if (error) {
-				/* @ts-expect-error: Unnecessary message type */
 				toast.error(t_toasts(message || 'error'))
 				return
 			}

@@ -40,7 +40,6 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 
 	const tCategory = (category?: string) => {
 		if (!category) return ''
-		// @ts-expect-error: Unnecessary message type
 		return t_categories(category.toLowerCase())
 	}
 

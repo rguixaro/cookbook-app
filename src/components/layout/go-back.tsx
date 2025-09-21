@@ -44,7 +44,6 @@ export const GoBack = ({ to = '/', text = 'return', children }: GoBackProps) => 
 						className='translate-x-0 group-hover:-translate-x-1 transition-all duration-300 ease-in-out'
 					/>
 				</svg>
-				{/* @ts-expect-error: Unnecessary message type */}
 				{t(text)}
 			</Link>
 			{children}
