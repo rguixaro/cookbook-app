@@ -46,18 +46,20 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 		resolver: zodResolver(UpdateProfileSchema),
 		defaultValues: {
 			name: props.name,
-			email: props.email,
 			isPrivate: props.isPrivate,
 		},
 	})
+
+	const watchedName = hookForm.watch('name')
+	const watchedIsPrivate = hookForm.watch('isPrivate')
 
 	const onSubmit = async (values: z.infer<typeof UpdateProfileSchema>) => {
 		try {
 			setLoading(true)
 			await updateProfile(values)
-			toast.success('Profile updated successfully.')
-		} catch (error) {
-			toast.error('An unexpected error has occurred. Please try again later.')
+			toast.success(t_toasts('profile-updated'))
+		} catch {
+			toast.error(t_toasts('error'))
 		} finally {
 			setLoading(false)
 		}
@@ -68,11 +70,8 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			.then(() => {
 				toast.success(t_toasts('account-link-copied'))
 			})
-			.catch((error) => {
-				toast.error(
-					'An unexpected error has occurred. Please try again later.',
-					{ description: error }
-				)
+			.catch(() => {
+				toast.error(t_toasts('error'))
 			})
 	}
 
@@ -156,31 +155,20 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							</FormItem>
 						)}
 					/>
-					<FormField
-						control={hookForm.control}
-						name='email'
-						render={({ field }) => (
-							<FormItem>
-								<FormLabel className='font-semibold'>
-									{t('email')}
-								</FormLabel>
-								<FormControl>
-									<Input
-										placeholder={t('email')}
-										{...field}
-										disabled
-									/>
-								</FormControl>
-								<FormDescription className='flex items-center gap-2 pl-1 text-forest-400'>
-									<AlertTriangleIcon size={24} />
-									<span>{t('email-hint')}</span>
-								</FormDescription>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
+					<FormItem>
+						<FormLabel className='font-semibold'>{t('email')}</FormLabel>
+						<Input
+							placeholder={t('email')}
+							value={props.email}
+							disabled
+						/>
+						<FormDescription className='flex items-center gap-2 pl-1 text-forest-400'>
+							<AlertTriangleIcon size={24} />
+							<span>{t('email-hint')}</span>
+						</FormDescription>
+					</FormItem>
 					<DeleteAccount
-						email={props.email!}
+						email={props.email}
 						trigger={
 							<Button
 								variant='destructive'
@@ -198,9 +186,8 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							className='w-full'
 							disabled={
 								loading ||
-								(hookForm.getValues().name === props.name &&
-									hookForm.getValues().isPrivate ===
-										props.isPrivate)
+								(watchedName === props.name &&
+									watchedIsPrivate === props.isPrivate)
 							}>
 							{loading ? (
 								<LoaderIcon size={16} className='animate-spin' />

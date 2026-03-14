@@ -26,7 +26,6 @@ import {
 import { Recipe } from '@/types'
 
 interface EditRecipeProps {
-	userId: string
 	recipe: Recipe
 }
 
@@ -49,7 +48,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	})
 
 	const [ingredients, setIngredients] = useState<string[]>(
-		form.getValues('ingredients') || []
+		form.getValues('ingredients') || [],
 	)
 
 	/**
@@ -59,11 +58,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	const onSubmit = async (values: z.infer<typeof CreateRecipeSchema>) => {
 		try {
 			setLoading(true)
-			const { error, message } = await updateRecipe(
-				props.recipe.id,
-				props.userId,
-				values
-			)
+			const { error, message } = await updateRecipe(props.recipe.id, values)
 			if (error) {
 				toast.error(t_toasts(message || 'error'))
 				return
@@ -131,7 +126,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 										setValue={(value) =>
 											form.setValue(
 												'category',
-												value as Categories
+												value as Categories,
 											)
 										}
 									/>
@@ -172,22 +167,22 @@ export const EditRecipe = (props: EditRecipeProps) => {
 																		{
 																			setValueAs:
 																				(
-																					v
+																					v,
 																				) =>
 																					v ===
 																					''
 																						? undefined
 																						: parseInt(
 																								v,
-																								10
+																								10,
 																							),
-																		}
+																		},
 																	)}
 																	autoComplete='off'
 																	type='number'
 																	className='rounded border-none shadow-none focus-visible:ring-0 text-right'
 																	placeholder={t(
-																		'minutes'
+																		'minutes',
 																	)}
 																	disabled={
 																		loading

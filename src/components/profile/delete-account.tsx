@@ -87,7 +87,7 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 								disabled={loading || confirmEmail !== props.email}
 								type='submit'
 								variant='destructive'>
-								{loading ?? (
+								{loading && (
 									<LoaderIcon size={16} className='animate-spin' />
 								)}
 								<span>{loading ? t('deleting') : t('delete')}</span>

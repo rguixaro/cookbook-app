@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import { useState, type ReactNode } from 'react';
-import { useTranslations } from 'next-intl';
-import { toast } from 'sonner';
+import { useState, type ReactNode } from 'react'
+import { useTranslations } from 'next-intl'
+import { toast } from 'sonner'
 
-import { handleSignOut } from '@/server/actions';
+import { handleSignOut } from '@/server/actions'
 import {
 	Dialog,
 	DialogContent,
@@ -14,25 +14,26 @@ import {
 	DialogTrigger,
 	Button,
 	DialogFooter,
-} from '@/ui';
-import { DialogClose } from '@radix-ui/react-dialog';
-import { LoaderIcon } from 'lucide-react';
+} from '@/ui'
+import { DialogClose } from '@radix-ui/react-dialog'
+import { LoaderIcon } from 'lucide-react'
 
 interface LogoutAccountProps {
-	trigger: ReactNode;
+	trigger: ReactNode
 }
 
 export const LogoutAccount = (props: LogoutAccountProps) => {
-	const t = useTranslations('ProfilePage');
+	const t = useTranslations('ProfilePage')
 
-	const [loading, setLoading] = useState<boolean>(false);
+	const [loading, setLoading] = useState<boolean>(false)
 
 	async function handleLogoutAccount() {
-		setLoading(true);
+		setLoading(true)
 		toast.promise(handleSignOut, {
 			loading: t('account-logout-logging-out'),
-			error: t('account-logout-logged-out'),
-		});
+			success: t('account-logout-logged-out'),
+			error: t('account-logout-error'),
+		})
 	}
 
 	return (
@@ -56,7 +57,7 @@ export const LogoutAccount = (props: LogoutAccountProps) => {
 						disabled={loading}
 						onClick={handleLogoutAccount}
 						variant='destructive'>
-						{loading ?? (
+						{loading && (
 							<LoaderIcon size={16} className='animate-spin' />
 						)}
 						<span>{t('account-logout')}</span>
@@ -64,5 +65,5 @@ export const LogoutAccount = (props: LogoutAccountProps) => {
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
-	);
-};
+	)
+}

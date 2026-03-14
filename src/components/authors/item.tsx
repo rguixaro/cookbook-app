@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import Image from 'next/image'
+
 import { useTranslations } from 'next-intl'
 import { motion, Variants } from 'framer-motion'
 
@@ -24,7 +24,7 @@ export function ItemAuthor({
 	author: AuthorSchema
 	query?: string
 }) {
-	const t = useTranslations('RecipesPage')
+	const t = useTranslations('AuthorsPage')
 
 	const queryParams = query ? `?query=${query}` : ''
 
@@ -39,14 +39,14 @@ export function ItemAuthor({
 					className={cn(
 						'w-full py-3 px-4 flex flex-col items-start',
 						'bg-forest-200/15 border-2 border-forest-200/20 rounded-lg',
-						'transition-all duration-300 hover:bg-forest-200/25'
+						'transition-all duration-300 hover:bg-forest-200/25',
 					)}>
 					<span className='text-base md:text-lg text-forest-200 font-bold'>
 						{author.name}
 					</span>
 					<span className='text-sm text-forest-300 mt-1'>
 						{author.recipesCount}{' '}
-						{author.recipesCount === 1 ? 'recipe' : 'recipes'}
+						{author.recipesCount === 1 ? t('recipe') : t('recipes')}
 					</span>
 				</div>
 			</motion.div>
