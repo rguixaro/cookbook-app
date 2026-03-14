@@ -23,8 +23,8 @@ export const SavedStatus = ({
 			if (error) throw new Error()
 			toast.success(t(isRecipeSaved ? 'recipe-deleted' : 'recipe-saved'))
 			setIsSaved((prev) => !prev)
-		} catch (error) {
-			toast.success(t('error'))
+		} catch {
+			toast.error(t('error'))
 		}
 	}
 
