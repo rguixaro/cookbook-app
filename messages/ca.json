@@ -17,7 +17,9 @@
 		"recipe-link-copied": "Enllaç de la recepta copiat al porta-retalls.",
 		"account-link-copied": "Enllaç del perfil copiat al porta-retalls.",
 		"error": "S'ha produït un error.",
-		"error-recipe-exists": "Ja existeix una recepta amb aquest nom."
+		"error-recipe-exists": "Ja existeix una recepta amb aquest nom.",
+		"profile-updated": "Perfil actualitzat amb èxit.",
+		"error-recipe-name-invalid": "El nom de la recepta ha de contenir lletres o números."
 	},
 	"errors": {
 		"recipe-name-too-short": "El nom de la recepta és massa curt.",
@@ -70,7 +72,7 @@
 	"ProfilePage": {
 		"title": "Perfil",
 		"description": "Aquí pots veure i modificar la teva informació personal.",
-		"private": "Perfil private",
+		"private": "Perfil privat",
 		"private-description": "Activa aquesta opció per fer que el teu perfil i les teves receptes siguin visibles només per a tu.",
 		"name": "Nom",
 		"email": "Correu electrònic",
@@ -98,6 +100,8 @@
 	"AuthorsPage": {
 		"search": "Cerca",
 		"searching": "Buscant autors...",
-		"not-found": "Autor no trobat"
+		"not-found": "Autor no trobat",
+		"recipe": "recepta",
+		"recipes": "receptes"
 	}
 }

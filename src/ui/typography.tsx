@@ -11,7 +11,7 @@ export const TypographyH1 = forwardRef<
 			ref={ref}
 			className={cn(
 				'mt-6 text-4xl font-bold tracking-tight lg:text-5xl',
-				className
+				className,
 			)}
 			{...props}
 		/>
@@ -29,7 +29,7 @@ export const TypographyH2 = forwardRef<
 			ref={ref}
 			className={cn(
 				'mt-6 text-4xl font-bold tracking-tight lg:text-5xl xl:text-6xl',
-				className
+				className,
 			)}
 			{...props}
 		/>
@@ -47,7 +47,7 @@ export const TypographyH3 = forwardRef<
 			ref={ref}
 			className={cn(
 				'my-6 text-3xl font-semibold tracking-tight lg:text-4xl',
-				className
+				className,
 			)}
 			{...props}
 		/>
@@ -65,7 +65,7 @@ export const TypographyH4 = forwardRef<
 			ref={ref}
 			className={cn(
 				'my-2 text-2xl font-extrabold tracking-tight lg:text-3xl',
-				className
+				className,
 			)}
 			{...props}
 		/>
@@ -79,11 +79,11 @@ export const TypographyH5 = forwardRef<
 	React.ComponentPropsWithoutRef<'h5'>
 >(({ className, ...props }, ref) => {
 	return (
-		<h4
+		<h5
 			ref={ref}
 			className={cn(
 				'my-2 text-lg font-semibold tracking-tight lg:text-xl',
-				className
+				className,
 			)}
 			{...props}
 		/>
@@ -101,7 +101,7 @@ export const TypographyP = forwardRef<
 			ref={ref}
 			className={cn(
 				'text-pretty leading-7 [&:not(:first-child)]:mt-4',
-				className
+				className,
 			)}
 			{...props}
 		/>

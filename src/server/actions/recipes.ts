@@ -2,28 +2,11 @@
 
 import { Prisma } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
-import type { z } from 'zod'
 
 import { auth } from '@/auth'
 import { db } from '@/server/db'
-import type { CreateRecipeSchema } from '@/server/schemas'
+import { CreateRecipeSchema } from '@/server/schemas'
 import { formatLongSentence, slugify } from '@/server/utils'
-import { Recipe } from '@/types'
-
-/**
- * Get single recipe data.
- * Auth required.
- * @param id {string}
- * @returns Promise<Recipe | null>
- */
-export const getSingleRecipe = async (id: string): Promise<Recipe | null> => {
-	const currentUser = await auth()
-
-	/** Not authenticated */
-	if (!currentUser) return null
-
-	return await db.recipe.findUnique({ where: { id } })
-}
 
 interface createRecipeResult {
 	error: boolean
@@ -36,22 +19,30 @@ interface createRecipeResult {
  * @param values {z.infer<typeof CreateRecipeSchema>}
  * @returns Promise<createRecipeResult>
  */
-export const createRecipe = async (
-	values: z.infer<typeof CreateRecipeSchema>
-): Promise<createRecipeResult> => {
+export const createRecipe = async (values: unknown): Promise<createRecipeResult> => {
 	const currentUser = await auth()
 
 	/** Not authenticated */
-	if (!currentUser)
-		return { error: true, message: 'Not authenticated. Please login again.' }
+	if (!currentUser) return { error: true, message: 'error' }
+
+	const parsed = CreateRecipeSchema.safeParse(values)
+	if (!parsed.success) return { error: true, message: 'error' }
+
+	const { name, category, time, ingredients, instructions } = parsed.data
+
+	const slug = slugify(name)
+	if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
 
 	try {
 		await db.recipe.create({
 			data: {
-				...values,
-				authorId: currentUser.user?.id,
-				slug: slugify(values.name),
-				instructions: formatLongSentence(values.instructions),
+				name,
+				category,
+				time,
+				ingredients,
+				instructions: formatLongSentence(instructions),
+				authorId: currentUser.user.id,
+				slug,
 			},
 		})
 	} catch (e) {
@@ -72,34 +63,43 @@ export const createRecipe = async (
 /**
  * Update an existing recipe.
  * Auth required.
+ * @param id Recipe id
  * @param values {z.infer<typeof CreateRecipeSchema>}
  * @returns Promise<createRecipeResult>
  */
 export const updateRecipe = async (
 	id: string,
-	userId: string,
-	values: z.infer<typeof CreateRecipeSchema>
+	values: unknown,
 ): Promise<createRecipeResult> => {
 	const currentUser = await auth()
 
 	/** Not authenticated */
-	if (!currentUser)
-		return { error: true, message: 'Not authenticated. Please login again.' }
+	if (!currentUser) return { error: true, message: 'error' }
+
+	const parsed = CreateRecipeSchema.safeParse(values)
+	if (!parsed.success) return { error: true, message: 'error' }
+
+	const { name, category, time, ingredients, instructions } = parsed.data
+
+	const slug = slugify(name)
+	if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
 
 	try {
-		// The recipe belongs to the user
 		const recipe = await db.recipe.findFirst({
-			where: { id, authorId: userId },
+			where: { id, authorId: currentUser.user.id },
 		})
 
-		if (!recipe) return { error: true, message: 'Recipe not found.' }
+		if (!recipe) return { error: true, message: 'error' }
 
 		await db.recipe.update({
 			where: { id },
 			data: {
-				...values,
-				slug: slugify(values.name),
-				instructions: formatLongSentence(values.instructions),
+				name,
+				category,
+				time,
+				ingredients,
+				instructions: formatLongSentence(instructions),
+				slug,
 			},
 		})
 	} catch (e) {
@@ -122,32 +122,60 @@ export const updateRecipe = async (
  * Auth required.
  * @param id {string}
  * @param isSaved {boolean} - true if recipe is saved, false if unsaved
- * @returns Promise<{ error: boolean; message?: string }>
+ * @returns Promise<{ error: boolean }>
  */
 export const saveRecipe = async (
 	id: string,
-	isSaved: boolean
+	isSaved: boolean,
 ): Promise<{ error: boolean }> => {
 	const currentUser = await auth()
 
 	/** Not authenticated */
 	if (!currentUser) return { error: true }
-	if (isSaved)
-		await db.user.update({
-			where: { id: currentUser.user?.id },
-			data: {
-				savedRecipes: {
-					set: currentUser.user?.savedRecipes.filter((r) => r !== id),
-				},
-			},
-		})
-	else
-		await db.user.update({
-			where: { id: currentUser.user?.id },
-			data: { savedRecipes: { push: id } },
-		})
 
-	return { error: false }
+	try {
+		/** Validate that the recipe exists */
+		const recipe = await db.recipe.findUnique({ where: { id } })
+		if (!recipe) return { error: true }
+
+		const userId = currentUser.user.id
+
+		if (isSaved) {
+			/** Unsave: remove from savedRecipes */
+			const user = await db.user.findUnique({
+				where: { id: userId },
+				select: { savedRecipes: true },
+			})
+			if (!user) return { error: true }
+
+			await db.user.update({
+				where: { id: userId },
+				data: {
+					savedRecipes: {
+						set: user.savedRecipes.filter((r) => r !== id),
+					},
+				},
+			})
+		} else {
+			/** Save: add to savedRecipes if not already present */
+			const user = await db.user.findUnique({
+				where: { id: userId },
+				select: { savedRecipes: true },
+			})
+			if (!user) return { error: true }
+
+			if (!user.savedRecipes.includes(id)) {
+				await db.user.update({
+					where: { id: userId },
+					data: { savedRecipes: { push: id } },
+				})
+			}
+		}
+
+		return { error: false }
+	} catch {
+		return { error: true }
+	}
 }
 
 /**
@@ -162,9 +190,15 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 	/** Not authenticated */
 	if (!currentUser) return { error: true }
 
-	await db.recipe.delete({ where: { id: id, authorId: currentUser.user?.id } })
+	try {
+		await db.recipe.delete({
+			where: { id, authorId: currentUser.user.id },
+		})
 
-	revalidatePath('/recipes')
+		revalidatePath('/recipes')
 
-	return { error: false }
+		return { error: false }
+	} catch {
+		return { error: true }
+	}
 }
