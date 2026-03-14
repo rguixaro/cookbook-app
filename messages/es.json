@@ -17,7 +17,9 @@
 		"recipe-link-copied": "Enlace de la receta copiado al portapapeles.",
 		"account-link-copied": "Enlace del perfil copiado al portapapeles.",
 		"error": "Se ha producido un error.",
-		"error-recipe-exists": "Ya existe una receta con este nombre."
+		"error-recipe-exists": "Ya existe una receta con este nombre.",
+		"profile-updated": "Perfil actualizado con éxito.",
+		"error-recipe-name-invalid": "El nombre de la receta debe contener letras o números."
 	},
 	"errors": {
 		"recipe-name-too-short": "El nombre de la receta es demasiado corto.",
@@ -98,6 +100,8 @@
 	"AuthorsPage": {
 		"search": "Buscar",
 		"searching": "Buscando autores...",
-		"not-found": "Autor no encontrado"
+		"not-found": "Autor no encontrado",
+		"recipe": "receta",
+		"recipes": "recetas"
 	}
 }

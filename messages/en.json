@@ -17,7 +17,9 @@
 		"recipe-link-copied": "Recipe link copied to clipboard.",
 		"account-link-copied": "Profile link copied to clipboard.",
 		"error": "An error occurred.",
-		"error-recipe-exists": "A recipe with this name already exists."
+		"error-recipe-exists": "A recipe with this name already exists.",
+		"profile-updated": "Profile updated successfully.",
+		"error-recipe-name-invalid": "Recipe name must contain letters or numbers."
 	},
 	"errors": {
 		"recipe-name-too-short": "Recipe name is too short.",
@@ -76,7 +78,7 @@
 		"email": "Email",
 		"email-hint": "Email address is managed by your OAuth provider.",
 		"email-unmatched": "The email address does not match.",
-		"cancel": "Cancelar",
+		"cancel": "Cancel",
 		"save": "Save",
 		"saving": "Saving...",
 		"delete": "Delete",
@@ -85,7 +87,7 @@
 		"account-delete": "Delete account",
 		"account-delete-attention": "This action cannot be undone.",
 		"account-delete-text": "This will permanently delete your account and all your recipes.",
-		"account-delete-prompt": "To confirm, please typo your email address:",
+		"account-delete-prompt": "To confirm, please type your email address:",
 		"account-deleting": "Your account is being deleted...",
 		"account-deleted": "Your account has been deleted.",
 		"account-delete-error": "An error occurred while deleting your account.",
@@ -98,6 +100,8 @@
 	"AuthorsPage": {
 		"search": "Search",
 		"searching": "Searching authors...",
-		"not-found": "Author not found"
+		"not-found": "Author not found",
+		"recipe": "recipe",
+		"recipes": "recipes"
 	}
 }
