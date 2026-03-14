@@ -2,14 +2,7 @@
  * Routes used for authentication.
  * Auth not required.
  */
-export const AUTH_ROUTES: string[] = [
-	'/auth',
-	'/register',
-	'/auth-error',
-	'/verify',
-	'/reset',
-	'/new-password',
-]
+export const AUTH_ROUTES: string[] = ['/auth', '/auth/error']
 
 /**
  * Routes that require authentication.
@@ -28,6 +21,12 @@ export const PROTECTED_ROUTES: string[] = [
  * Auth required.
  */
 export const RECIPES_ROUTE_PREFIX: string = '/recipes/'
+
+/**
+ * Authors routes prefix.
+ * Auth required.
+ */
+export const AUTHORS_ROUTE_PREFIX: string = '/authors/'
 
 /**
  * API Authentication routes prefix.

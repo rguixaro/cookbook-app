@@ -14,10 +14,9 @@
 		"jsx": "preserve",
 		"incremental": true,
 		"plugins": [{ "name": "next" }],
-		"baseUrl": ".",
 		"paths": {
 			"@/*": ["./src/*"],
-			"auth": ["src/auth.config.ts"]
+			"auth": ["./src/auth.config.ts"]
 		}
 	},
 	"include": [

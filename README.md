@@ -1,7 +1,5 @@
 # Cookbook
 
-Cookbook webpage
-
 ## Introduction
 
 [**CookBook**](https://cookbook.rguixaro.dev) is a service that offers a way to write
