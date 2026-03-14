@@ -5,6 +5,26 @@ import { db } from '@/server/db'
 import { RecipeSchema } from '../schemas'
 
 /**
+ * Get saved recipe IDs for the current user.
+ * Auth required.
+ * @returns Promise<string[]>
+ */
+export const getSavedRecipeIds = cache(async (): Promise<string[]> => {
+	const currentUser = await auth()
+	if (!currentUser) return []
+
+	try {
+		const user = await db.user.findUnique({
+			where: { id: currentUser.user.id },
+			select: { savedRecipes: true },
+		})
+		return user?.savedRecipes ?? []
+	} catch {
+		return []
+	}
+})
+
+/**
  * Get recipes by userId.
  * Auth required.
  * @returns Promise<{ recipes: Recipe[] } | null>
@@ -20,10 +40,14 @@ export const getRecipesByUserId = cache(async (userId?: string) => {
 	try {
 		let savedRecipes: RecipeSchema[] = []
 		const recipes = await db.recipe.findMany({ where: { authorId } })
-		if (!userId && currentUser.user.savedRecipes.length)
-			savedRecipes = await db.recipe.findMany({
-				where: { id: { in: currentUser.user.savedRecipes } },
-			})
+
+		if (!userId) {
+			const savedIds = await getSavedRecipeIds()
+			if (savedIds.length)
+				savedRecipes = await db.recipe.findMany({
+					where: { id: { in: savedIds } },
+				})
+		}
 
 		return { recipes: [...recipes, ...savedRecipes] }
 	} catch (error) {
@@ -51,7 +75,7 @@ export const getRecipeByAuthAndSlug = cache(
 		} catch (error) {
 			throw error
 		}
-	}
+	},
 )
 
 /**
@@ -62,7 +86,7 @@ export const getRecipeByAuthAndSlug = cache(
  */
 export const getProfileByUserId = cache(
 	async (
-		userId: string
+		userId: string,
 	): Promise<{
 		profile: { name: string; image: string } | null
 	}> => {
@@ -77,10 +101,10 @@ export const getProfileByUserId = cache(
 				select: { image: true, name: true },
 			})
 			return { profile }
-		} catch (error) {
+		} catch {
 			return { profile: null }
 		}
-	}
+	},
 )
 
 /**
@@ -130,7 +154,7 @@ export const getAuthorsByName = cache(async (name: string) => {
 		}))
 
 		return { authors: mappedAuthors }
-	} catch (error) {
+	} catch {
 		return null
 	}
 })

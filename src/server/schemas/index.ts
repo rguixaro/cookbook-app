@@ -47,7 +47,6 @@ export const UpdateProfileSchema = z.object({
 	name: z.string().min(1, { message: 'username-required' }).max(40, {
 		message: 'username-too-long',
 	}),
-	email: z.string().email({ message: 'email-invalid' }),
 	isPrivate: z.boolean().optional(),
 })
 

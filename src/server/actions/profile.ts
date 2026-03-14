@@ -1,11 +1,10 @@
-'use server';
+'use server'
 
-import { revalidatePath } from 'next/cache';
-import type { z } from 'zod';
+import { revalidatePath } from 'next/cache'
 
-import { auth, signOut } from '@/auth';
-import { db } from '@/server/db';
-import type { UpdateProfileSchema } from '@/server/schemas';
+import { auth, signOut } from '@/auth'
+import { db } from '@/server/db'
+import { UpdateProfileSchema } from '@/server/schemas'
 
 /**
  * Update Profile.
@@ -13,24 +12,29 @@ import type { UpdateProfileSchema } from '@/server/schemas';
  * @param values {z.infer<typeof UpdateProfileSchema>}
  * @returns Promise<void | null>
  */
-export const updateProfile = async (
-	values: z.infer<typeof UpdateProfileSchema>
-): Promise<void | null> => {
-	const currentUser = await auth();
+export const updateProfile = async (values: unknown): Promise<void | null> => {
+	const currentUser = await auth()
 
 	/** Not authenticated */
-	if (!currentUser) return null;
+	if (!currentUser) return null
 
-	await db.user.update({
-		where: { id: currentUser.user.id },
-		data: { ...values },
-	});
+	const parsed = UpdateProfileSchema.safeParse(values)
+	if (!parsed.success) return null
 
-	revalidatePath('/');
-	revalidatePath('/profile');
+	const { name, isPrivate } = parsed.data
 
-	return;
-};
+	try {
+		await db.user.update({
+			where: { id: currentUser.user.id },
+			data: { name, isPrivate },
+		})
+
+		revalidatePath('/')
+		revalidatePath('/profile')
+	} catch {
+		return null
+	}
+}
 
 /**
  * Delete Profile.
@@ -38,13 +42,16 @@ export const updateProfile = async (
  * @returns Promise<null | true>
  */
 export const deleteProfile = async (): Promise<null | true> => {
-	const currentUser = await auth();
+	const currentUser = await auth()
 
 	/** Not authenticated */
-	if (!currentUser) return null;
+	if (!currentUser) return null
 
-	await db.user.delete({ where: { id: currentUser.user.id } });
-	await signOut();
-
-	return true;
-};
+	try {
+		await db.user.delete({ where: { id: currentUser.user.id } })
+		await signOut()
+		return true
+	} catch {
+		return null
+	}
+}
