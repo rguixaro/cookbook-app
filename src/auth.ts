@@ -4,7 +4,7 @@ import NextAuth from 'next-auth'
 
 import AuthConfig from '@/auth.config'
 import { db } from '@/server/db'
-import { getUserById, getAccountByUserId } from '@/server/utils'
+import { getUserById } from '@/server/utils'
 import { env } from './env.mjs'
 
 const { AUTH_SECRET } = env
@@ -34,8 +34,6 @@ export const {
 			if (session.user) {
 				session.user.name = token.name
 				session.user.email = token.email!
-				session.user.isOAuth = token.isOAuth as boolean
-				session.user.savedRecipes = token.savedRecipes as string[]
 				session.user.isPrivate = token.isPrivate as boolean
 			}
 
@@ -46,12 +44,9 @@ export const {
 			const existingUser = await getUserById(token.sub)
 
 			if (!existingUser) return token
-			const existingAccount = await getAccountByUserId(existingUser.id)
 
-			token.isOAuth = !!existingAccount
 			token.name = existingUser.name
 			token.email = existingUser.email
-			token.savedRecipes = existingUser.savedRecipes
 			token.isPrivate = existingUser.isPrivate
 
 			return token
