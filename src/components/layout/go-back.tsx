@@ -19,8 +19,8 @@ export const GoBack = ({ to = '/', text = 'return', children }: GoBackProps) => 
 			<Link
 				href={to}
 				className={cn(
-					'flex w-fit p-1 px-3 rounded-[5px] items-center text-forest-300 font-bold text-sm md:text-base',
-					'transition-all duration-300 hover:bg-forest-200/15 group'
+					'flex w-fit p-1 px-3 rounded-xl items-center text-forest-300 font-bold text-sm md:text-base',
+					'transition-all duration-300 hover:bg-forest-200/15 group',
 				)}>
 				<svg
 					xmlns='http://www.w3.org/2000/svg'

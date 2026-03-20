@@ -10,10 +10,10 @@ export const AddRecipe = ({ className }: { className?: string }) => {
 		<Link
 			href='/recipes/new'
 			className={cn(
-				'bg-forest-200 py-3 px-5 rounded shadow text-white',
-				className
+				'bg-forest-200 py-3 px-5 rounded-2xl shadow text-white',
+				className,
 			)}>
-			<span className='text-base md:text-lg font-bold'>{t('add')}</span>
+			<span className='text-base font-bold'>{t('add')}</span>
 		</Link>
 	)
 }

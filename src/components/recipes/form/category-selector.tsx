@@ -16,7 +16,7 @@ export const CategorySelector = ({ value, setValue }: CategorySelectorProps) => 
 	const t = useTranslations('RecipeCategories')
 
 	return (
-		<div className='flex overflow-x-scroll no-scrollbar py-2 snap-x '>
+		<div className='flex overflow-x-scroll no-scrollbar py-2 snap-x'>
 			{Categories.map((categoryName) => {
 				const isActive = value === categoryName
 				return (
@@ -25,9 +25,9 @@ export const CategorySelector = ({ value, setValue }: CategorySelectorProps) => 
 						onClick={() => setValue(categoryName as Categories)}
 						key={categoryName}
 						className={cn(
-							'relative snap-center flex flex-col min-w-[4.5rem] py-3 mx-1 bg-forest-200/15 rounded items-center justify-center shadow-sm',
+							'relative snap-center flex flex-col min-w-[4.5rem] py-3 mx-1 bg-forest-200/15 rounded-2xl items-center justify-center shadow-sm',
 							'transition-all duration-400 hover:scale-[1.05] border-2 border-forest-200/15',
-							isActive && 'border-forest-200 '
+							isActive && 'border-forest-200 ',
 						)}>
 						<Icon name={categoryName} size={24} />
 						<span className='text-xs text-forest-200/75 pt-3'>
@@ -37,7 +37,7 @@ export const CategorySelector = ({ value, setValue }: CategorySelectorProps) => 
 							className={cn(
 								'absolute -top-1 -right-1 bg-[#fefff2] border-2 border-forest-200 rounded',
 								'transition-opacity duration-300',
-								isActive ? 'opacity-100' : 'opacity-0'
+								isActive ? 'opacity-100' : 'opacity-0',
 							)}>
 							<Check size={14} color={'#789B84'} />
 						</div>

@@ -31,7 +31,7 @@ export const SavedStatus = ({
 	return (
 		<button
 			onClick={() => onSaveRecipe()}
-			className='hover:bg-forest-200/15 p-1 rounded transition-colors duration-300'>
+			className='hover:bg-forest-200/15 p-1 rounded-xl transition-colors duration-300'>
 			<BookmarkIcon filled={isRecipeSaved} />
 		</button>
 	)

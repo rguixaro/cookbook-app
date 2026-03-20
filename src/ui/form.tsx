@@ -26,7 +26,7 @@ type FormFieldContextValue<
 }
 
 const FormFieldContext = React.createContext<FormFieldContextValue>(
-	{} as FormFieldContextValue
+	{} as FormFieldContextValue,
 )
 
 const FormField = <
@@ -69,7 +69,7 @@ type FormItemContextValue = {
 }
 
 const FormItemContext = React.createContext<FormItemContextValue>(
-	{} as FormItemContextValue
+	{} as FormItemContextValue,
 )
 
 const FormItem = React.forwardRef<
@@ -96,8 +96,8 @@ const FormLabel = React.forwardRef<
 		<Label
 			ref={ref}
 			className={cn(
-				'text-base md:text-lg font-bold text-forest-300',
-				className
+				'text-base md:text-lg font-extrabold text-forest-300',
+				className,
 			)}
 			htmlFor={formItemId}
 			{...props}

@@ -65,7 +65,7 @@ export const SearchAuthors = () => {
 					onChange={onChange}
 					id='author-search-input'
 					className={cn(
-						'w-full py-2 pl-10 pr-10 rounded bg-forest-200/15 border-2 border-forest-200 text-forest-300 placeholder-forest-200 focus:outline-none'
+						'w-full py-2 pl-10 pr-10 rounded-2xl bg-forest-200/15 border-2 border-forest-200 text-forest-300 placeholder-forest-200 focus:outline-none',
 					)}
 				/>
 				<button
@@ -75,7 +75,7 @@ export const SearchAuthors = () => {
 						'absolute right-3 top-1/2 -translate-y-1/2 text-forest-300 transition-all duration-200 ease-in-out',
 						value
 							? 'opacity-100 translate-x-0'
-							: 'opacity-0 translate-x-2 pointer-events-none'
+							: 'opacity-0 translate-x-2 pointer-events-none',
 					)}>
 					<X className='w-4 h-4' />
 				</button>
