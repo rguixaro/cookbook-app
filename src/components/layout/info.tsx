@@ -44,18 +44,18 @@ export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
 		initial: {
 			opacity: 1,
 			y: 0,
-			transition: { duration: 0.3, delay: 1, ease: 'easeInOut' },
+			transition: { duration: 0.3, delay: 1, ease: 'easeInOut' as const },
 		},
 		bottom: {
 			opacity: 1,
 			y: 0,
-			transition: { duration: 0.3, ease: 'easeInOut' },
+			transition: { duration: 0.3, ease: 'easeInOut' as const },
 		},
 		middle: {
 			opacity: 1,
 			bottom: 0,
 			y: -middleHeight,
-			transition: { duration: 0.3, ease: 'easeInOut' },
+			transition: { duration: 0.3, ease: 'easeInOut' as const },
 		},
 	}
 
