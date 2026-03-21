@@ -6,7 +6,16 @@ const withNextIntl = createNextIntlPlugin()
 const nextConfig: NextConfig = {
 	pageExtensions: ['ts', 'tsx'],
 	experimental: {
-		optimizePackageImports: ['lucide-react'],
+		optimizePackageImports: [
+			'lucide-react',
+			'framer-motion',
+			'motion',
+			'react-hook-form',
+			'@radix-ui/react-dialog',
+			'@radix-ui/react-label',
+			'@radix-ui/react-slot',
+		],
+		webpackMemoryOptimizations: true,
 	},
 	images: {
 		remotePatterns: [
