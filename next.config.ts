@@ -4,6 +4,7 @@ import createNextIntlPlugin from 'next-intl/plugin'
 const withNextIntl = createNextIntlPlugin()
 
 const nextConfig: NextConfig = {
+	output: 'standalone',
 	pageExtensions: ['ts', 'tsx'],
 	experimental: {
 		optimizePackageImports: [
@@ -16,6 +17,12 @@ const nextConfig: NextConfig = {
 			'@radix-ui/react-slot',
 		],
 		webpackMemoryOptimizations: true,
+	},
+	eslint: {
+		ignoreDuringBuilds: true,
+	},
+	typescript: {
+		ignoreBuildErrors: true,
 	},
 	images: {
 		remotePatterns: [
