@@ -34,10 +34,10 @@ export const AuthorSchema = z.object({
 export const CreateRecipeSchema = z.object({
 	name: z.string().min(3, { message: 'recipe-name-too-short' }),
 	category: z.enum(Categories, {
-		required_error: 'category-required',
+		error: 'category-required',
 	}),
 	time: z
-		.number({ required_error: 'time-invalid' })
+		.number({ error: 'time-invalid' })
 		.min(1, { message: 'time-invalid' }),
 	ingredients: z.array(z.string()).nonempty({ message: 'ingredients-required' }),
 	instructions: z.string().min(10, { message: 'instructions-too-short' }),
