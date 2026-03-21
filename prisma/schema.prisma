@@ -76,6 +76,7 @@ model User {
     password            String?
     isPrivate           Boolean     @default(true)
     savedRecipes        String[]
+    favouriteRecipes    String[]
     accounts            Account[]
     sessions            Session[]
     recipes             Recipe[]
