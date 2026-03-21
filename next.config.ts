@@ -4,25 +4,9 @@ import createNextIntlPlugin from 'next-intl/plugin'
 const withNextIntl = createNextIntlPlugin()
 
 const nextConfig: NextConfig = {
-	output: 'standalone',
 	pageExtensions: ['ts', 'tsx'],
 	experimental: {
-		optimizePackageImports: [
-			'lucide-react',
-			'framer-motion',
-			'motion',
-			'react-hook-form',
-			'@radix-ui/react-dialog',
-			'@radix-ui/react-label',
-			'@radix-ui/react-slot',
-		],
-		webpackMemoryOptimizations: true,
-	},
-	eslint: {
-		ignoreDuringBuilds: true,
-	},
-	typescript: {
-		ignoreBuildErrors: true,
+		optimizePackageImports: ['lucide-react'],
 	},
 	images: {
 		remotePatterns: [
