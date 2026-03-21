@@ -27,8 +27,8 @@ const buttonVariants = cva(
 				destructive:
 					'bg-red-500 text-neutral-50 shadow-sm hover:bg-red-500/90',
 				outline:
-					'bg-forest-200/15 border-2 border-forest-200/15 shadow-sm hover:bg-forest-200/60 text-forest-400 shadow',
-				ghost: 'hover:bg-forest-200/15 hover:text-neutral-900',
+					'bg-forest-200/15 border-2 border-forest-200/15 shadow-sm hover:bg-forest-200/60 text-forest-300 font-bold shadow hover:text-white',
+				ghost: 'hover:bg-forest-200/15',
 			},
 			size: {
 				default: 'h-9 px-4 py-2',
@@ -68,7 +68,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps & ButtonIconProps
 				)}
 				<Slottable>{props.children}</Slottable>
 				{Icon && iconPlacement === 'right' && (
-					<div className='w-0 translate-x-[100%] pl-0 opacity-0 transition-all duration-200 group-hover:w-4 group-hover:translate-x-0 group-hover:pl-1 group-hover:opacity-100'>
+					<div className='w-0 translate-x-full pl-0 opacity-0 transition-all duration-200 group-hover:w-4 group-hover:translate-x-0 group-hover:pl-1 group-hover:opacity-100'>
 						<Icon size={18} />
 					</div>
 				)}
