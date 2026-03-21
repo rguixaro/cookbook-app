@@ -25,7 +25,7 @@ export const CategorySelector = ({ value, setValue }: CategorySelectorProps) => 
 						onClick={() => setValue(categoryName as Categories)}
 						key={categoryName}
 						className={cn(
-							'relative snap-center flex flex-col min-w-[4.5rem] py-3 mx-1 bg-forest-200/15 rounded-2xl items-center justify-center shadow-sm',
+							'relative snap-center flex flex-col min-w-18 py-3 mx-1 bg-forest-200/15 rounded-2xl items-center justify-center shadow-sm',
 							'transition-all duration-400 hover:scale-[1.05] border-2 border-forest-200/15',
 							isActive && 'border-forest-200 ',
 						)}>

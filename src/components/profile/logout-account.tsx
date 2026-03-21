@@ -49,7 +49,7 @@ export const LogoutAccount = (props: LogoutAccountProps) => {
 						<Button
 							variant='ghost'
 							disabled={loading}
-							className='font-bold text-forest-400'>
+							className='font-bold text-forest-400 mt-2'>
 							{t('cancel')}
 						</Button>
 					</DialogClose>

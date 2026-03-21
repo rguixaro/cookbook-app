@@ -8,6 +8,7 @@ import {
 	getRecipeByAuthAndSlug,
 	getProfileByUserId,
 	getSavedRecipeIds,
+	getFavouriteRecipeIds,
 } from '@/server/queries'
 import { GoBack } from '@/components/layout'
 import { SyncAuthorName } from '@/components/profile'
@@ -16,6 +17,7 @@ import {
 	RecipeEdit,
 	RecipeShare,
 	SavedStatus,
+	FavouriteStatus,
 } from '@/components/recipes'
 import { TypographyH4 } from '@/ui'
 import { IconProps, cn } from '@/utils'
@@ -65,6 +67,8 @@ export default async function RecipePage({
 	const isOwner = session.user.id === recipe.authorId
 	const savedIds = await getSavedRecipeIds()
 	const isSaved = savedIds.includes(recipe.id)
+	const favouriteIds = await getFavouriteRecipeIds()
+	const isFavourited = favouriteIds.includes(recipe.id)
 
 	async function getAuthor(): Promise<{
 		name: string
@@ -90,6 +94,7 @@ export default async function RecipePage({
 				<div className='flex space-x-3'>
 					<RecipeShare recipe={recipe} />
 					<RecipeDownload recipe={recipe} author={author} />
+					<FavouriteStatus initial={isFavourited} recipeId={recipe.id} />
 					{!isOwner ? (
 						<SavedStatus initial={isSaved} recipeId={recipe.id} />
 					) : (

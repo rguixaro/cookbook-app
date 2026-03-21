@@ -141,10 +141,10 @@ export const saveRecipe = async (
 		const userId = currentUser.user.id
 
 		if (isSaved) {
-			/** Unsave: remove from savedRecipes */
+			/** Unsave: remove from savedRecipes and favouriteRecipes */
 			const user = await db.user.findUnique({
 				where: { id: userId },
-				select: { savedRecipes: true },
+				select: { savedRecipes: true, favouriteRecipes: true },
 			})
 			if (!user) return { error: true }
 
@@ -153,6 +153,9 @@ export const saveRecipe = async (
 				data: {
 					savedRecipes: {
 						set: user.savedRecipes.filter((r) => r !== id),
+					},
+					favouriteRecipes: {
+						set: user.favouriteRecipes.filter((r) => r !== id),
 					},
 				},
 			})
@@ -168,6 +171,67 @@ export const saveRecipe = async (
 				await db.user.update({
 					where: { id: userId },
 					data: { savedRecipes: { push: id } },
+				})
+			}
+		}
+
+		return { error: false }
+	} catch {
+		return { error: true }
+	}
+}
+
+/**
+ * Favourite or unfavourite recipe.
+ * Auth required.
+ * @param id {string}
+ * @param isFavourited {boolean} - true if recipe is already favourited
+ * @returns Promise<{ error: boolean }>
+ */
+export const favouriteRecipe = async (
+	id: string,
+	isFavourited: boolean,
+): Promise<{ error: boolean }> => {
+	const currentUser = await auth()
+
+	/** Not authenticated */
+	if (!currentUser) return { error: true }
+
+	try {
+		/** Validate that the recipe exists */
+		const recipe = await db.recipe.findUnique({ where: { id } })
+		if (!recipe) return { error: true }
+
+		const userId = currentUser.user.id
+
+		if (isFavourited) {
+			/** Unfavourite: remove from favouriteRecipes */
+			const user = await db.user.findUnique({
+				where: { id: userId },
+				select: { favouriteRecipes: true },
+			})
+			if (!user) return { error: true }
+
+			await db.user.update({
+				where: { id: userId },
+				data: {
+					favouriteRecipes: {
+						set: user.favouriteRecipes.filter((r) => r !== id),
+					},
+				},
+			})
+		} else {
+			/** Favourite: add to favouriteRecipes if not already present */
+			const user = await db.user.findUnique({
+				where: { id: userId },
+				select: { favouriteRecipes: true },
+			})
+			if (!user) return { error: true }
+
+			if (!user.favouriteRecipes.includes(id)) {
+				await db.user.update({
+					where: { id: userId },
+					data: { favouriteRecipes: { push: id } },
 				})
 			}
 		}

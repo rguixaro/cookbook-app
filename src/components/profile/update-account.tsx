@@ -203,9 +203,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 						variant='outline'
 						size='sm'
 						className='mt-4 mb-4 w-fit self-center'>
-						<span className='font-bold text-forest-400'>
-							{t('account-logout')}
-						</span>
+						<span>{t('account-logout')}</span>
 					</Button>
 				}
 			/>
