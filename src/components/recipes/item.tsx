@@ -50,26 +50,30 @@ export function ItemRecipe({
 				viewport={{ once: true, amount: 0.01 }}>
 				<div
 					className={cn(
-						'w-full my-2 py-3 px-2 flex flex-col items-start',
-						'bg-forest-200/15 border-4 border-forest-200/15 rounded-lg',
-						'transition-all duration-300 hover:bg-forest-200/15'
+						'w-full my-2 flex flex-col items-start shadow-sm',
+						'bg-forest-200/15 border-4 border-forest-200/15 rounded-2xl',
+						'transition-all duration-300 hover:bg-forest-200/15',
 					)}>
-					<div className='flex items-center justify-between w-full'>
+					<div className='flex items-center justify-between w-full bg-[#fefff2] rounded-xl px-4 py-2 shadow-sm'>
 						<div className='flex items-center'>
 							<Icon name={recipe.category} />
-							<span className='ms-2 text-base md:text-lg text-forest-200 font-bold'>
+							<span className='ms-2 text-base md:text-lg text-forest-200 font-extrabold leading-4'>
 								{recipe.name}
 							</span>
 						</div>
 						{recipe.time && (
-							<div className='flex items-center justify-center'>
-								<Clock {...IconProps} size={14} color='#3D6C5F' />
-								<span className='text-xs md:text-sm text-forest-400 ms-1'>{`${recipe.time}'`}</span>
+							<div className='ms-2 flex items-center justify-center bg-forest-200 px-2 py-1 rounded-xl'>
+								<Clock
+									{...IconProps}
+									size={16}
+									className='stroke-white'
+								/>
+								<span className='text-xs md:text-sm font-bold text-white ms-1'>{`${recipe.time}'`}</span>
 							</div>
 						)}
 					</div>
-					<div className='text-sm md:text-base mt-2'>
-						<span className='font-semibold line-clamp-2 text-forest-300'>
+					<div className='text-sm md:text-base mt-2 px-4 py-2'>
+						<span className='font-bold line-clamp-2 text-forest-300'>
 							{`${t('instructions')}: `}
 							<span className='font-normal text-justify text-forest-400'>
 								{recipe.instructions}

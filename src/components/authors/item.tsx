@@ -38,7 +38,7 @@ export function ItemAuthor({
 				<div
 					className={cn(
 						'w-full py-3 px-4 flex flex-col items-start',
-						'bg-forest-200/15 border-2 border-forest-200/20 rounded-lg',
+						'bg-forest-200/15 border-2 border-forest-200/20 rounded-2xl',
 						'transition-all duration-300 hover:bg-forest-200/25',
 					)}>
 					<span className='text-base md:text-lg text-forest-200 font-bold'>

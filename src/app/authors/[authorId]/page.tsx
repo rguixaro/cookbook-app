@@ -51,7 +51,7 @@ export default async function AuthorPage({
 				<div>
 					<SyncAuthorName name={profile.name} />
 					<div className='flex flex-col items-center justify-center space-y-3 mb-5'>
-						<div className='w-20 h-20 rounded overflow-hidden shadow border-4 border-forest-200'>
+						<div className='w-20 h-20 rounded-2xl overflow-hidden shadow border-4 border-forest-200'>
 							<Image
 								src={profile.image}
 								referrerPolicy='no-referrer'

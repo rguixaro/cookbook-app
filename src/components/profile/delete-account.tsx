@@ -79,7 +79,7 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 								<Button
 									variant='ghost'
 									disabled={loading}
-									className='font-bold'>
+									className='font-bold text-forest-400'>
 									{t('cancel')}
 								</Button>
 							</DialogClose>

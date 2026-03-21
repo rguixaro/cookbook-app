@@ -20,7 +20,7 @@ export const Header = () => {
 	return (
 		<Link
 			href='/'
-			className='flex h-24 w-full bg-[#fefff2] justify-center items-center sticky top-0 cursor-pointer border-b-4 border-forest-300 z-50'>
+			className='flex h-24 w-full justify-center items-center sticky top-0 cursor-pointer bg-transparent rounded-2xl border-b-4 border-forest-200 z-50'>
 			<div className='w-full text-center'>
 				<TypographyH1 className='font-title text-forest-300 pb-5'>
 					{displayName ? (

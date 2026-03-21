@@ -18,7 +18,7 @@ interface IconRefProps {
 export type ButtonIconProps = IconProps | IconRefProps
 
 const buttonVariants = cva(
-	'inline-flex items-center space-x-3 justify-center whitespace-nowrap rounded text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-neutral-500',
+	'inline-flex items-center space-x-3 justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-forest-200/15',
 	{
 		variants: {
 			variant: {
@@ -41,7 +41,7 @@ const buttonVariants = cva(
 			variant: 'default',
 			size: 'default',
 		},
-	}
+	},
 )
 
 export interface ButtonProps
@@ -53,7 +53,7 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps & ButtonIconProps>(
 	(
 		{ className, variant, size, asChild = false, Icon, iconPlacement, ...props },
-		ref
+		ref,
 	) => {
 		const Comp = asChild ? Slot : 'button'
 		return (
@@ -74,7 +74,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps & ButtonIconProps
 				)}
 			</Comp>
 		)
-	}
+	},
 )
 Button.displayName = 'Button'
 

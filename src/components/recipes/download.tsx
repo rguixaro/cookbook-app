@@ -41,6 +41,7 @@ export const RecipeDownload = ({
 				link.click()
 			})
 			.catch((_err) => {
+				console.log(_err)
 				toast.error(t_toasts('error'))
 			})
 	}, [ref, recipe, t_toasts])
@@ -50,7 +51,7 @@ export const RecipeDownload = ({
 	return (
 		<button
 			onClick={onButtonClick}
-			className='hover:bg-forest-200/15 p-1 rounded transition-colors duration-300'>
+			className='hover:bg-forest-200/15 p-1 rounded-xl transition-colors duration-300'>
 			<ArrowDownToLine size={24} className='text-forest-200' />
 			<div className='absolute opacity-0 pointer-events-none w-96'>
 				<div
@@ -68,7 +69,7 @@ export const RecipeDownload = ({
 					</div>
 					<div
 						className={cn(
-							'w-full my-3 p-5 flex flex-col items-center justify-center'
+							'w-full my-3 p-5 flex flex-col items-center justify-center',
 						)}>
 						<TypographyH4 className='text-2xl text-forest-300 font-bold'>
 							{recipe.name}
