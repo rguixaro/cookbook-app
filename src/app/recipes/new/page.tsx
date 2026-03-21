@@ -14,6 +14,7 @@ import { createRecipe } from '@/server/actions'
 import { GoBack } from '@/components/layout'
 import { CategorySelector, IngredientSelector } from '@/components/recipes/form'
 import {
+	Button,
 	Form,
 	FormControl,
 	FormField,
@@ -79,165 +80,170 @@ export default function NewRecipePage() {
 	return (
 		<div className='flex flex-col pt-2 my-2 text-forest-400 w-full z-0'>
 			<GoBack text={'recipes'} />
-			<Form {...form}>
-				<form
-					onSubmit={form.handleSubmit(onSubmit)}
-					onKeyDown={(e) => checkKeyDown(e)}
-					className='w-full mt-2'>
-					<FormField
-						control={form.control}
-						name='name'
-						render={({ field }) => (
-							<FormItem className='text-left mb-2'>
-								<FormControl>
-									<Input
-										{...field}
-										autoComplete='off'
-										className='rounded border-2 text-center py-5 bg-forest-200/15'
-										placeholder={t('recipe-name')}
-										disabled={loading}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name='category'
-						render={() => (
-							<FormItem className='my-5'>
-								<FormLabel>{t('categories')}</FormLabel>
-								<FormControl>
-									<CategorySelector
-										value={form.getValues('category')}
-										setValue={(value) =>
-											form.setValue(
-												'category',
-												value as Categories
-											)
-										}
-									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name='time'
-						render={() => (
-							<FormItem className='my-5'>
-								<FormControl>
-									<div className='flex my-5 bg-forest-200/15 rounded overflow-hidden shadow-sm'>
-										<div className='bg-forest-200 p-2 flex items-center justify-center'>
-											<Clock color='#fff' size={24} />
-										</div>
-										<div className='flex px-5 w-full items-center rounded-r justify-between border-2 border-forest-200/15'>
-											<span className='font-semibold text-forest-200/75'>
-												{t('time')}
-											</span>
-											<FormField
-												control={form.control}
-												name='time'
-												render={({ field }) => {
-													return (
-														<FormItem className='my-2'>
-															<FormControl>
-																<Input
-																	{...field}
-																	value={
-																		field.value ||
-																		''
-																	}
-																	{...form.register(
-																		'time',
-																		{
-																			setValueAs:
-																				(
-																					v
-																				) =>
-																					v ===
-																					''
-																						? undefined
-																						: parseInt(
-																								v,
-																								10
-																							),
+			<div className='flex my-5 w-full flex-col border-4 border-forest-200/15 p-4 rounded-3xl text-forest-400'>
+				<Form {...form}>
+					<form
+						onSubmit={form.handleSubmit(onSubmit)}
+						onKeyDown={(e) => checkKeyDown(e)}
+						className='w-full mt-2'>
+						<FormField
+							control={form.control}
+							name='name'
+							render={({ field }) => (
+								<FormItem className='text-left mb-2'>
+									<FormControl>
+										<Input
+											{...field}
+											autoComplete='off'
+											className='border-2 text-center py-5 bg-forest-200/15'
+											placeholder={t('recipe-name')}
+											disabled={loading}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name='category'
+							render={() => (
+								<FormItem className='my-5'>
+									<FormLabel>{t('categories')}</FormLabel>
+									<FormControl>
+										<CategorySelector
+											value={form.getValues('category')}
+											setValue={(value) =>
+												form.setValue(
+													'category',
+													value as Categories,
+												)
+											}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name='time'
+							render={() => (
+								<FormItem className='my-5'>
+									<FormControl>
+										<div className='flex my-5 bg-forest-200/15 rounded-2xl overflow-hidden shadow-sm'>
+											<div className='bg-forest-200 p-2 flex items-center justify-center'>
+												<Clock color='#fff' size={24} />
+											</div>
+											<div className='flex px-5 w-full items-center rounded-r-2xl justify-between border-2 border-l-0 border-forest-200/15'>
+												<span className='font-bold text-forest-200/75 leading-4'>
+													{t('time')}
+												</span>
+												<FormField
+													control={form.control}
+													name='time'
+													render={({ field }) => {
+														return (
+															<FormItem className='my-2'>
+																<FormControl>
+																	<Input
+																		{...field}
+																		value={
+																			field.value ||
+																			''
 																		}
-																	)}
-																	autoComplete='off'
-																	type='number'
-																	className='rounded border-none shadow-none focus-visible:ring-0 text-right'
-																	placeholder={t(
-																		'minutes'
-																	)}
-																	disabled={
-																		loading
-																	}
-																/>
-															</FormControl>
-														</FormItem>
-													)
-												}}
-											/>
+																		{...form.register(
+																			'time',
+																			{
+																				setValueAs:
+																					(
+																						v,
+																					) =>
+																						v ===
+																						''
+																							? undefined
+																							: parseInt(
+																									v,
+																									10,
+																								),
+																			},
+																		)}
+																		autoComplete='off'
+																		type='number'
+																		className='rounded border-none shadow-none focus-visible:ring-0 text-right'
+																		placeholder={t(
+																			'minutes',
+																		)}
+																		disabled={
+																			loading
+																		}
+																	/>
+																</FormControl>
+															</FormItem>
+														)
+													}}
+												/>
+											</div>
 										</div>
-									</div>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name='ingredients'
-						render={() => (
-							<FormItem className='my-5'>
-								<FormLabel>{t('ingredients')}</FormLabel>
-								<IngredientSelector
-									values={ingredients}
-									setValues={setIngredients}
-								/>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<FormField
-						control={form.control}
-						name='instructions'
-						render={({ field }) => (
-							<FormItem className='my-5'>
-								<FormLabel>{t('instructions')}</FormLabel>
-								<FormControl>
-									<Textarea
-										{...field}
-										onKeyDown={(e) => e.stopPropagation()}
-										className='rounded border-2 bg-forest-200/15 text-forest-400 placeholder:text-forest-200'
-										placeholder={t('instructions-add')}
-										disabled={loading}
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name='ingredients'
+							render={() => (
+								<FormItem className='my-5'>
+									<FormLabel>{t('ingredients')}</FormLabel>
+									<IngredientSelector
+										values={ingredients}
+										setValues={setIngredients}
 									/>
-								</FormControl>
-								<FormMessage />
-							</FormItem>
-						)}
-					/>
-					<div className='w-full flex justify-center mt-5'>
-						<button
-							type='submit'
-							disabled={loading}
-							className='bg-forest-200 p-2 px-5 rounded shadow text-white'>
-							<div className='flex items-center space-x-3'>
-								{loading && (
-									<LoaderIcon size={16} className='animate-spin' />
-								)}
-								<span className='text-base md:text-lg font-bold'>
-									{loading ? t('creating') : t('create')}
-								</span>
-							</div>
-						</button>
-					</div>
-				</form>
-			</Form>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<FormField
+							control={form.control}
+							name='instructions'
+							render={({ field }) => (
+								<FormItem className='my-5'>
+									<FormLabel>{t('instructions')}</FormLabel>
+									<FormControl>
+										<Textarea
+											{...field}
+											onKeyDown={(e) => e.stopPropagation()}
+											className='border-2 bg-forest-200/15 text-forest-400 placeholder:text-forest-200'
+											placeholder={t('instructions-add')}
+											disabled={loading}
+										/>
+									</FormControl>
+									<FormMessage />
+								</FormItem>
+							)}
+						/>
+						<div className='w-full flex justify-center mt-5'>
+							<Button
+								type='submit'
+								className='w-full'
+								disabled={loading}>
+								<div className='flex items-center space-x-3'>
+									{loading && (
+										<LoaderIcon
+											size={16}
+											className='animate-spin'
+										/>
+									)}
+									<span className='text-base font-bold'>
+										{loading ? t('creating') : t('create')}
+									</span>
+								</div>
+							</Button>
+						</div>
+					</form>
+				</Form>
+			</div>
 		</div>
 	)
 }
