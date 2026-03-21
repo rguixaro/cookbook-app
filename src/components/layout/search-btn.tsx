@@ -18,13 +18,13 @@ export function SearchButton({
 		<button
 			onClick={onClick}
 			className={cn(
-				'w-8 h-8 rounded flex items-center justify-center z-40 hover:bg-forest-200/15 transition-all duration-300',
-				className
+				'w-8 h-8 rounded-xl flex items-center justify-center z-40 hover:bg-forest-200/15 transition-all duration-300',
+				className,
 			)}>
 			<Search
 				className={cn(
 					'w-7 h-7 p-1 text-forest-200 transition-all duration-300',
-					iconClassName
+					iconClassName,
 				)}
 			/>
 		</button>

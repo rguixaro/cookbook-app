@@ -7,5 +7,6 @@ export interface User {
 	image: string | null
 	password: string | null
 	savedRecipes: string[]
+	favouriteRecipes: string[]
 	isPrivate: boolean
 }

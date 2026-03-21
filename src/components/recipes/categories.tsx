@@ -40,7 +40,7 @@ export const Categories = ({ trigger, onSelect, selected }: CategoriesProps) => 
 					<DialogTitle className='text-center text-forest-400'>
 						<span className='font-bold'>{t('categories')}</span>
 					</DialogTitle>
-					<DialogDescription className='text-center text-forest-400'>
+					<DialogDescription className='text-center text-forest-400/70'>
 						<span className='font-medium'>{t('categories-select')}</span>
 					</DialogDescription>
 				</DialogHeader>
@@ -50,9 +50,9 @@ export const Categories = ({ trigger, onSelect, selected }: CategoriesProps) => 
 							key={category}
 							onClick={() => select(category)}
 							className={cn(
-								'w-full h-20 max-w-40 flex flex-col items-start space-x-0 bg-forest-200/15 text-forest-200 rounded border-2 border-forest-200/15 hover:bg-forest-200/30',
+								'w-full h-20 max-w-40 flex flex-col items-start space-x-0 bg-forest-200/15 text-forest-200 rounded-2xl border-2 border-forest-200/15 hover:bg-forest-200/30',
 								selected === category &&
-									'border-forest-200 bg-forest-200/30'
+									'border-forest-200 bg-forest-200/30',
 							)}>
 							<Icon name={category} size={24} />
 							<span className='font-bold mt-2'>

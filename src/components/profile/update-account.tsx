@@ -67,19 +67,15 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 
 	const handleCopy = (text: string) => () => {
 		copy(text)
-			.then(() => {
-				toast.success(t_toasts('account-link-copied'))
-			})
-			.catch(() => {
-				toast.error(t_toasts('error'))
-			})
+			.then(() => toast.success(t_toasts('account-link-copied')))
+			.catch(() => toast.error(t_toasts('error')))
 	}
 
 	const ShareComponent = () => {
 		return (
 			<button
 				onClick={handleCopy(`${SITE_URL}/authors/${props.id}`)}
-				className='bg-forest-200 text-white font-bold rounded text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/75 shadow'>
+				className='bg-forest-200 text-white font-bold rounded-xl text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/75 shadow'>
 				<span>{t('share')}</span>
 			</button>
 		)
@@ -99,7 +95,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 						name='isPrivate'
 						render={({ field }) => (
 							<FormItem className='space-y-1'>
-								<FormLabel className='font-semibold'>
+								<FormLabel className='font-bold'>
 									{t('private')}
 								</FormLabel>
 								<FormDescription className='text-sm opacity-70 mb-2'>
@@ -141,7 +137,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 						name='name'
 						render={({ field }) => (
 							<FormItem>
-								<FormLabel className='font-semibold'>
+								<FormLabel className='font-bold'>
 									{t('name')}
 								</FormLabel>
 								<FormControl>
@@ -156,7 +152,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 						)}
 					/>
 					<FormItem>
-						<FormLabel className='font-semibold'>{t('email')}</FormLabel>
+						<FormLabel className='font-bold'>{t('email')}</FormLabel>
 						<Input
 							placeholder={t('email')}
 							value={props.email}
@@ -173,7 +169,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							<Button
 								variant='destructive'
 								size='sm'
-								className='w-1/2'>
+								className='mb-8 w-fit'>
 								<span className='font-bold'>
 									{t('account-delete')}
 								</span>
@@ -194,18 +190,20 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							) : (
 								<SaveIcon size={16} />
 							)}
-							<span>{loading ? t('saving') : t('save')}</span>
+							<span className='font-bold'>
+								{loading ? t('saving') : t('save')}
+							</span>
 						</Button>
 					</div>
 				</form>
 			</Form>
 			<LogoutAccount
 				trigger={
-					<Button variant='outline' className='mt-20'>
-						<LogOut size={16} color='#3D6C5F' />
-						<span className='font-semibold text-forest-400'>
-							{t('account-logout')}
-						</span>
+					<Button
+						variant='outline'
+						size='sm'
+						className='mt-4 mb-4 w-fit self-center'>
+						<span>{t('account-logout')}</span>
 					</Button>
 				}
 			/>

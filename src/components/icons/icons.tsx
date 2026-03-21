@@ -22,6 +22,23 @@ export const GoogleLogo = (props: SharedLogoProps) => (
 			d='M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251'></path>
 	</svg>
 )
+export const HeartIcon = ({ filled = false }: { filled?: boolean }) => (
+	<svg
+		xmlns='http://www.w3.org/2000/svg'
+		width='24'
+		height='24'
+		viewBox='0 0 24 24'
+		fill='none'
+		stroke='#789B84'
+		strokeWidth='2'
+		strokeLinecap='round'
+		strokeLinejoin='round'>
+		<path
+			fill={filled ? '#789B84' : 'transparent'}
+			d='M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z'
+		/>
+	</svg>
+)
 export const BookmarkIcon = ({ filled = false }: { filled?: boolean }) => (
 	<svg
 		xmlns='http://www.w3.org/2000/svg'

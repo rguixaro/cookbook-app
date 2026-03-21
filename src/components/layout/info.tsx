@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import * as motion from 'motion/react-client'
 import { AnimatePresence } from 'motion/react'
-import { FileQuestion, User, Utensils } from 'lucide-react'
+import { ChefHat, Utensils } from 'lucide-react'
 
 import {
 	TypographyH2,
@@ -44,18 +44,18 @@ export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
 		initial: {
 			opacity: 1,
 			y: 0,
-			transition: { duration: 0.3, delay: 1, ease: 'easeInOut' },
+			transition: { duration: 0.3, delay: 1, ease: 'easeInOut' as const },
 		},
 		bottom: {
 			opacity: 1,
 			y: 0,
-			transition: { duration: 0.3, ease: 'easeInOut' },
+			transition: { duration: 0.3, ease: 'easeInOut' as const },
 		},
 		middle: {
 			opacity: 1,
 			bottom: 0,
 			y: -middleHeight,
-			transition: { duration: 0.3, ease: 'easeInOut' },
+			transition: { duration: 0.3, ease: 'easeInOut' as const },
 		},
 	}
 
@@ -83,8 +83,10 @@ export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
 					animate={{ opacity: 1, y: topHeight, scale: 1 }}
 					exit={{ opacity: 0, y: 0, scale: 0 }}>
 					<div className='h-32 flex flex-col items-center justify-center text-forest-200'>
-						<TypographyH4>{t('no-recipes')}</TypographyH4>
-						<Utensils size={24} className='mt-2 mb-5' />
+						<Utensils size={24} />
+						<TypographyH4 className='mt-2 mb-5'>
+							{t('no-recipes')}
+						</TypographyH4>
 					</div>
 				</motion.div>
 			)}
@@ -97,15 +99,17 @@ export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
 					<div className='h-32 flex flex-col items-center justify-center text-forest-200 text-center'>
 						{enabled ? (
 							<>
-								<TypographyH4>{t('no-authors')}</TypographyH4>
-								<User size={24} className='mt-2 mb-5' />
+								<ChefHat size={24} />
+								<TypographyH4 className='mt-2 mb-5'>
+									{t('no-authors')}
+								</TypographyH4>
 							</>
 						) : (
 							<>
-								<TypographyH5>
+								<ChefHat size={48} />
+								<TypographyH5 className='mt-2 mb-5'>
 									{t('start-author-search')}
 								</TypographyH5>
-								<Utensils size={48} className='mt-2 mb-5' />
 							</>
 						)}
 					</div>

@@ -25,6 +25,26 @@ export const getSavedRecipeIds = cache(async (): Promise<string[]> => {
 })
 
 /**
+ * Get favourite recipe IDs for the current user.
+ * Auth required.
+ * @returns Promise<string[]>
+ */
+export const getFavouriteRecipeIds = cache(async (): Promise<string[]> => {
+	const currentUser = await auth()
+	if (!currentUser) return []
+
+	try {
+		const user = await db.user.findUnique({
+			where: { id: currentUser.user.id },
+			select: { favouriteRecipes: true },
+		})
+		return user?.favouriteRecipes ?? []
+	} catch {
+		return []
+	}
+})
+
+/**
  * Get recipes by userId.
  * Auth required.
  * @returns Promise<{ recipes: Recipe[] } | null>

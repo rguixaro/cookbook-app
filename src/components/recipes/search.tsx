@@ -31,11 +31,15 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 	const debouncedStatus = useDebounce(status, 100)
 
 	const [inputValue, setInputValue] = useState(
-		searchParams.get('search')?.toString() || ''
+		searchParams.get('search')?.toString() || '',
 	)
 
 	const [category, setCategory] = useState<CategoriesType | null>(
-		searchParams.get('category')?.toString() || null
+		searchParams.get('category')?.toString() || null,
+	)
+
+	const [isFavourites, setIsFavourites] = useState(
+		searchParams.get('favourites') === 'true',
 	)
 
 	const tCategory = (category?: string) => {
@@ -55,7 +59,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 
 			router.replace(`${pathname}?${params.toString()}`)
 		},
-		300
+		300,
 	)
 
 	/**
@@ -73,6 +77,18 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 		}
 		router.replace(`${pathname}?${params.toString()}`)
 	}, 300)
+
+	/**
+	 * Handle toggling favourites filter
+	 */
+	const handleToggleFavourites = () => {
+		const params = new URLSearchParams(searchParams)
+		const next = !isFavourites
+		if (next) params.set('favourites', 'true')
+		else params.delete('favourites')
+		setIsFavourites(next)
+		router.replace(`${pathname}?${params.toString()}`)
+	}
 
 	/**
 	 * Handle removing the selected category
@@ -125,8 +141,8 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 					className={cn(
 						'h-8 flex duration-1000 transition-transform relative',
 						debouncedStatus !== 'hidden'
-							? 'translate-x-[2px]'
-							: 'translate-x-0'
+							? 'translate-x-0.5'
+							: 'translate-x-0',
 					)}>
 					<input
 						type='text'
@@ -140,10 +156,10 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 						}}
 						className={cn(
 							'relative block w-0 h-8 text-sm z-10 bg-forest-200/15 text-forest-200 font-medium placeholder-forest-200/75',
-							'transition-all duration-500 border-l-[5px] border-forest-200 rounded-[5px] focus:outline-none ring-1 ring-forest-200 ps-9 pe-3',
+							'transition-all duration-500 border-l-[5px] border-forest-200 rounded-xl focus:outline-none ring-2 ring-forest-200 ps-9 pe-3',
 							debouncedStatus === 'hidden'
 								? 'opacity-0 pointer-events-none'
-								: 'w-full pointer-events-auto'
+								: 'w-full pointer-events-auto',
 						)}
 						required
 					/>
@@ -153,13 +169,13 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 							'absolute top-1/2 -translate-y-1/2 transition-transform',
 							debouncedStatus !== 'hidden'
 								? 'translate-x-1 bg-forest-200/15'
-								: 'translate-x-0'
+								: 'translate-x-0',
 						)}
 						iconClassName={cn(
 							debouncedStatus === 'visible' && 'rotate-90',
 							debouncedStatus === 'hidden'
 								? 'text-forest-200'
-								: 'text-forest-300'
+								: 'text-forest-300',
 						)}
 					/>
 					<button
@@ -178,7 +194,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 							'absolute top-1/2 right-0 -translate-y-1/2 z-30 text-forest-300 transition-all duration-200 ease-in-out',
 							inputValue
 								? 'opacity-100 -translate-x-2'
-								: 'opacity-0 translate-x-2 pointer-events-none'
+								: 'opacity-0 translate-x-2 pointer-events-none',
 						)}>
 						<X className='w-4 h-4' />
 					</button>
@@ -190,14 +206,14 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 					</div>
 				)}
 			</div>
-			<div className='flex flex-col ms-[2px]'>
+			<div className='flex flex-col ms-0.5 space-y-4'>
 				<div className='flex space-x-2'>
 					<Categories
 						onSelect={handleSelect}
 						selected={category}
 						trigger={
 							<Button size={'sm'}>
-								<span className='text-base md:text-lg font-bold'>
+								<span className='text-base font-bold'>
 									{t('categories')}
 								</span>
 							</Button>
@@ -218,7 +234,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 									x: -25,
 									transition: { duration: 0.3 },
 								}}
-								className='bg-forest-200/75 rounded text-white flex items-center'>
+								className='bg-forest-200/75 rounded-xl text-white flex items-center'>
 								<button
 									onClick={handleRemoveCategory}
 									className='flex items-center justify-center px-3 space-x-2'>
@@ -230,6 +246,19 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 							</motion.div>
 						)}
 					</AnimatePresence>
+					<Button
+						size={'sm'}
+						variant={'outline'}
+						onClick={handleToggleFavourites}
+						className={cn(
+							isFavourites &&
+								'bg-forest-200/60 text-white hover:bg-forest-200/15 hover:text-forest-300',
+							'w-fit',
+						)}>
+						<span className={cn('text-base font-bold')}>
+							{t('favourites')}
+						</span>
+					</Button>
 				</div>
 			</div>
 		</div>

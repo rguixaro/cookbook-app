@@ -7,10 +7,16 @@ import { RecipesFeed, SearchRecipes } from '@/components/recipes'
 export default async function RecipesPage({
 	searchParams,
 }: {
-	searchParams?: Promise<{ search?: string; category?: string }>
+	searchParams?: Promise<{
+		search?: string
+		category?: string
+		favourites?: string
+	}>
 }) {
-	const searchParam = (await searchParams)?.search
-	const categoryParam = (await searchParams)?.category
+	const params = await searchParams
+	const searchParam = params?.search
+	const categoryParam = params?.category
+	const favouritesParam = params?.favourites === 'true'
 	const t = await getTranslations('RecipesPage')
 
 	const LoadingSkeleton = () => {
@@ -29,6 +35,7 @@ export default async function RecipesPage({
 				<RecipesFeed
 					searchParam={searchParam}
 					categoryParam={categoryParam}
+					favouritesParam={favouritesParam}
 				/>
 			</Suspense>
 		</main>
