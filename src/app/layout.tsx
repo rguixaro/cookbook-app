@@ -36,9 +36,7 @@ export default async function RootLayout({
 					<NextIntlClientProvider messages={messages}>
 						<ProfileProvider initialName={userName || ''}>
 							<Header />
-							<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
-								{children}
-							</div>
+							{children}
 							<ToasterProvider />
 						</ProfileProvider>
 					</NextIntlClientProvider>
