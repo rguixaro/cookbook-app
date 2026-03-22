@@ -8,7 +8,7 @@ export const RecipeEdit = ({ recipe }: { recipe: Recipe | null }) => {
 
 	return (
 		<Link
-			href={`/recipes/edit/${recipe?.authorId}/${recipe?.slug}`}
+			href={`/recipes/edit/${recipe?.authorUsername}/${recipe?.slug}`}
 			className=' hover:bg-forest-200/15 p-1 rounded-xl transition-colors duration-300'>
 			<NotebookPen size={24} className='text-forest-200' />
 		</Link>

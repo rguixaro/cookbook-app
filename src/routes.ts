@@ -11,7 +11,7 @@ export const AUTH_ROUTES: string[] = ['/auth', '/auth/error']
 export const PROTECTED_ROUTES: string[] = [
 	'/',
 	'/profile',
-	'/authors',
+	'/profiles',
 	'/recipes',
 	'/recipes/new',
 ]
@@ -23,10 +23,10 @@ export const PROTECTED_ROUTES: string[] = [
 export const RECIPES_ROUTE_PREFIX: string = '/recipes/'
 
 /**
- * Authors routes prefix.
+ * Profiles routes prefix.
  * Auth required.
  */
-export const AUTHORS_ROUTE_PREFIX: string = '/authors/'
+export const PROFILES_ROUTE_PREFIX: string = '/profiles/'
 
 /**
  * API Authentication routes prefix.

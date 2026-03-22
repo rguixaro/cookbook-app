@@ -28,7 +28,7 @@ import { DeleteAccount } from './delete-account'
 import { LogoutAccount } from './logout-account'
 
 interface UpdateAccountProps {
-	id: string
+	username: string
 	name: string
 	email: string
 	isPrivate: boolean
@@ -74,7 +74,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 	const ShareComponent = () => {
 		return (
 			<button
-				onClick={handleCopy(`${SITE_URL}/authors/${props.id}`)}
+				onClick={handleCopy(`${SITE_URL}/profiles/${props.username}`)}
 				className='bg-forest-200 text-white font-bold rounded-xl text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/75 shadow'>
 				<span>{t('share')}</span>
 			</button>

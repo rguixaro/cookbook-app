@@ -22,7 +22,7 @@ const headerHeight = 101
 const searchHeight = 112
 const notFoundHeight = 128
 
-type InfoMode = 'recipes' | 'authors'
+type InfoMode = 'recipes' | 'profiles'
 
 export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
 	const t = useTranslations('common')
@@ -90,9 +90,9 @@ export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
 					</div>
 				</motion.div>
 			)}
-			{mode == 'authors' && (
+			{mode == 'profiles' && (
 				<motion.div
-					key='info-authors'
+					key='info-profiles'
 					initial={{ opacity: 0, y: 0, scale: 0 }}
 					animate={{ opacity: 1, y: topHeight, scale: 1 }}
 					exit={{ opacity: 0, y: 0, scale: 0 }}>
@@ -101,14 +101,14 @@ export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
 							<>
 								<ChefHat size={24} />
 								<TypographyH4 className='mt-2 mb-5'>
-									{t('no-authors')}
+									{t('no-profiles')}
 								</TypographyH4>
 							</>
 						) : (
 							<>
 								<ChefHat size={48} />
 								<TypographyH5 className='mt-2 mb-5'>
-									{t('start-author-search')}
+									{t('start-profile-search')}
 								</TypographyH5>
 							</>
 						)}

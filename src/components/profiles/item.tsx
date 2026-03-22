@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl'
 import { motion, Variants } from 'framer-motion'
 import { ChefHat } from 'lucide-react'
 
-import { AuthorSchema } from '@/server/schemas'
+import { ProfileSchema } from '@/server/schemas'
 
 const motions: Variants = {
 	offscreen: { opacity: 0, y: 75 },
@@ -18,11 +18,11 @@ const motions: Variants = {
 	},
 }
 
-export function ItemAuthor({
-	author,
+export function ItemProfile({
+	profile,
 	query,
 }: {
-	author: AuthorSchema
+	profile: ProfileSchema
 	query?: string
 }) {
 	const t = useTranslations('RecipesPage')
@@ -30,7 +30,7 @@ export function ItemAuthor({
 	const queryParams = query ? `?query=${query}` : ''
 
 	return (
-		<Link href={`/authors/${author.id}${queryParams}`} className='w-full'>
+		<Link href={`/profiles/${profile.username}${queryParams}`} className='w-full'>
 			<motion.div
 				initial='offscreen'
 				whileInView='onscreen'
@@ -40,7 +40,7 @@ export function ItemAuthor({
 					<div className='flex items-center gap-3 bg-[#fefff2] rounded-xl px-4 py-2 shadow-sm'>
 						<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-sm'>
 							<Image
-								src={author.image}
+								src={profile.image}
 								referrerPolicy='no-referrer'
 								alt='Profile image'
 								width={32}
@@ -48,7 +48,7 @@ export function ItemAuthor({
 							/>
 						</div>
 						<span className='text-base font-title md:text-lg text-forest-300 font-extrabold leading-4'>
-							{`@${author.name}`}
+							{`@${profile.name}`}
 						</span>
 					</div>
 					<div className='px-4 py-2 text-sm'>
@@ -57,7 +57,7 @@ export function ItemAuthor({
 								size={14}
 								className='inline-block mr-1 mb-0.5'
 							/>
-							{t('recipe-count', { count: author.recipesCount })}
+							{t('recipe-count', { count: profile.recipesCount })}
 						</span>
 					</div>
 				</div>

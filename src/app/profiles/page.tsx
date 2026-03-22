@@ -3,15 +3,15 @@ import { getTranslations } from 'next-intl/server'
 import { Loader } from 'lucide-react'
 
 import { GoBack } from '@/components/layout'
-import { AuthorsFeed, SearchAuthors } from '@/components/authors'
+import { ProfilesFeed, SearchProfiles } from '@/components/profiles'
 
-export default async function AuthorsPage({
+export default async function ProfilesPage({
 	searchParams,
 }: {
 	searchParams?: Promise<{ search?: string; category?: string }>
 }) {
 	const searchParam = (await searchParams)?.search
-	const t = await getTranslations('AuthorsPage')
+	const t = await getTranslations('ProfilesPage')
 
 	const LoadingSkeleton = () => {
 		return (
@@ -28,9 +28,9 @@ export default async function AuthorsPage({
 				<GoBack />
 			</div>
 			<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
-				<SearchAuthors />
+				<SearchProfiles />
 				<Suspense fallback={<LoadingSkeleton />}>
-					<AuthorsFeed searchParam={searchParam} />
+					<ProfilesFeed searchParam={searchParam} />
 				</Suspense>
 			</div>
 		</div>

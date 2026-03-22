@@ -10,6 +10,24 @@ import { env } from './env.mjs'
 const { AUTH_SECRET } = env
 
 /**
+ * Derive a unique username from an email address.
+ * Strips the domain, lowercases, removes non-alphanumeric chars (except -),
+ * and appends -2, -3, etc. if the username is already taken.
+ */
+async function generateUsername(email: string): Promise<string> {
+	const prefix = email.split('@')[0].toLowerCase().replace(/[^a-z0-9-]/g, '')
+	let candidate = prefix
+	let suffix = 2
+
+	while (await db.user.findUnique({ where: { username: candidate } })) {
+		candidate = `${prefix}-${suffix}`
+		suffix++
+	}
+
+	return candidate
+}
+
+/**
  * NextAuth configuration
  */
 export const {
@@ -24,6 +42,16 @@ export const {
 	basePath: '/api/auth',
 	secret: AUTH_SECRET,
 	pages: { signIn: '/auth', error: '/auth/error' },
+	events: {
+		async createUser({ user }) {
+			if (!user.id || !user.email) return
+			const username = await generateUsername(user.email)
+			await db.user.update({
+				where: { id: user.id },
+				data: { username },
+			})
+		},
+	},
 	callbacks: {
 		async signIn() {
 			return true

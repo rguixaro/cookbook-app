@@ -6,8 +6,8 @@ import { TypographyH1 } from '@/ui'
 import { useProfileContext } from '@/providers'
 
 export const Header = () => {
-	const { currentUserName, authorName } = useProfileContext()
-	const nameToDisplay = authorName || currentUserName
+	const { currentUserName, profileName } = useProfileContext()
+	const nameToDisplay = profileName || currentUserName
 
 	let displayName = ''
 	if (nameToDisplay) {

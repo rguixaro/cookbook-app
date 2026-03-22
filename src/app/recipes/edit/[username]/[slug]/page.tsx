@@ -3,24 +3,26 @@ import { getTranslations } from 'next-intl/server'
 import { FileQuestion } from 'lucide-react'
 
 import { auth } from '@/auth'
-import { getRecipeByAuthAndSlug } from '@/server/queries'
+import { getRecipeByAuthAndSlug, getUserByUsername } from '@/server/queries'
 import { EditRecipe } from '@/components/recipes/form'
 import { TypographyH4 } from '@/ui'
 
 export default async function EditRecipePage({
 	params,
 }: {
-	params: Promise<{ authorId: string; slug: string }>
+	params: Promise<{ username: string; slug: string }>
 }) {
 	const session = await auth()
 	if (!session) return null
 
-	const { slug, authorId } = await params
+	const { slug, username } = await params
 	const t = await getTranslations('common')
 	const t_recipes = await getTranslations('RecipesPage')
 
+	const user = await getUserByUsername(username)
+
 	/** Only the recipe owner can edit */
-	if (session.user.id !== authorId) {
+	if (!user || session.user.id !== user.id) {
 		return (
 			<div className='mt-32 flex flex-col items-center justify-center text-forest-200'>
 				<FileQuestion size={24} />
@@ -34,7 +36,7 @@ export default async function EditRecipePage({
 		)
 	}
 
-	const recipe = await getRecipeByAuthAndSlug(authorId, slug)
+	const recipe = await getRecipeByAuthAndSlug(user.id, slug)
 
 	if (!recipe) {
 		return (

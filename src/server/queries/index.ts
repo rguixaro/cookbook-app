@@ -5,6 +5,22 @@ import { db } from '@/server/db'
 import { RecipeSchema } from '../schemas'
 
 /**
+ * Get a user by username.
+ * @param username
+ * @returns Promise<{ id: string; username: string } | null>
+ */
+export const getUserByUsername = cache(async (username: string) => {
+	try {
+		return await db.user.findUnique({
+			where: { username },
+			select: { id: true, username: true },
+		})
+	} catch {
+		return null
+	}
+})
+
+/**
  * Get saved recipe IDs for the current user.
  * Auth required.
  * @returns Promise<string[]>
@@ -59,14 +75,29 @@ export const getRecipesByUserId = cache(async (userId?: string) => {
 
 	try {
 		let savedRecipes: RecipeSchema[] = []
-		const recipes = await db.recipe.findMany({ where: { authorId } })
+		const rawRecipes = await db.recipe.findMany({
+			where: { authorId },
+			include: { author: { select: { username: true } } },
+		})
+		const recipes = rawRecipes.map((r) => ({
+			...r,
+			authorUsername: r.author?.username ?? '',
+			author: undefined,
+		}))
 
 		if (!userId) {
 			const savedIds = await getSavedRecipeIds()
-			if (savedIds.length)
-				savedRecipes = await db.recipe.findMany({
+			if (savedIds.length) {
+				const rawSaved = await db.recipe.findMany({
 					where: { id: { in: savedIds } },
+					include: { author: { select: { username: true } } },
 				})
+				savedRecipes = rawSaved.map((r) => ({
+					...r,
+					authorUsername: r.author?.username ?? '',
+					author: undefined,
+				}))
+			}
 		}
 
 		return { recipes: [...recipes, ...savedRecipes] }
@@ -90,8 +121,16 @@ export const getRecipeByAuthAndSlug = cache(
 		if (!currentUser) return null
 
 		try {
-			const recipe = await db.recipe.findFirst({ where: { authorId, slug } })
-			return recipe
+			const recipe = await db.recipe.findFirst({
+				where: { authorId, slug },
+				include: { author: { select: { username: true } } },
+			})
+			if (!recipe) return null
+			return {
+				...recipe,
+				authorUsername: recipe.author?.username ?? '',
+				author: undefined,
+			}
 		} catch (error) {
 			throw error
 		}
@@ -99,16 +138,17 @@ export const getRecipeByAuthAndSlug = cache(
 )
 
 /**
- * Get profile by user id.
+ * Get profile by username.
  * Auth required.
- * @param userId User id
- * @returns Promise<{ profile: { name: string, image: string } | null; }>
+ * @param username Username
+ * @returns Promise<{ profile: { id: string, name: string, image: string, ... } | null }>
  */
-export const getProfileByUserId = cache(
+export const getProfileByUsername = cache(
 	async (
-		userId: string,
+		username: string,
 	): Promise<{
 		profile: {
+			id: string
 			name: string
 			image: string
 			createdAt: Date
@@ -122,8 +162,9 @@ export const getProfileByUserId = cache(
 
 		try {
 			const profile = await db.user.findFirst({
-				where: { id: userId, isPrivate: false },
+				where: { username, isPrivate: false },
 				select: {
+					id: true,
 					image: true,
 					name: true,
 					createdAt: true,
@@ -138,12 +179,12 @@ export const getProfileByUserId = cache(
 )
 
 /**
- * Get authors filtered by name.
+ * Get profiles filtered by name.
  * Auth required.
- * @param name Partial or full author name
- * @returns Promise<User[] | null>
+ * @param name Partial or full name
+ * @returns Promise<Profile[] | null>
  */
-export const getAuthorsByName = cache(async (name: string) => {
+export const getProfilesByName = cache(async (name: string) => {
 	const currentUser = await auth()
 
 	/** Not authenticated */
@@ -154,7 +195,7 @@ export const getAuthorsByName = cache(async (name: string) => {
 	if (!name.trim()) return []
 
 	try {
-		const authors = await db.user.findMany({
+		const profiles = await db.user.findMany({
 			where: {
 				id: { not: userId },
 				isPrivate: false,
@@ -166,6 +207,7 @@ export const getAuthorsByName = cache(async (name: string) => {
 			select: {
 				id: true,
 				name: true,
+				username: true,
 				image: true,
 				isPrivate: true,
 				_count: {
@@ -178,14 +220,15 @@ export const getAuthorsByName = cache(async (name: string) => {
 			take: 10,
 		})
 
-		const mappedAuthors = authors.map((author) => ({
-			id: author.id,
-			name: author.name,
-			image: author.image,
-			recipesCount: author._count.recipes + author.savedRecipes.length,
+		const mappedProfiles = profiles.map((profile) => ({
+			id: profile.id,
+			name: profile.name,
+			username: profile.username,
+			image: profile.image,
+			recipesCount: profile._count.recipes + profile.savedRecipes.length,
 		}))
 
-		return { authors: mappedAuthors }
+		return { profiles: mappedProfiles }
 	} catch {
 		return null
 	}
