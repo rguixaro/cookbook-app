@@ -60,7 +60,9 @@
 		"creating": "Creating recipe...",
 		"update": "Update",
 		"updating": "Updating recipe...",
-		"more-on": "More recipes on"
+		"more-on": "More recipes on",
+		"member-since": "Since {date}",
+		"recipe-count": "{count, plural, one {# recipe} other {# recipes}}"
 	},
 	"RecipeCategories": {
 		"starter": "Starter",
