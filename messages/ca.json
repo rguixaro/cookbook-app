@@ -4,10 +4,10 @@
 		"recipes": "Receptes",
 		"page-not-found": "Pàgina no trobada",
 		"user-not-found": "Usuari no trobat",
-		"author-not-found": "Autor no trobat",
+		"profile-not-found": "Perfil no trobat",
 		"no-recipes": "No s'han trobat receptes",
-		"no-authors": "No s'han trobat autors",
-		"start-author-search": "Comença a escriure el nom d'un autor per veure les seves receptes"
+		"no-profiles": "No s'han trobat perfils",
+		"start-profile-search": "Comença a escriure el nom d'un usuario per veure les seves receptes"
 	},
 	"toasts": {
 		"recipe-created": "Recepta creada amb èxit.",
@@ -102,10 +102,10 @@
 		"account-logout-logging-out": "Tancant la sessió...",
 		"account-logout-error": "Hi ha hagut un error en tancar la sessió."
 	},
-	"AuthorsPage": {
+	"ProfilesPage": {
 		"search": "Cerca",
-		"searching": "Buscant autors...",
-		"not-found": "Autor no trobat",
+		"searching": "Buscant perfils...",
+		"not-found": "Perfil no trobat",
 		"recipe": "recepta",
 		"recipes": "receptes"
 	}

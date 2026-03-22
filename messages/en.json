@@ -4,10 +4,10 @@
 		"recipes": "Recipes",
 		"page-not-found": "Page not found",
 		"user-not-found": "User not found",
-		"author-not-found": "Author not found",
+		"profile-not-found": "Profile not found",
 		"no-recipes": "No recipes found",
-		"no-authors": "No authors found",
-		"start-author-search": "Start typing an author's name to see their recipes"
+		"no-profiles": "No profiles found",
+		"start-profile-search": "Start typing the name of a user to see their recipes"
 	},
 	"toasts": {
 		"recipe-created": "Recipe created successfully.",
@@ -102,10 +102,10 @@
 		"account-logout-logging-out": "Logging out...",
 		"account-logout-error": "An error occurred while logging out."
 	},
-	"AuthorsPage": {
+	"ProfilesPage": {
 		"search": "Search",
-		"searching": "Searching authors...",
-		"not-found": "Author not found",
+		"searching": "Searching profiles...",
+		"not-found": "Profile not found",
 		"recipe": "recipe",
 		"recipes": "recipes"
 	}
