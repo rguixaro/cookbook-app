@@ -60,7 +60,9 @@
 		"creating": "Creant recepta...",
 		"update": "Actualitzar",
 		"updating": "Actualitzant recepta...",
-		"more-on": "Més receptes a"
+		"more-on": "Més receptes a",
+		"member-since": "Des de {date}",
+		"recipe-count": "{count, plural, one {# recepta} other {# receptes}}"
 	},
 	"RecipeCategories": {
 		"starter": "Entrant",

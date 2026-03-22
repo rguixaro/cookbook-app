@@ -23,12 +23,16 @@ export default async function AuthorsPage({
 	}
 
 	return (
-		<div className='mt-5 duration-500 animate-in fade-in-5 slide-in-from-bottom-2'>
-			<GoBack />
-			<SearchAuthors />
-			<Suspense fallback={<LoadingSkeleton />}>
-				<AuthorsFeed searchParam={searchParam} />
-			</Suspense>
+		<div className='flex flex-col items-center mt-5 w-full duration-500 animate-in fade-in-5 slide-in-from-bottom-2'>
+			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
+				<GoBack />
+			</div>
+			<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
+				<SearchAuthors />
+				<Suspense fallback={<LoadingSkeleton />}>
+					<AuthorsFeed searchParam={searchParam} />
+				</Suspense>
+			</div>
 		</div>
 	)
 }

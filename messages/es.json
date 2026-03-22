@@ -60,7 +60,9 @@
 		"creating": "Creando receta...",
 		"update": "Actualizar",
 		"updating": "Actualizando receta...",
-		"more-on": "Más recetas en"
+		"more-on": "Más recetas en",
+		"member-since": "Desde {date}",
+		"recipe-count": "{count, plural, one {# receta} other {# recetas}}"
 	},
 	"RecipeCategories": {
 		"starter": "Entrante",

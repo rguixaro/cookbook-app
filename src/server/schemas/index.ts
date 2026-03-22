@@ -28,6 +28,7 @@ export const RecipeSchema = z.object({
 export const AuthorSchema = z.object({
 	id: z.string(),
 	name: z.string(),
+	image: z.string(),
 	recipesCount: z.number(),
 })
 

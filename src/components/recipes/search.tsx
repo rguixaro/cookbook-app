@@ -6,12 +6,13 @@ import { useDebouncedCallback } from 'use-debounce'
 import { AnimatePresence } from 'motion/react'
 import * as motion from 'motion/react-client'
 import { useTranslations } from 'next-intl'
-import { Search, X } from 'lucide-react'
+import { ListFilter, X } from 'lucide-react'
 
 import { useDebounce } from '@/hooks'
 import { UserButton, SocialButton, SearchButton } from '@/components/layout'
 import { Categories as CategoriesType } from '@/types'
 import { Button } from '@/ui'
+import { HeartIcon } from '@/components/icons'
 import { cn } from '@/utils'
 import { Categories } from './categories'
 
@@ -135,7 +136,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 	}, [searchParams])
 
 	return (
-		<div className='w-full flex flex-col my-2'>
+		<div className='w-11/12 sm:w-3/5 lg:w-3/8 flex flex-col my-2'>
 			<div className='w-full flex items-end justify-between mb-2'>
 				<div
 					className={cn(
@@ -206,60 +207,57 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 					</div>
 				)}
 			</div>
-			<div className='flex flex-col ms-0.5 space-y-4'>
-				<div className='flex space-x-2'>
-					<Categories
-						onSelect={handleSelect}
-						selected={category}
-						trigger={
-							<Button size={'sm'}>
-								<span className='text-base font-bold'>
-									{t('categories')}
+			<div className='flex flex-wrap gap-2 ms-0.5'>
+				<Categories
+					onSelect={handleSelect}
+					selected={category}
+					trigger={
+						<Button size={'sm'}>
+							<ListFilter size={16} />
+							<span className='text-base font-bold'>
+								{t('categories')}
+							</span>
+						</Button>
+					}
+				/>
+				<AnimatePresence>
+					{category && (
+						<motion.div
+							key='selected-category'
+							initial={{ opacity: 0, x: -25 }}
+							animate={{
+								opacity: 1,
+								x: 0,
+								transition: { duration: 0.3 },
+							}}
+							exit={{
+								opacity: 0,
+								x: -25,
+								transition: { duration: 0.3 },
+							}}
+							className='bg-forest-200/75 rounded-xl text-white flex items-center'>
+							<button
+								onClick={handleRemoveCategory}
+								className='flex items-center justify-center px-3 space-x-2'>
+								<span className='font-semibold text-sm md:text-base'>
+									{tCategory(category)}
 								</span>
-							</Button>
-						}
+								<X size={14} className='mt-0.5' />
+							</button>
+						</motion.div>
+					)}
+				</AnimatePresence>
+				<div className='flex-grow' />
+				<Button size={'sm'} onClick={handleToggleFavourites}>
+					<HeartIcon
+						filled={isFavourites}
+						size={16}
+						color='currentColor'
 					/>
-					<AnimatePresence>
-						{category && (
-							<motion.div
-								key='selected-category'
-								initial={{ opacity: 0, x: -25 }}
-								animate={{
-									opacity: 1,
-									x: 0,
-									transition: { duration: 0.3 },
-								}}
-								exit={{
-									opacity: 0,
-									x: -25,
-									transition: { duration: 0.3 },
-								}}
-								className='bg-forest-200/75 rounded-xl text-white flex items-center'>
-								<button
-									onClick={handleRemoveCategory}
-									className='flex items-center justify-center px-3 space-x-2'>
-									<span className='font-semibold text-sm md:text-base'>
-										{tCategory(category)}
-									</span>
-									<X size={14} className='mt-0.5' />
-								</button>
-							</motion.div>
-						)}
-					</AnimatePresence>
-					<Button
-						size={'sm'}
-						variant={'outline'}
-						onClick={handleToggleFavourites}
-						className={cn(
-							isFavourites &&
-								'bg-forest-200/60 text-white hover:bg-forest-200/15 hover:text-forest-300',
-							'w-fit',
-						)}>
-						<span className={cn('text-base font-bold')}>
-							{t('favourites')}
-						</span>
-					</Button>
-				</div>
+					<span className={cn('text-base font-bold')}>
+						{t('favourites')}
+					</span>
+				</Button>
 			</div>
 		</div>
 	)

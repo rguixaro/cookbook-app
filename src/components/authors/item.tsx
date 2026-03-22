@@ -1,12 +1,13 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 
 import { useTranslations } from 'next-intl'
 import { motion, Variants } from 'framer-motion'
+import { ChefHat } from 'lucide-react'
 
 import { AuthorSchema } from '@/server/schemas'
-import { cn } from '@/utils'
 
 const motions: Variants = {
 	offscreen: { opacity: 0, y: 75 },
@@ -24,30 +25,41 @@ export function ItemAuthor({
 	author: AuthorSchema
 	query?: string
 }) {
-	const t = useTranslations('AuthorsPage')
+	const t = useTranslations('RecipesPage')
 
 	const queryParams = query ? `?query=${query}` : ''
 
 	return (
-		<Link href={`/authors/${author.id}${queryParams}`} className='w-3/4'>
+		<Link href={`/authors/${author.id}${queryParams}`} className='w-full'>
 			<motion.div
 				initial='offscreen'
 				whileInView='onscreen'
 				variants={motions}
 				viewport={{ once: true, amount: 0.01 }}>
-				<div
-					className={cn(
-						'w-full py-3 px-4 flex flex-col items-start',
-						'bg-forest-200/15 border-2 border-forest-200/20 rounded-2xl',
-						'transition-all duration-300 hover:bg-forest-200/25',
-					)}>
-					<span className='text-base md:text-lg text-forest-200 font-bold'>
-						{author.name}
-					</span>
-					<span className='text-sm text-forest-300 mt-1'>
-						{author.recipesCount}{' '}
-						{author.recipesCount === 1 ? t('recipe') : t('recipes')}
-					</span>
+				<div className='my-1 bg-forest-200/15 border-4 border-forest-200/15 rounded-2xl shadow-sm'>
+					<div className='flex items-center gap-3 bg-[#fefff2] rounded-xl px-4 py-2 shadow-sm'>
+						<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-sm'>
+							<Image
+								src={author.image}
+								referrerPolicy='no-referrer'
+								alt='Profile image'
+								width={32}
+								height={32}
+							/>
+						</div>
+						<span className='text-base font-title md:text-lg text-forest-300 font-extrabold leading-4'>
+							{`@${author.name}`}
+						</span>
+					</div>
+					<div className='px-4 py-2 text-sm'>
+						<span className='font-bold text-forest-300'>
+							<ChefHat
+								size={14}
+								className='inline-block mr-1 mb-0.5'
+							/>
+							{t('recipe-count', { count: author.recipesCount })}
+						</span>
+					</div>
 				</div>
 			</motion.div>
 		</Link>

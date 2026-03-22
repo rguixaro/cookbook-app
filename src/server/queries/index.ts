@@ -108,7 +108,12 @@ export const getProfileByUserId = cache(
 	async (
 		userId: string,
 	): Promise<{
-		profile: { name: string; image: string } | null
+		profile: {
+			name: string
+			image: string
+			createdAt: Date
+			_count: { recipes: number }
+		} | null
 	}> => {
 		const currentUser = await auth()
 
@@ -118,7 +123,12 @@ export const getProfileByUserId = cache(
 		try {
 			const profile = await db.user.findFirst({
 				where: { id: userId, isPrivate: false },
-				select: { image: true, name: true },
+				select: {
+					image: true,
+					name: true,
+					createdAt: true,
+					_count: { select: { recipes: true } },
+				},
 			})
 			return { profile }
 		} catch {
@@ -156,6 +166,7 @@ export const getAuthorsByName = cache(async (name: string) => {
 			select: {
 				id: true,
 				name: true,
+				image: true,
 				isPrivate: true,
 				_count: {
 					select: {
@@ -170,6 +181,7 @@ export const getAuthorsByName = cache(async (name: string) => {
 		const mappedAuthors = authors.map((author) => ({
 			id: author.id,
 			name: author.name,
+			image: author.image,
 			recipesCount: author._count.recipes + author.savedRecipes.length,
 		}))
 
