@@ -90,9 +90,11 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	}
 
 	return (
-		<div className='flex flex-col pt-2 my-2 text-forest-400 w-full z-0'>
-			<GoBack text={'recipes'} />
-			<div className='flex my-5 w-full flex-col border-4 border-forest-200/15 p-4 rounded-3xl text-forest-400'>
+		<div className='flex flex-col items-center pt-2 my-2 text-forest-400 w-full z-0'>
+			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
+				<GoBack text={'recipes'} />
+			</div>
+			<div className='flex my-5 w-10/12 sm:w-2/4 lg:w-2/6 flex-col border-4 border-forest-200/15 p-4 rounded-3xl text-forest-400'>
 				<Form {...form}>
 					<form
 						onSubmit={form.handleSubmit(onSubmit)}

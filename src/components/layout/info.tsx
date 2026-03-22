@@ -82,7 +82,7 @@ export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
 					initial={{ opacity: 0, y: 0, scale: 0 }}
 					animate={{ opacity: 1, y: topHeight, scale: 1 }}
 					exit={{ opacity: 0, y: 0, scale: 0 }}>
-					<div className='h-32 flex flex-col items-center justify-center text-forest-200'>
+					<div className='h-32 flex flex-col items-center justify-center text-forest-200 text-center'>
 						<Utensils size={24} />
 						<TypographyH4 className='mt-2 mb-5'>
 							{t('no-recipes')}
