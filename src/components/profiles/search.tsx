@@ -8,8 +8,8 @@ import { useDebounce } from '@/hooks'
 import { cn } from '@/utils'
 import { useTranslations } from 'next-intl'
 
-export const SearchAuthors = () => {
-	const t = useTranslations('AuthorsPage')
+export const SearchProfiles = () => {
+	const t = useTranslations('ProfilesPage')
 
 	const searchParams = useSearchParams()
 	const pathname = usePathname()
@@ -54,18 +54,20 @@ export const SearchAuthors = () => {
 	}
 
 	return (
-		<div className='flex justify-center my-8'>
-			<div className='relative w-3/4 max-w-md'>
-				<Search className='absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-forest-300' />
+		<div className='flex justify-center my-4'>
+			<div className='relative w-full'>
+				<Search className='absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-forest-200' />
 				<input
 					ref={inputRef}
 					type='text'
 					placeholder={t('search')}
 					value={value}
 					onChange={onChange}
-					id='author-search-input'
+					id='profile-search-input'
 					className={cn(
-						'w-full py-2 pl-10 pr-10 rounded-2xl bg-forest-200/15 border-2 border-forest-200 text-forest-300 placeholder-forest-200 focus:outline-none',
+						'w-full h-8 text-sm pl-9 pr-9 rounded-xl',
+						'bg-forest-200/15 border-l-[5px] border-forest-200 ring-2 ring-forest-200',
+						'text-forest-200 font-medium placeholder-forest-200/75 focus:outline-none',
 					)}
 				/>
 				<button

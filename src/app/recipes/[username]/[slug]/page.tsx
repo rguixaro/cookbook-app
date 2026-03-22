@@ -6,12 +6,13 @@ import Link from 'next/link'
 import { auth } from '@/auth'
 import {
 	getRecipeByAuthAndSlug,
-	getProfileByUserId,
+	getProfileByUsername,
+	getUserByUsername,
 	getSavedRecipeIds,
 	getFavouriteRecipeIds,
 } from '@/server/queries'
 import { GoBack } from '@/components/layout'
-import { SyncAuthorName } from '@/components/profile'
+import { SyncProfileName } from '@/components/profile'
 import {
 	RecipeDownload,
 	RecipeEdit,
@@ -27,7 +28,7 @@ export default async function RecipePage({
 	params,
 	searchParams,
 }: {
-	params: Promise<{ authorId: string; slug: string }>
+	params: Promise<{ username: string; slug: string }>
 	searchParams?: Promise<{
 		referred?: boolean
 		query?: string
@@ -37,7 +38,7 @@ export default async function RecipePage({
 	const session = await auth()
 	if (!session) return null
 
-	const { slug, authorId } = await params
+	const { slug, username } = await params
 	const isReferred = (await searchParams)?.referred
 	const query = (await searchParams)?.query
 	const category = (await searchParams)?.category
@@ -45,17 +46,20 @@ export default async function RecipePage({
 	const paramQuery = query ? `?search=${query}` : ''
 	const paramCategory = category ? `${query ? '&' : '?'}category=${category}` : ''
 
-	const recipe = await getRecipeByAuthAndSlug(authorId, slug)
+	const user = await getUserByUsername(username)
+	const recipe = user ? await getRecipeByAuthAndSlug(user.id, slug) : null
 	const t = await getTranslations('RecipesPage')
 
 	const backTo = isReferred
-		? `/authors/${authorId}${paramQuery}${paramCategory}`
+		? `/profiles/${username}${paramQuery}${paramCategory}`
 		: `/${paramQuery}${paramCategory}`
 
 	if (!recipe) {
 		return (
-			<div className='flex flex-col pt-2 my-2 text-center'>
-				<GoBack text={'recipes'} to={backTo} />
+			<div className='flex flex-col items-center pt-2 my-2 text-center w-full'>
+				<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
+					<GoBack text={'recipes'} to={backTo} />
+				</div>
 				<div className='h-32 mt-10 flex flex-col items-center justify-center text-forest-200'>
 					<TypographyH4>{t('not-found')}</TypographyH4>
 					<Utensils size={24} className='mt-2 mb-5' />
@@ -75,7 +79,7 @@ export default async function RecipePage({
 		image: string
 	}> {
 		if (!isOwner) {
-			const { profile } = await getProfileByUserId(authorId)
+			const { profile } = await getProfileByUsername(username)
 			if (!profile) return { name: '', image: '' }
 			return profile
 		} else
@@ -88,23 +92,28 @@ export default async function RecipePage({
 	const author = await getAuthor()
 
 	return (
-		<div className='flex flex-col pt-2 my-2 text-center'>
-			<SyncAuthorName name={author.name} />
-			<GoBack text={'recipes'} to={backTo}>
-				<div className='flex space-x-3'>
-					<RecipeShare recipe={recipe} />
-					<RecipeDownload recipe={recipe} author={author} />
-					<FavouriteStatus initial={isFavourited} recipeId={recipe.id} />
-					{!isOwner ? (
-						<SavedStatus initial={isSaved} recipeId={recipe.id} />
-					) : (
-						<RecipeEdit recipe={recipe} />
-					)}
-				</div>
-			</GoBack>
+		<div className='flex flex-col items-center pt-2 my-2 text-center w-full'>
+			<SyncProfileName name={author.name} />
+			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
+				<GoBack text={'recipes'} to={backTo}>
+					<div className='flex space-x-3'>
+						<RecipeShare recipe={recipe} />
+						<RecipeDownload recipe={recipe} author={author} />
+						<FavouriteStatus
+							initial={isFavourited}
+							recipeId={recipe.id}
+						/>
+						{!isOwner ? (
+							<SavedStatus initial={isSaved} recipeId={recipe.id} />
+						) : (
+							<RecipeEdit recipe={recipe} />
+						)}
+					</div>
+				</GoBack>
+			</div>
 			<div
 				className={cn(
-					'w-full mb-2 mt-5 flex flex-col items-center justify-center bg-forest-200/15 rounded-3xl border-4 border-forest-400/15',
+					'w-10/12 sm:w-2/4 lg:w-2/6 mb-2 mt-5 flex flex-col items-center justify-center bg-forest-200/15 rounded-3xl border-4 border-forest-400/15',
 				)}>
 				<div className='bg-[#fefff2] rounded-[20px] p-4 shadow-sm w-full flex items-center justify-center'>
 					<Icon name={recipe.category} />
@@ -149,25 +158,23 @@ export default async function RecipePage({
 							{recipe.instructions}
 						</span>
 					</div>
-					<div className='h-1.5 w-3/4 my-3 rounded-xl bg-forest-400/15' />
-					<div className='mt-3'>
-						<Link href={`/authors/${authorId}`}>
-							<div className='flex flex-col items-center justify-center space-y-1'>
-								<Image
-									src={author.image}
-									referrerPolicy='no-referrer'
-									alt='Profile image'
-									width={40}
-									height={40}
-									className='rounded-xl border-2 border-forest-200/15 shadow-sm'
-								/>
-								<span className='font-bold text-forest-300 text-sm bg-[#fefff2] px-2 py-1 rounded-xl shadow-sm'>
-									{` @${author.name}`}
-								</span>
-							</div>
-						</Link>
-					</div>
 				</div>
+				<Link href={`/profiles/${username}`} className='w-full block'>
+					<div className='flex items-center justify-center gap-3 bg-[#fefff2] rounded-[20px] px-3 py-2.5 shadow-sm transition-colors duration-200 '>
+						<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-sm'>
+							<Image
+								src={author.image}
+								referrerPolicy='no-referrer'
+								alt='Profile image'
+								width={32}
+								height={32}
+							/>
+						</div>
+						<span className='font-extrabold font-title text-forest-300 text-sm md:text-base truncate'>
+							{`@${author.name}`}
+						</span>
+					</div>
+				</Link>
 			</div>
 		</div>
 	)

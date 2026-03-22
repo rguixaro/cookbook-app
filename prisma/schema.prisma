@@ -71,7 +71,8 @@ model User {
     updatedAt           DateTime    @updatedAt
     image               String
     name                String
-    email               String     @unique
+    username            String      @unique
+    email               String      @unique
     emailVerified       DateTime?
     password            String?
     isPrivate           Boolean     @default(true)

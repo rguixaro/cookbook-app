@@ -22,4 +22,5 @@ export interface Recipe {
 	updatedAt: Date;
 	category: Categories;
 	authorId: string;
+	authorUsername: string;
 }

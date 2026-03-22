@@ -31,13 +31,15 @@ export default async function RecipesPage({
 	return (
 		<main className='flex flex-col items-center text-forest-400 w-full h-full'>
 			<SearchRecipes />
-			<Suspense fallback={<LoadingSkeleton />}>
-				<RecipesFeed
-					searchParam={searchParam}
-					categoryParam={categoryParam}
-					favouritesParam={favouritesParam}
-				/>
-			</Suspense>
+			<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
+				<Suspense fallback={<LoadingSkeleton />}>
+					<RecipesFeed
+						searchParam={searchParam}
+						categoryParam={categoryParam}
+						favouritesParam={favouritesParam}
+					/>
+				</Suspense>
+			</div>
 		</main>
 	)
 }

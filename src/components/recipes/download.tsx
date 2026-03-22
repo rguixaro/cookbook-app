@@ -82,7 +82,7 @@ export const RecipeDownload = ({
 			<div className='absolute opacity-0 pointer-events-none w-96'>
 				<div
 					ref={ref}
-					className='w-full flex flex-col items-center justify-center overflow-hidden p-4'>
+					className='w-full flex flex-col items-center justify-center overflow-hidden p-8'>
 					<div
 						className={cn(
 							'w-full my-3 flex flex-col items-center justify-center bg-forest-200/15 rounded-3xl border-4 border-forest-400/15',
@@ -95,7 +95,7 @@ export const RecipeDownload = ({
 						</div>
 						<div
 							className={cn(
-								'w-full mb-2 p-5 flex flex-col items-center justify-center',
+								'w-full p-5 flex flex-col items-center justify-center',
 							)}>
 							{recipe.time && (
 								<div className='flex mb-3 items-center bg-forest-200 text-white px-2 py-1 rounded-xl'>
@@ -130,29 +130,27 @@ export const RecipeDownload = ({
 									{recipe.instructions}
 								</span>
 							</div>
-							<div className='h-1.5 w-3/4 my-3 rounded-xl bg-forest-400/15' />
-							<div className='mt-3'>
-								<div className='flex flex-col items-center justify-center space-y-1'>
-									<Image
-										src={author.image}
-										referrerPolicy='no-referrer'
-										alt='Profile image'
-										width={40}
-										height={40}
-										className='rounded-xl border-2 border-forest-200/15 shadow-sm'
-									/>
-									<span className='font-bold text-forest-300 text-sm bg-[#fefff2] px-2 py-1 rounded-xl shadow-sm'>
-										{` @${author.name}`}
-									</span>
-								</div>
-							</div>
-							<div className='mt-5'>
-								<p>{t('more-on')}</p>
-								<p className='text-forest-300 font-extrabold font-title'>
-									cookbook.rguixaro.dev
-								</p>
-							</div>
 						</div>
+						<div className='w-full flex items-center justify-center gap-3 bg-[#fefff2] rounded-[20px] px-3 py-2.5 shadow-sm'>
+							<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-sm'>
+								<Image
+									src={author.image}
+									referrerPolicy='no-referrer'
+									alt='Profile image'
+									width={32}
+									height={32}
+								/>
+							</div>
+							<span className='font-extrabold font-title text-forest-300 text-sm truncate'>
+								{`@${author.name}`}
+							</span>
+						</div>
+					</div>
+					<div className='mt-3 text-center'>
+						<p className='text-sm text-forest-300'>{t('more-on')}</p>
+						<p className='text-forest-300 font-extrabold font-title'>
+							cookbook.rguixaro.dev
+						</p>
 					</div>
 				</div>
 			</div>
