@@ -22,12 +22,14 @@ export const RecipeSchema = z.object({
 	ingredients: z.array(z.string()),
 	category: z.enum(Categories),
 	authorId: z.string(),
+	authorUsername: z.string(),
 	createdAt: z.date(),
 })
 
-export const AuthorSchema = z.object({
+export const ProfileSchema = z.object({
 	id: z.string(),
 	name: z.string(),
+	username: z.string(),
 	image: z.string(),
 	recipesCount: z.number(),
 })
@@ -54,5 +56,5 @@ export const UpdateProfileSchema = z.object({
 export type UpdateProfileInput = z.TypeOf<typeof UpdateProfileSchema>
 
 export type RecipeSchema = z.TypeOf<typeof RecipeSchema>
-export type AuthorSchema = z.TypeOf<typeof AuthorSchema>
+export type ProfileSchema = z.TypeOf<typeof ProfileSchema>
 export type CreateRecipeInput = z.TypeOf<typeof CreateRecipeSchema>

@@ -6,12 +6,13 @@ import Link from 'next/link'
 import { auth } from '@/auth'
 import {
 	getRecipeByAuthAndSlug,
-	getProfileByUserId,
+	getProfileByUsername,
+	getUserByUsername,
 	getSavedRecipeIds,
 	getFavouriteRecipeIds,
 } from '@/server/queries'
 import { GoBack } from '@/components/layout'
-import { SyncAuthorName } from '@/components/profile'
+import { SyncProfileName } from '@/components/profile'
 import {
 	RecipeDownload,
 	RecipeEdit,
@@ -27,7 +28,7 @@ export default async function RecipePage({
 	params,
 	searchParams,
 }: {
-	params: Promise<{ authorId: string; slug: string }>
+	params: Promise<{ username: string; slug: string }>
 	searchParams?: Promise<{
 		referred?: boolean
 		query?: string
@@ -37,7 +38,7 @@ export default async function RecipePage({
 	const session = await auth()
 	if (!session) return null
 
-	const { slug, authorId } = await params
+	const { slug, username } = await params
 	const isReferred = (await searchParams)?.referred
 	const query = (await searchParams)?.query
 	const category = (await searchParams)?.category
@@ -45,11 +46,12 @@ export default async function RecipePage({
 	const paramQuery = query ? `?search=${query}` : ''
 	const paramCategory = category ? `${query ? '&' : '?'}category=${category}` : ''
 
-	const recipe = await getRecipeByAuthAndSlug(authorId, slug)
+	const user = await getUserByUsername(username)
+	const recipe = user ? await getRecipeByAuthAndSlug(user.id, slug) : null
 	const t = await getTranslations('RecipesPage')
 
 	const backTo = isReferred
-		? `/authors/${authorId}${paramQuery}${paramCategory}`
+		? `/profiles/${username}${paramQuery}${paramCategory}`
 		: `/${paramQuery}${paramCategory}`
 
 	if (!recipe) {
@@ -77,7 +79,7 @@ export default async function RecipePage({
 		image: string
 	}> {
 		if (!isOwner) {
-			const { profile } = await getProfileByUserId(authorId)
+			const { profile } = await getProfileByUsername(username)
 			if (!profile) return { name: '', image: '' }
 			return profile
 		} else
@@ -91,7 +93,7 @@ export default async function RecipePage({
 
 	return (
 		<div className='flex flex-col items-center pt-2 my-2 text-center w-full'>
-			<SyncAuthorName name={author.name} />
+			<SyncProfileName name={author.name} />
 			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
 				<GoBack text={'recipes'} to={backTo}>
 					<div className='flex space-x-3'>
@@ -157,7 +159,7 @@ export default async function RecipePage({
 						</span>
 					</div>
 				</div>
-				<Link href={`/authors/${authorId}`} className='w-full block'>
+				<Link href={`/profiles/${username}`} className='w-full block'>
 					<div className='flex items-center justify-center gap-3 bg-[#fefff2] rounded-[20px] px-3 py-2.5 shadow-sm transition-colors duration-200 '>
 						<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-sm'>
 							<Image

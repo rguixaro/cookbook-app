@@ -8,8 +8,8 @@ import { useDebounce } from '@/hooks'
 import { cn } from '@/utils'
 import { useTranslations } from 'next-intl'
 
-export const SearchAuthors = () => {
-	const t = useTranslations('AuthorsPage')
+export const SearchProfiles = () => {
+	const t = useTranslations('ProfilesPage')
 
 	const searchParams = useSearchParams()
 	const pathname = usePathname()
@@ -63,7 +63,7 @@ export const SearchAuthors = () => {
 					placeholder={t('search')}
 					value={value}
 					onChange={onChange}
-					id='author-search-input'
+					id='profile-search-input'
 					className={cn(
 						'w-full h-8 text-sm pl-9 pr-9 rounded-xl',
 						'bg-forest-200/15 border-l-[5px] border-forest-200 ring-2 ring-forest-200',

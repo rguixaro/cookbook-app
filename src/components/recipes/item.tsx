@@ -41,7 +41,7 @@ export function ItemRecipe({
 
 	return (
 		<Link
-			href={`/recipes/${recipe.authorId}/${recipe.slug}${queryParams}`}
+			href={`/recipes/${recipe.authorUsername}/${recipe.slug}${queryParams}`}
 			className='w-full'>
 			<motion.div
 				initial='offscreen'

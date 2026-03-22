@@ -12,7 +12,7 @@ type SocialButtonProps = React.HTMLAttributes<HTMLAnchorElement> & {
 export function SocialButton({ className }: SocialButtonProps) {
 	return (
 		<Link
-			href='/authors'
+			href='/profiles'
 			className={cn(
 				'w-8 h-8 ms-2 rounded-xl hover:bg-forest-200/15 z-10 flex items-center justify-center ',
 				className,

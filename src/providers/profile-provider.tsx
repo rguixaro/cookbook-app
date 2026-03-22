@@ -4,8 +4,8 @@ import { createContext, useContext, useState, ReactNode } from 'react'
 
 type ProfileContextType = {
 	currentUserName?: string
-	authorName?: string
-	setAuthorName: (name?: string) => void
+	profileName?: string
+	setProfileName: (name?: string) => void
 }
 
 const ProfileContext = createContext<ProfileContextType | undefined>(undefined)
@@ -18,11 +18,11 @@ export function ProfileProvider({
 	initialName?: string
 }) {
 	const [currentUserName] = useState(initialName)
-	const [authorName, setAuthorName] = useState<string | undefined>()
+	const [profileName, setProfileName] = useState<string | undefined>()
 
 	return (
 		<ProfileContext.Provider
-			value={{ currentUserName, authorName, setAuthorName }}>
+			value={{ currentUserName, profileName, setProfileName }}>
 			{children}
 		</ProfileContext.Provider>
 	)

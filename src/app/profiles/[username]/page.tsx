@@ -4,29 +4,29 @@ import Image from 'next/image'
 import { getTranslations } from 'next-intl/server'
 import { ChefHat, Loader, User } from 'lucide-react'
 
-import { getProfileByUserId } from '@/server/queries'
+import { getProfileByUsername } from '@/server/queries'
 import { GoBack } from '@/components/layout'
 import { RecipesFeed, SearchRecipes } from '@/components/recipes'
-import { SyncAuthorName } from '@/components/profile'
+import { SyncProfileName } from '@/components/profile'
 import { TypographyH4 } from '@/ui'
 
-export default async function AuthorPage({
+export default async function ProfilePage({
 	params,
 	searchParams,
 }: {
-	params: Promise<{ authorId: string }>
+	params: Promise<{ username: string }>
 	searchParams?: Promise<{
 		search?: string
 		category?: string
 		favourites?: string
 	}>
 }) {
-	const { authorId } = await params
+	const { username } = await params
 	const searchParam = (await searchParams)?.search
 	const categoryParam = (await searchParams)?.category
 	const favouritesParam = (await searchParams)?.favourites === 'true'
 
-	const { profile } = await getProfileByUserId(authorId)
+	const { profile } = await getProfileByUsername(username)
 	const t = await getTranslations('RecipesPage')
 	const t_common = await getTranslations('common')
 
@@ -48,7 +48,7 @@ export default async function AuthorPage({
 				<div className='mt-32 flex flex-col items-center justify-center text-forest-200'>
 					<User size={24} />
 					<TypographyH4 className='mt-2 mb-w5'>
-						{t_common('author-not-found')}
+						{t_common('profile-not-found')}
 					</TypographyH4>
 					<Link href='/' className='mt-5 underline font-medium'>
 						{t_common('return')}
@@ -56,7 +56,7 @@ export default async function AuthorPage({
 				</div>
 			) : (
 				<div className='flex flex-col items-center w-full'>
-					<SyncAuthorName name={profile.name} />
+					<SyncProfileName name={profile.name} />
 					<div className='mb-2 mt-3 bg-forest-200/15 border-4 border-forest-200/15 rounded-2xl shadow-sm'>
 						<div className='flex items-center gap-4 bg-[#fefff2] rounded-xl px-3 py-3 shadow-sm'>
 							<div className='w-14 h-14 shrink-0 rounded-xl overflow-hidden shadow-sm'>
@@ -99,7 +99,7 @@ export default async function AuthorPage({
 						<Suspense fallback={<LoadingSkeleton />}>
 							<RecipesFeed
 								referred
-								userId={authorId}
+								userId={profile.id}
 								searchParam={searchParam}
 								categoryParam={categoryParam}
 								favouritesParam={favouritesParam}
