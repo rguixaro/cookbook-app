@@ -62,7 +62,10 @@
 		"updating": "Actualizando receta...",
 		"more-on": "Más recetas en",
 		"member-since": "Desde {date}",
-		"recipe-count": "{count, plural, one {# receta} other {# recetas}}"
+		"recipe-count": "{count, plural, one {# receta} other {# recetas}}",
+		"source-links": "Enlaces de la receta",
+		"source-links-placeholder": "https://ejemplo.com/receta",
+		"sources": "Fuentes"
 	},
 	"RecipeCategories": {
 		"starter": "Entrante",
@@ -108,5 +111,10 @@
 		"not-found": "Perfil no encontrado",
 		"recipe": "receta",
 		"recipes": "recetas"
+	},
+	"ErrorPage": {
+		"title": "Algo salió mal",
+		"description": "Ocurrió un error inesperado. Por favor, inténtalo de nuevo.",
+		"retry": "Reintentar"
 	}
 }

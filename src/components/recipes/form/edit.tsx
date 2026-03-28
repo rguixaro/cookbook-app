@@ -10,9 +10,18 @@ import { toast } from 'sonner'
 import { type z } from 'zod'
 
 import { Categories, CreateRecipeSchema } from '@/server/schemas'
-import { updateRecipe } from '@/server/actions'
+import {
+	updateRecipe,
+	uploadRecipeImages,
+	updateRecipeImages,
+} from '@/server/actions'
 import { GoBack } from '@/components/layout'
-import { CategorySelector, IngredientSelector } from '@/components/recipes/form'
+import {
+	CategorySelector,
+	IngredientSelector,
+	SourceLinksInput,
+} from '@/components/recipes/form'
+import { RecipeImageInput } from '@/components/recipes/form/image-input'
 import {
 	Button,
 	Form,
@@ -30,6 +39,19 @@ interface EditRecipeProps {
 	recipe: Recipe
 }
 
+const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN ?? ''
+
+/**
+ * Extract the S3 file key from a full CloudFront URL.
+ * e.g. "https://assets.rguixaro.dev/cookbook/images/recipe_abc/uuid.jpg" → "images/recipe_abc/uuid.jpg"
+ */
+function extractKey(url: string): string | null {
+	if (!CLOUDFRONT_DOMAIN) return null
+	return url.startsWith(CLOUDFRONT_DOMAIN)
+		? url.slice(CLOUDFRONT_DOMAIN.length + 1)
+		: null
+}
+
 export const EditRecipe = (props: EditRecipeProps) => {
 	const t = useTranslations('RecipesPage')
 	const t_toasts = useTranslations('toasts')
@@ -45,12 +67,24 @@ export const EditRecipe = (props: EditRecipeProps) => {
 			time: undefined,
 			instructions: props.recipe.instructions,
 			category: props.recipe.category as Categories,
+			sourceUrls: props.recipe.sourceUrls ?? [],
 		},
 	})
 
 	const [ingredients, setIngredients] = useState<string[]>(
 		form.getValues('ingredients') || [],
 	)
+	const [sourceUrls, setSourceUrls] = useState<string[]>(
+		props.recipe.sourceUrls ?? [],
+	)
+
+	// Existing images are already full CloudFront URLs from the query layer
+	const existingUrls = props.recipe.images ?? []
+	const [images, setImages] = useState<string[]>(existingUrls)
+	const [imageFiles, setImageFiles] = useState<(File | null)[]>(
+		existingUrls.map(() => null), // null = already uploaded
+	)
+	const [coverIndex, setCoverIndex] = useState(0)
 
 	/**
 	 * onSubmit form handler
@@ -59,11 +93,48 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	const onSubmit = async (values: z.infer<typeof CreateRecipeSchema>) => {
 		try {
 			setLoading(true)
-			const { error, message } = await updateRecipe(props.recipe.id, values)
+			const { error, message } = await updateRecipe(props.recipe.id, {
+				...values,
+				sourceUrls: sourceUrls.filter((url) => url.trim() !== ''),
+			})
 			if (error) {
 				toast.error(t_toasts(message || 'error'))
 				return
 			}
+
+			// Reorder by cover so index 0 = hero/thumbnail
+			const orderedImages = reorderByCover(images, coverIndex)
+			const orderedFiles = reorderByCover(imageFiles, coverIndex)
+
+			// Upload new files first so we have their S3 keys
+			const newFiles: { file: File; position: number }[] = []
+			orderedFiles.forEach((file, i) => {
+				if (file !== null) newFiles.push({ file, position: i })
+			})
+
+			let uploadedKeys: string[] = []
+			if (newFiles.length > 0) {
+				// First, clear existing images to make room, then re-set everything
+				const formData = new FormData()
+				newFiles.forEach(({ file }) => formData.append('images', file))
+				const result = await uploadRecipeImages(props.recipe.id, formData)
+				uploadedKeys = result.images?.slice(-newFiles.length) ?? []
+			}
+
+			// Build final ordered array: existing keys in order + new keys spliced in
+			let uploadIdx = 0
+			const finalKeys: string[] = orderedFiles
+				.map((file, i) => {
+					if (file === null) {
+						return extractKey(orderedImages[i]) ?? ''
+					} else {
+						return uploadedKeys[uploadIdx++] ?? ''
+					}
+				})
+				.filter(Boolean)
+
+			// Set the final ordered array
+			await updateRecipeImages(props.recipe.id, finalKeys)
 
 			toast.success(t_toasts('recipe-updated'))
 			form.reset()
@@ -92,7 +163,9 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	return (
 		<div className='flex flex-col items-center pt-2 my-2 text-forest-400 w-full z-0'>
 			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
-				<GoBack text={'recipes'} />
+				<GoBack
+					to={`/recipes/${props.recipe.authorUsername}/${props.recipe.slug}`}
+				/>
 			</div>
 			<div className='flex my-5 w-10/12 sm:w-2/4 lg:w-2/6 flex-col border-4 border-forest-200/15 p-4 rounded-3xl text-forest-400'>
 				<Form {...form}>
@@ -118,6 +191,17 @@ export const EditRecipe = (props: EditRecipeProps) => {
 								</FormItem>
 							)}
 						/>
+						<div className='my-5'>
+							<RecipeImageInput
+								images={images}
+								onChange={setImages}
+								files={imageFiles}
+								onFilesChange={setImageFiles}
+								coverIndex={coverIndex}
+								onCoverChange={setCoverIndex}
+								disabled={loading}
+							/>
+						</div>
 						<FormField
 							control={form.control}
 							name='category'
@@ -237,6 +321,13 @@ export const EditRecipe = (props: EditRecipeProps) => {
 								</FormItem>
 							)}
 						/>
+						<div className='my-5'>
+							<FormLabel>{t('source-links')}</FormLabel>
+							<SourceLinksInput
+								values={sourceUrls}
+								setValues={setSourceUrls}
+							/>
+						</div>
 						<div className='w-full flex justify-center mt-5'>
 							<Button
 								type='submit'
@@ -260,4 +351,13 @@ export const EditRecipe = (props: EditRecipeProps) => {
 			</div>
 		</div>
 	)
+}
+
+/** Reorder array so the cover image is first */
+function reorderByCover<T>(arr: T[], coverIdx: number): T[] {
+	if (coverIdx === 0 || coverIdx >= arr.length) return arr
+	const copy = [...arr]
+	const [cover] = copy.splice(coverIdx, 1)
+	copy.unshift(cover)
+	return copy
 }

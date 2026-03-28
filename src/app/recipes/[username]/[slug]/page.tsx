@@ -1,5 +1,7 @@
+import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-import { Clock, Utensils } from 'lucide-react'
+import { notFound, redirect } from 'next/navigation'
+import { Clock, ExternalLink } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -11,6 +13,26 @@ import {
 	getSavedRecipeIds,
 	getFavouriteRecipeIds,
 } from '@/server/queries'
+
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ username: string; slug: string }>
+}): Promise<Metadata> {
+	const { username, slug } = await params
+	const user = await getUserByUsername(username)
+	const recipe = user ? await getRecipeByAuthAndSlug(user.id, slug) : null
+	if (!recipe) return { title: 'Recipe Not Found — CookBook' }
+	return {
+		title: `${recipe.name} — CookBook`,
+		description: `${recipe.name} by @${username}`,
+		openGraph: {
+			title: `${recipe.name} — CookBook`,
+			description: `${recipe.name} by @${username}`,
+			images: recipe.images?.[0] ? [recipe.images[0]] : [],
+		},
+	}
+}
 import { GoBack } from '@/components/layout'
 import { SyncProfileName } from '@/components/profile'
 import {
@@ -20,9 +42,12 @@ import {
 	SavedStatus,
 	FavouriteStatus,
 } from '@/components/recipes'
-import { TypographyH4 } from '@/ui'
 import { IconProps, cn } from '@/utils'
 import { Icon } from '@/components/recipes/icon'
+import {
+	RecipeGallery,
+	RecipeGalleryPlaceholder,
+} from '@/components/recipes/gallery'
 
 export default async function RecipePage({
 	params,
@@ -36,7 +61,7 @@ export default async function RecipePage({
 	}>
 }) {
 	const session = await auth()
-	if (!session) return null
+	if (!session) redirect('/auth')
 
 	const { slug, username } = await params
 	const isReferred = (await searchParams)?.referred
@@ -54,19 +79,7 @@ export default async function RecipePage({
 		? `/profiles/${username}${paramQuery}${paramCategory}`
 		: `/${paramQuery}${paramCategory}`
 
-	if (!recipe) {
-		return (
-			<div className='flex flex-col items-center pt-2 my-2 text-center w-full'>
-				<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
-					<GoBack text={'recipes'} to={backTo} />
-				</div>
-				<div className='h-32 mt-10 flex flex-col items-center justify-center text-forest-200'>
-					<TypographyH4>{t('not-found')}</TypographyH4>
-					<Utensils size={24} className='mt-2 mb-5' />
-				</div>
-			</div>
-		)
-	}
+	if (!recipe) notFound()
 
 	const isOwner = session.user.id === recipe.authorId
 	const savedIds = await getSavedRecipeIds()
@@ -81,7 +94,7 @@ export default async function RecipePage({
 		if (!isOwner) {
 			const { profile } = await getProfileByUsername(username)
 			if (!profile) return { name: '', image: '' }
-			return profile
+			return { name: profile.name ?? '', image: profile.image ?? '' }
 		} else
 			return {
 				name: session?.user?.name as string,
@@ -121,6 +134,11 @@ export default async function RecipePage({
 						{recipe.name}
 					</span>
 				</div>
+				{recipe.images?.length ? (
+					<RecipeGallery images={recipe.images} />
+				) : (
+					<RecipeGalleryPlaceholder />
+				)}
 				<div
 					className={cn(
 						'w-full mb-2 p-5 flex flex-col items-center justify-center',
@@ -158,6 +176,37 @@ export default async function RecipePage({
 							{recipe.instructions}
 						</span>
 					</div>
+					{recipe.sourceUrls && recipe.sourceUrls.length > 0 && (
+						<>
+							<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
+							<div className='text-sm md:text-base'>
+								<p className='font-extrabold text-forest-300'>
+									{t('sources')}
+								</p>
+								<div className='flex flex-col gap-1 mt-1'>
+									{recipe.sourceUrls.map((url, index) => (
+										<a
+											key={index}
+											href={url}
+											target='_blank'
+											rel='noopener noreferrer'
+											className='flex items-center gap-1.5 text-forest-200 hover:text-forest-300 transition-colors'>
+											<ExternalLink
+												size={14}
+												className='shrink-0'
+											/>
+											<span className='truncate text-sm'>
+												{new URL(url).hostname.replace(
+													'www.',
+													'',
+												)}
+											</span>
+										</a>
+									))}
+								</div>
+							</div>
+						</>
+					)}
 				</div>
 				<Link href={`/profiles/${username}`} className='w-full block'>
 					<div className='flex items-center justify-center gap-3 bg-[#fefff2] rounded-[20px] px-3 py-2.5 shadow-sm transition-colors duration-200 '>

@@ -62,7 +62,10 @@
 		"updating": "Updating recipe...",
 		"more-on": "More recipes on",
 		"member-since": "Since {date}",
-		"recipe-count": "{count, plural, one {# recipe} other {# recipes}}"
+		"recipe-count": "{count, plural, one {# recipe} other {# recipes}}",
+		"source-links": "Recipe links",
+		"source-links-placeholder": "https://example.com/recipe",
+		"sources": "Sources"
 	},
 	"RecipeCategories": {
 		"starter": "Starter",
@@ -108,5 +111,10 @@
 		"not-found": "Profile not found",
 		"recipe": "recipe",
 		"recipes": "recipes"
+	},
+	"ErrorPage": {
+		"title": "Something went wrong",
+		"description": "An unexpected error occurred. Please try again.",
+		"retry": "Try again"
 	}
 }

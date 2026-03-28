@@ -62,7 +62,10 @@
 		"updating": "Actualitzant recepta...",
 		"more-on": "Més receptes a",
 		"member-since": "Des de {date}",
-		"recipe-count": "{count, plural, one {# recepta} other {# receptes}}"
+		"recipe-count": "{count, plural, one {# recepta} other {# receptes}}",
+		"source-links": "Enllaços de la recepta",
+		"source-links-placeholder": "https://exemple.com/recepta",
+		"sources": "Fonts"
 	},
 	"RecipeCategories": {
 		"starter": "Entrant",
@@ -108,5 +111,10 @@
 		"not-found": "Perfil no trobat",
 		"recipe": "recepta",
 		"recipes": "receptes"
+	},
+	"ErrorPage": {
+		"title": "Alguna cosa ha anat malament",
+		"description": "S'ha produït un error inesperat. Si us plau, torna-ho a provar.",
+		"retry": "Tornar-ho a provar"
 	}
 }

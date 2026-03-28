@@ -24,6 +24,8 @@ export const RecipeSchema = z.object({
 	authorId: z.string(),
 	authorUsername: z.string(),
 	createdAt: z.date(),
+	images: z.array(z.string()).optional(),
+	sourceUrls: z.array(z.string().url()).optional(),
 })
 
 export const ProfileSchema = z.object({
@@ -35,15 +37,35 @@ export const ProfileSchema = z.object({
 })
 
 export const CreateRecipeSchema = z.object({
-	name: z.string().min(3, { message: 'recipe-name-too-short' }),
+	name: z
+		.string()
+		.min(3, { message: 'recipe-name-too-short' })
+		.max(100, { message: 'recipe-name-too-long' }),
 	category: z.enum(Categories, {
 		error: 'category-required',
 	}),
 	time: z
 		.number({ error: 'time-invalid' })
-		.min(1, { message: 'time-invalid' }),
-	ingredients: z.array(z.string()).nonempty({ message: 'ingredients-required' }),
-	instructions: z.string().min(10, { message: 'instructions-too-short' }),
+		.min(1, { message: 'time-invalid' })
+		.max(10080, { message: 'time-invalid' }),
+	ingredients: z
+		.array(z.string().min(1).max(200))
+		.nonempty({ message: 'ingredients-required' }),
+	instructions: z
+		.string()
+		.min(10, { message: 'instructions-too-short' })
+		.max(10000, { message: 'instructions-too-long' }),
+	sourceUrls: z
+		.array(
+			z
+				.string()
+				.max(2048)
+				.url({ message: 'source-url-invalid' })
+				.refine((url) => /^https?:\/\//i.test(url), {
+					message: 'source-url-invalid',
+				}),
+		)
+		.max(2),
 })
 
 export const UpdateProfileSchema = z.object({
