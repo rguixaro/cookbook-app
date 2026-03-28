@@ -21,7 +21,19 @@ const socialProviders = [
 export const SocialLogin = () => {
 	const t = useTranslations('LoginPage')
 	const searchParams = useSearchParams()
-	const callbackUrl = searchParams.get('callbackUrl')
+	const rawCallbackUrl = searchParams.get('callbackUrl')
+	const callbackUrl = (() => {
+		if (!rawCallbackUrl) return null
+		// Only allow relative paths — reject absolute URLs to prevent open redirect
+		if (
+			rawCallbackUrl.startsWith('/') &&
+			rawCallbackUrl[1] !== '/' &&
+			rawCallbackUrl[1] !== '\\'
+		) {
+			return rawCallbackUrl
+		}
+		return null
+	})()
 	const [loading, setLoading] = useState<boolean>(false)
 	const [provider, setProvider] = useState<string | null>()
 

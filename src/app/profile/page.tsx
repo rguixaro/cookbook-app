@@ -1,11 +1,17 @@
+import type { Metadata } from 'next'
+import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
+
+export const metadata: Metadata = {
+	title: 'My Profile — CookBook',
+}
 import { GoBack } from '@/components/layout'
 import { UpdateAccount } from '@/components/profile'
 import { db } from '@/server/db'
 
 export default async function ProfilePage() {
 	const session = await auth()
-	if (!session) return null
+	if (!session) redirect('/auth')
 
 	const user = await db.user.findUnique({
 		where: { id: session.user.id },
@@ -21,7 +27,7 @@ export default async function ProfilePage() {
 			<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
 				<UpdateAccount
 					username={user.username}
-					name={session.user.name!}
+					name={session.user.name ?? ''}
 					email={session.user.email!}
 					isPrivate={session.user.isPrivate!}
 				/>
