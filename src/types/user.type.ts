@@ -6,7 +6,6 @@ export interface User {
 	createdAt: Date
 	updatedAt: Date
 	image: string | null
-	password: string | null
 	savedRecipes: string[]
 	favouriteRecipes: string[]
 	isPrivate: boolean

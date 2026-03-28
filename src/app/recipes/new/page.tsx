@@ -10,9 +10,14 @@ import { toast } from 'sonner'
 import { type z } from 'zod'
 
 import { Categories, CreateRecipeSchema } from '@/server/schemas'
-import { createRecipe } from '@/server/actions'
+import { createRecipe, uploadRecipeImages } from '@/server/actions'
 import { GoBack } from '@/components/layout'
-import { CategorySelector, IngredientSelector } from '@/components/recipes/form'
+import {
+	CategorySelector,
+	IngredientSelector,
+	SourceLinksInput,
+} from '@/components/recipes/form'
+import { RecipeImageInput } from '@/components/recipes/form/image-input'
 import {
 	Button,
 	Form,
@@ -39,10 +44,15 @@ export default function NewRecipePage() {
 			ingredients: [],
 			time: undefined,
 			instructions: '',
+			sourceUrls: [],
 		},
 	})
 
 	const [ingredients, setIngredients] = useState<string[]>([])
+	const [sourceUrls, setSourceUrls] = useState<string[]>([])
+	const [images, setImages] = useState<string[]>([])
+	const [imageFiles, setImageFiles] = useState<(File | null)[]>([])
+	const [coverIndex, setCoverIndex] = useState(0)
 
 	/**
 	 * onSubmit form handler
@@ -51,15 +61,30 @@ export default function NewRecipePage() {
 	const onSubmit = async (values: z.infer<typeof CreateRecipeSchema>) => {
 		try {
 			setLoading(true)
-			const { error, message } = await createRecipe(values)
-			if (error) {
+			const { error, message, recipeId } = await createRecipe({
+				...values,
+				sourceUrls: sourceUrls.filter((url) => url.trim() !== ''),
+			})
+			if (error || !recipeId) {
 				toast.error(t_toasts(message || 'error'))
 				return
+			}
+
+			// Upload images if any
+			const newFiles = imageFiles.filter((f): f is File => f !== null)
+			if (newFiles.length > 0) {
+				const formData = new FormData()
+				// Reorder: cover image first
+				const ordered = reorderByCover(newFiles, coverIndex)
+				ordered.forEach((file) => formData.append('images', file))
+				await uploadRecipeImages(recipeId, formData)
 			}
 
 			toast.success(t_toasts('recipe-created'))
 			form.reset()
 			setIngredients([])
+			setImages([])
+			setImageFiles([])
 			router.replace('/')
 		} catch (error) {
 			toast.error(t_toasts('error'))
@@ -106,6 +131,17 @@ export default function NewRecipePage() {
 								</FormItem>
 							)}
 						/>
+						<div className='my-5'>
+							<RecipeImageInput
+								images={images}
+								onChange={setImages}
+								files={imageFiles}
+								onFilesChange={setImageFiles}
+								coverIndex={coverIndex}
+								onCoverChange={setCoverIndex}
+								disabled={loading}
+							/>
+						</div>
 						<FormField
 							control={form.control}
 							name='category'
@@ -225,6 +261,13 @@ export default function NewRecipePage() {
 								</FormItem>
 							)}
 						/>
+						<div className='my-5'>
+							<FormLabel>{t('source-links')}</FormLabel>
+							<SourceLinksInput
+								values={sourceUrls}
+								setValues={setSourceUrls}
+							/>
+						</div>
 						<div className='w-full flex justify-center mt-5'>
 							<Button
 								type='submit'
@@ -248,4 +291,13 @@ export default function NewRecipePage() {
 			</div>
 		</div>
 	)
+}
+
+/** Reorder array so the cover image is first */
+function reorderByCover<T>(arr: T[], coverIdx: number): T[] {
+	if (coverIdx === 0 || coverIdx >= arr.length) return arr
+	const copy = [...arr]
+	const [cover] = copy.splice(coverIdx, 1)
+	copy.unshift(cover)
+	return copy
 }

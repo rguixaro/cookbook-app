@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 import { useTranslations } from 'next-intl'
-import { motion, Variants } from 'framer-motion'
+import { motion, Variants } from 'motion/react'
 import { ChefHat } from 'lucide-react'
 
 import { ProfileSchema } from '@/server/schemas'
@@ -27,10 +27,12 @@ export function ItemProfile({
 }) {
 	const t = useTranslations('RecipesPage')
 
-	const queryParams = query ? `?query=${query}` : ''
+	const queryParams = query ? `?query=${encodeURIComponent(query)}` : ''
 
 	return (
-		<Link href={`/profiles/${profile.username}${queryParams}`} className='w-full'>
+		<Link
+			href={`/profiles/${profile.username}${queryParams}`}
+			className='w-full'>
 			<motion.div
 				initial='offscreen'
 				whileInView='onscreen'

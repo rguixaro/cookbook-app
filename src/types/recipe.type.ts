@@ -7,20 +7,22 @@ export const Categories = [
 	'Salad',
 	'Soup',
 	'Dessert',
-];
+]
 
-export type Categories = (typeof Categories)[number];
+export type Categories = (typeof Categories)[number]
 
 export interface Recipe {
-	id: string;
-	slug: string;
-	name: string;
-	time: number | null;
-	instructions: string;
-	ingredients: string[];
-	createdAt: Date;
-	updatedAt: Date;
-	category: Categories;
-	authorId: string;
-	authorUsername: string;
+	id: string
+	slug: string
+	name: string
+	time: number | null
+	instructions: string
+	ingredients: string[]
+	createdAt: Date
+	updatedAt: Date
+	category: Categories
+	authorId: string
+	authorUsername: string
+	images?: string[]
+	sourceUrls?: string[]
 }

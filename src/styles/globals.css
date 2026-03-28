@@ -45,7 +45,8 @@
 }
 
 @theme {
-	--color-forest-100: #a6bbb9;
+	--color-forest-100: #eaf0e2;
+	--color-forest-150: #d9e3d4;
 	--color-forest-200: #789b84;
 	--color-forest-300: #5a8470;
 	--color-forest-400: #3d6c5f;
