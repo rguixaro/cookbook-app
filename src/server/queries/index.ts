@@ -4,6 +4,14 @@ import { auth } from '@/auth'
 import { db } from '@/server/db'
 import { RecipeSchema } from '../schemas'
 
+const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN
+
+/** Convert S3 file keys to full CloudFront URLs */
+export function toImageUrls(keys: string[]): string[] {
+	if (!CLOUDFRONT_DOMAIN) return []
+	return keys.map((key) => `${CLOUDFRONT_DOMAIN}/${key}`)
+}
+
 /**
  * Get a user by username.
  * @param username
@@ -73,6 +81,15 @@ export const getRecipesByUserId = cache(async (userId?: string) => {
 
 	const authorId = userId || currentUser.user?.id
 
+	/** If viewing another user's recipes, check their privacy setting */
+	if (userId && userId !== currentUser.user?.id) {
+		const targetUser = await db.user.findUnique({
+			where: { id: userId },
+			select: { isPrivate: true },
+		})
+		if (!targetUser || targetUser.isPrivate) return null
+	}
+
 	try {
 		let savedRecipes: RecipeSchema[] = []
 		const rawRecipes = await db.recipe.findMany({
@@ -83,6 +100,7 @@ export const getRecipesByUserId = cache(async (userId?: string) => {
 			...r,
 			authorUsername: r.author?.username ?? '',
 			author: undefined,
+			images: toImageUrls(r.images),
 		}))
 
 		if (!userId) {
@@ -96,6 +114,7 @@ export const getRecipesByUserId = cache(async (userId?: string) => {
 					...r,
 					authorUsername: r.author?.username ?? '',
 					author: undefined,
+					images: toImageUrls(r.images),
 				}))
 			}
 		}
@@ -120,6 +139,15 @@ export const getRecipeByAuthAndSlug = cache(
 		/** Not authenticated */
 		if (!currentUser) return null
 
+		/** If viewing another user's recipe, check their privacy setting */
+		if (authorId !== currentUser.user?.id) {
+			const author = await db.user.findUnique({
+				where: { id: authorId },
+				select: { isPrivate: true },
+			})
+			if (!author || author.isPrivate) return null
+		}
+
 		try {
 			const recipe = await db.recipe.findFirst({
 				where: { authorId, slug },
@@ -130,6 +158,7 @@ export const getRecipeByAuthAndSlug = cache(
 				...recipe,
 				authorUsername: recipe.author?.username ?? '',
 				author: undefined,
+				images: toImageUrls(recipe.images),
 			}
 		} catch (error) {
 			throw error
@@ -149,8 +178,8 @@ export const getProfileByUsername = cache(
 	): Promise<{
 		profile: {
 			id: string
-			name: string
-			image: string
+			name: string | null
+			image: string | null
 			createdAt: Date
 			_count: { recipes: number }
 		} | null
@@ -215,17 +244,16 @@ export const getProfilesByName = cache(async (name: string) => {
 						recipes: true,
 					},
 				},
-				savedRecipes: true,
 			},
 			take: 10,
 		})
 
 		const mappedProfiles = profiles.map((profile) => ({
 			id: profile.id,
-			name: profile.name,
-			username: profile.username,
-			image: profile.image,
-			recipesCount: profile._count.recipes + profile.savedRecipes.length,
+			name: profile.name ?? '',
+			username: profile.username!,
+			image: profile.image ?? '',
+			recipesCount: profile._count.recipes,
 		}))
 
 		return { profiles: mappedProfiles }
