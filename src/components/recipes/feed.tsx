@@ -1,12 +1,39 @@
-import { getTranslations } from 'next-intl/server'
-import { Utensils } from 'lucide-react'
+'use client'
 
-import { getRecipesByUserId, getFavouriteRecipeIds } from '@/server/queries'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useTranslations } from 'next-intl'
+import { Loader, Utensils } from 'lucide-react'
+
+import { fetchRecipes } from '@/server/actions'
+import { useInfiniteScroll } from '@/hooks'
 import { Info } from '@/components/layout'
 import { ItemRecipe } from '@/components/recipes/item'
 import { TypographyH4 } from '@/ui'
+import type { RecipeSchema } from '@/server/schemas'
 
-export const RecipesFeed = async ({
+function RecipeSkeleton() {
+	return (
+		<div className='w-full my-2 flex shadow-sm bg-forest-200/15 border-4 border-forest-200/15 rounded-2xl overflow-hidden animate-pulse'>
+			<div className='flex flex-col flex-1 min-w-0'>
+				<div className='flex items-center w-full bg-[#fefff2] px-4 py-3 rounded-l-xl shadow-sm'>
+					<div className='w-6 h-6 bg-forest-200/20 rounded' />
+					<div className='ms-2 h-4 w-2/3 bg-forest-200/20 rounded' />
+				</div>
+				<div className='flex flex-wrap gap-1.5 px-3 py-2.5'>
+					{[1, 2, 3].map((i) => (
+						<div
+							key={i}
+							className='h-5 w-16 bg-forest-200/10 rounded-lg'
+						/>
+					))}
+				</div>
+			</div>
+			<div className='w-24 shrink-0 bg-forest-200/10' />
+		</div>
+	)
+}
+
+export const RecipesFeed = ({
 	searchParam,
 	categoryParam,
 	favouritesParam,
@@ -19,36 +46,64 @@ export const RecipesFeed = async ({
 	userId?: string
 	referred?: boolean
 }) => {
-	const data = await getRecipesByUserId(userId)
-	const favouriteIds = favouritesParam ? await getFavouriteRecipeIds() : []
-	const t = await getTranslations('common')
+	const t = useTranslations('common')
+	const [recipes, setRecipes] = useState<RecipeSchema[]>([])
+	const [nextCursor, setNextCursor] = useState<string | null>(null)
+	const [isLoading, setIsLoading] = useState(true)
+	const fetchIdRef = useRef(0)
 
-	const normalize = (str = '') =>
-		str
-			.toLowerCase()
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.trim()
-			.replace(/\s+/g, ' ')
+	const hasMore = nextCursor !== null
 
-	const filteredRecipes = data?.recipes.filter((recipe) => {
-		if (favouritesParam && !favouriteIds.includes(recipe.id)) return false
-		if (!searchParam && !categoryParam) return true
-		if (categoryParam && recipe.category !== categoryParam) return false
+	const loadPage = useCallback(
+		async (cursor?: string) => {
+			const id = ++fetchIdRef.current
+			if (!cursor) setIsLoading(true)
 
-		const query = normalize(searchParam || '')
-		const name = normalize(recipe.name)
+			const result = await fetchRecipes({
+				cursor: cursor ?? undefined,
+				search: searchParam,
+				category: categoryParam,
+				favourites: favouritesParam,
+				userId,
+			})
 
-		return !query || name.includes(query)
-	})
+			// Discard stale responses
+			if (fetchIdRef.current !== id) return
 
-	const sortedRecipes = filteredRecipes?.sort((a, b) => {
-		return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-	})
+			setRecipes((prev) => {
+				const combined = cursor
+					? [...prev, ...result.recipes]
+					: result.recipes
+				const seen = new Set<string>()
+				return combined.filter((r) =>
+					seen.has(r.id) ? false : seen.add(r.id) && true,
+				)
+			})
+			setNextCursor(result.nextCursor)
+			setIsLoading(false)
+		},
+		[searchParam, categoryParam, favouritesParam, userId],
+	)
+
+	// Reset and fetch page 1 when filters change
+	useEffect(() => {
+		setRecipes([])
+		setNextCursor(null)
+		loadPage()
+	}, [loadPage])
+
+	const loadMore = useCallback(() => {
+		if (!hasMore || isLoading) return
+		loadPage(nextCursor!)
+	}, [hasMore, isLoading, nextCursor, loadPage])
+
+	const sentinelRef = useInfiniteScroll(loadMore, hasMore && !isLoading)
+
+	const isEmpty = recipes.length === 0 && !isLoading
 
 	return (
 		<div className='w-full h-full flex flex-col items-center'>
-			{sortedRecipes?.map((recipe) => (
+			{recipes.map((recipe) => (
 				<ItemRecipe
 					key={recipe.id}
 					recipe={recipe}
@@ -57,8 +112,30 @@ export const RecipesFeed = async ({
 					category={categoryParam}
 				/>
 			))}
+
+			{/* Loading skeletons */}
+			{isLoading && (
+				<>
+					{recipes.length === 0 ? (
+						<>
+							<RecipeSkeleton />
+							<RecipeSkeleton />
+							<RecipeSkeleton />
+						</>
+					) : (
+						<div className='flex flex-col mt-3 justify-center items-center text-forest-200'>
+							<Loader size={18} className='animate-spin' />
+						</div>
+					)}
+				</>
+			)}
+
+			{/* Scroll sentinel */}
+			<div ref={sentinelRef} />
+
+			{/* Empty states */}
 			{referred ? (
-				filteredRecipes?.length === 0 && (
+				isEmpty && (
 					<div className='mt-10 h-32 flex flex-col items-center justify-center text-forest-200 text-center'>
 						<Utensils size={24} />
 						<TypographyH4 className='mt-2 mb-5'>
@@ -67,7 +144,7 @@ export const RecipesFeed = async ({
 					</div>
 				)
 			) : (
-				<Info enabled={filteredRecipes?.length === 0} mode='recipes' />
+				<Info enabled={isEmpty} mode='recipes' />
 			)}
 		</div>
 	)

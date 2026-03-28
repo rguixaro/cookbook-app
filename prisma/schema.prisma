@@ -25,6 +25,8 @@ model Recipe {
     time                Int?
     instructions        String
     ingredients         String[]
+    images              String[]
+    sourceUrls          String[]
     createdAt           DateTime   @default(now())
     updatedAt           DateTime   @updatedAt
     category            Category
@@ -69,12 +71,11 @@ model User {
     id                  String      @id @default(auto()) @map("_id") @db.ObjectId
     createdAt           DateTime    @default(now())
     updatedAt           DateTime    @updatedAt
-    image               String
-    name                String
+    image               String?
+    name                String?
     username            String      @unique
     email               String      @unique
     emailVerified       DateTime?
-    password            String?
     isPrivate           Boolean     @default(true)
     savedRecipes        String[]
     favouriteRecipes    String[]
@@ -83,20 +84,3 @@ model User {
     recipes             Recipe[]
 }
 
-model VerificationToken {
-    id                  String      @id @default(auto()) @map("_id") @db.ObjectId
-    email               String
-    token               String      @unique
-    expires             DateTime
-
-    @@unique([email, token])
-}
-
-model PasswordResetToken {
-    id                  String      @id @default(auto()) @map("_id") @db.ObjectId
-    email               String
-    token               String      @unique
-    expires             DateTime
-
-    @@unique([email, token])
-}

@@ -4,7 +4,7 @@ import { getLocale, getMessages } from 'next-intl/server'
 import { SessionProvider } from 'next-auth/react'
 
 import { auth } from '@/auth'
-import { ToasterProvider, ProfileProvider } from '@/providers'
+import { ToasterProvider, ProfileProvider, CookiesProvider } from '@/providers'
 import { Header } from '@/components/layout/header'
 import '@/styles/globals.css'
 import { cn } from '@/utils'
@@ -32,9 +32,10 @@ export default async function RootLayout({
 					'font-sans antialiased bg-[#fefff2] selection:bg-forest-200/15',
 					'flex flex-col items-center',
 				)}>
-				<SessionProvider>
+				<SessionProvider session={session}>
 					<NextIntlClientProvider messages={messages}>
 						<ProfileProvider initialName={userName || ''}>
+							<CookiesProvider />
 							<Header />
 							{children}
 							<ToasterProvider />

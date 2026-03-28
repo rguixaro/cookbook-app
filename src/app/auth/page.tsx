@@ -1,18 +1,24 @@
-import { getTranslations } from 'next-intl/server';
-import { UtensilsCrossed } from 'lucide-react';
+import type { Metadata } from 'next'
+import { getTranslations } from 'next-intl/server'
+import { UtensilsCrossed } from 'lucide-react'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui';
-import { SocialLogin } from '@/components/auth';
-import { cn } from '@/utils';
+export const metadata: Metadata = {
+	title: 'Sign In — CookBook',
+	description: 'Sign in to your CookBook account',
+}
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui'
+import { SocialLogin } from '@/components/auth'
+import { cn } from '@/utils'
 
 export default async function LoginPage() {
-	const t = await getTranslations('LoginPage');
+	const t = await getTranslations('LoginPage')
 
 	return (
 		<Card
 			className={cn(
 				'w-full max-w-sm',
-				'duration-300 animate-in fade-in-15 slide-in-from-bottom-3'
+				'duration-300 animate-in fade-in-15 slide-in-from-bottom-3',
 			)}>
 			<CardHeader className='flex items-center justify-center text-center text-forest-300'>
 				<UtensilsCrossed size={48} />
@@ -30,5 +36,5 @@ export default async function LoginPage() {
 				<SocialLogin />
 			</CardContent>
 		</Card>
-	);
+	)
 }
