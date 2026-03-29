@@ -1,12 +1,11 @@
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
+import { withSentryConfig } from '@sentry/nextjs'
 
 const withNextIntl = createNextIntlPlugin()
 
 const cloudfrontDomain = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN ?? ''
-const cloudfrontHostname = cloudfrontDomain
-	? new URL(cloudfrontDomain).hostname
-	: ''
+const cloudfrontHostname = cloudfrontDomain ? new URL(cloudfrontDomain).hostname : ''
 
 const nextConfig: NextConfig = {
 	poweredByHeader: false,
@@ -27,8 +26,8 @@ const nextConfig: NextConfig = {
 				hostname: 'lh3.googleusercontent.com',
 			},
 			...(cloudfrontHostname
-			? [{ protocol: 'https' as const, hostname: cloudfrontHostname }]
-			: []),
+				? [{ protocol: 'https' as const, hostname: cloudfrontHostname }]
+				: []),
 		],
 		localPatterns: [
 			{
@@ -69,7 +68,7 @@ const nextConfig: NextConfig = {
 							"style-src 'self' 'unsafe-inline'",
 							`img-src 'self' data: blob: https://lh3.googleusercontent.com${cloudfrontDomain ? ` ${cloudfrontDomain}` : ''}`,
 							"font-src 'self'",
-							`connect-src 'self'${cloudfrontDomain ? ` ${cloudfrontDomain}` : ''}${process.env.NODE_ENV === 'development' ? ' ws://127.0.0.1:* ws://localhost:*' : ''}`,
+							`connect-src 'self'${cloudfrontDomain ? ` ${cloudfrontDomain}` : ''} *.sentry.io${process.env.NODE_ENV === 'development' ? ' ws://127.0.0.1:* ws://localhost:*' : ''}`,
 							"frame-ancestors 'none'",
 						].join('; '),
 					},
@@ -79,4 +78,16 @@ const nextConfig: NextConfig = {
 	},
 }
 
-export default withNextIntl(nextConfig)
+export default withSentryConfig(withNextIntl(nextConfig), {
+	org: process.env.SENTRY_ORG,
+	project: process.env.SENTRY_PROJECT,
+	silent: !process.env.CI,
+	widenClientFileUpload: true,
+	tunnelRoute: '/monitoring',
+	webpack: {
+		automaticVercelMonitors: false,
+		treeshake: {
+			removeDebugLogging: true,
+		},
+	},
+})

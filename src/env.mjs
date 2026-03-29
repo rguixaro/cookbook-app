@@ -18,6 +18,9 @@ export const env = createEnv({
 		AMAZON_CLOUDFRONT_KEY_PAIR_ID: z.string(),
 		AMAZON_CLOUDFRONT_PRIVATE_KEY_SECRET_NAME: z.string(),
 		COOKIES_DOMAIN: z.string(),
+		SENTRY_DSN: z.string().url().optional(),
+		SENTRY_ORG: z.string().optional(),
+		SENTRY_PROJECT: z.string().optional(),
 	},
 	client: {
 		NEXT_PUBLIC_SITE_URL: z.string().url(),
@@ -35,6 +38,9 @@ export const env = createEnv({
 		AMAZON_CLOUDFRONT_PRIVATE_KEY_SECRET_NAME:
 			process.env.AMAZON_CLOUDFRONT_PRIVATE_KEY_SECRET_NAME,
 		COOKIES_DOMAIN: process.env.COOKIES_DOMAIN,
+		SENTRY_DSN: process.env.SENTRY_DSN,
+		SENTRY_ORG: process.env.SENTRY_ORG,
+		SENTRY_PROJECT: process.env.SENTRY_PROJECT,
 		NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
 		NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN:
 			process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN,

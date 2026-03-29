@@ -9,6 +9,7 @@ import { motion, Variants } from 'motion/react'
 import Image, { ImageLoader } from 'next/image'
 
 import { RecipeSchema } from '@/server/schemas'
+import { useCookiesReady } from '@/providers/cookie-provider'
 
 const proxyLoader: ImageLoader = ({ src, width, quality }) => {
 	return `/api/proxy?url=${encodeURIComponent(src)}&w=${width}${quality ? `&q=${quality}` : ''}`
@@ -51,6 +52,7 @@ export function ItemRecipe({
 	category?: string
 }) {
 	const t = useTranslations('RecipesPage')
+	const cookiesReady = useCookiesReady()
 	const chipsRef = useRef<HTMLDivElement>(null)
 	const [visibleCount, setVisibleCount] = useState<number | null>(null)
 	const ceilingRef = useRef<number>(Infinity)
@@ -168,7 +170,7 @@ export function ItemRecipe({
 							</span>
 						</div>
 					</div>
-					{recipe.images?.[0] && (
+					{cookiesReady && recipe.images?.[0] && (
 						<div className='w-24 shrink-0 relative border-l-4 border-transparent bg-forest-150'>
 							<Image
 								src={recipe.images[0]}

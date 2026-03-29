@@ -56,7 +56,12 @@ export const RecipeDownload = ({
 				fonts.map(async (f) => {
 					const res = await fetch(f.url)
 					const buf = await res.arrayBuffer()
-					const base64 = btoa(String.fromCharCode(...new Uint8Array(buf)))
+					const bytes = new Uint8Array(buf)
+					let binary = ''
+					for (let i = 0; i < bytes.length; i++) {
+						binary += String.fromCharCode(bytes[i])
+					}
+					const base64 = btoa(binary)
 					const format = f.url.endsWith('.otf') ? 'opentype' : 'truetype'
 					return `@font-face { font-family: '${f.family || 'Montserrat'}'; src: url(data:font/${format};base64,${base64}) format('${format}'); font-weight: ${f.weight}; }`
 				}),
