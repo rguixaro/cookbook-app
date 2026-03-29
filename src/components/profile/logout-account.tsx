@@ -52,14 +52,11 @@ export const LogoutAccount = (props: LogoutAccountProps) => {
 						<Button
 							variant='ghost'
 							disabled={loading}
-							className='font-bold text-forest-400 mt-2'>
+							className='font-bold text-forest-400 mt-2 md:mt-0'>
 							{t('cancel')}
 						</Button>
 					</DialogClose>
-					<Button
-						disabled={loading}
-						onClick={handleLogoutAccount}
-						variant='destructive'>
+					<Button disabled={loading} onClick={handleLogoutAccount}>
 						{loading && (
 							<LoaderIcon size={16} className='animate-spin' />
 						)}

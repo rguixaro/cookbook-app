@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
 import Image, { ImageLoader } from 'next/image'
 import { ImageIcon } from 'lucide-react'
+import { useCookiesReady } from '@/providers/cookie-provider'
 
 /**
  * Custom image loader that routes through the proxy API
@@ -20,7 +20,9 @@ const proxyLoader: ImageLoader = ({ src, width, quality }) => {
  * Falls back to empty-state placeholder when no images.
  */
 export function RecipeGallery({ images }: { images: string[] }) {
+	const cookiesReady = useCookiesReady()
 	if (!images.length) return null
+	if (!cookiesReady) return <RecipeGalleryPlaceholder />
 
 	const count = Math.min(images.length, 3)
 
@@ -116,7 +118,8 @@ export function RecipeGalleryPlaceholder() {
  * Shows the first image or a placeholder icon.
  */
 export function RecipeThumbnail({ src }: { src?: string }) {
-	if (!src) return null
+	const cookiesReady = useCookiesReady()
+	if (!src || !cookiesReady) return null
 
 	return (
 		<div className='w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-forest-150'>
