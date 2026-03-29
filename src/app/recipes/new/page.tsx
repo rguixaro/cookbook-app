@@ -5,19 +5,18 @@ import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Clock, LoaderIcon } from 'lucide-react'
+import { Clock, ImageIcon, LoaderIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { type z } from 'zod'
 
 import { Categories, CreateRecipeSchema } from '@/server/schemas'
-import { createRecipe, uploadRecipeImages } from '@/server/actions'
+import { createRecipe } from '@/server/actions'
 import { GoBack } from '@/components/layout'
 import {
 	CategorySelector,
 	IngredientSelector,
 	SourceLinksInput,
 } from '@/components/recipes/form'
-import { RecipeImageInput } from '@/components/recipes/form/image-input'
 import {
 	Button,
 	Form,
@@ -50,9 +49,6 @@ export default function NewRecipePage() {
 
 	const [ingredients, setIngredients] = useState<string[]>([])
 	const [sourceUrls, setSourceUrls] = useState<string[]>([])
-	const [images, setImages] = useState<string[]>([])
-	const [imageFiles, setImageFiles] = useState<(File | null)[]>([])
-	const [coverIndex, setCoverIndex] = useState(0)
 
 	/**
 	 * onSubmit form handler
@@ -70,21 +66,9 @@ export default function NewRecipePage() {
 				return
 			}
 
-			// Upload images if any
-			const newFiles = imageFiles.filter((f): f is File => f !== null)
-			if (newFiles.length > 0) {
-				const formData = new FormData()
-				// Reorder: cover image first
-				const ordered = reorderByCover(newFiles, coverIndex)
-				ordered.forEach((file) => formData.append('images', file))
-				await uploadRecipeImages(recipeId, formData)
-			}
-
 			toast.success(t_toasts('recipe-created'))
 			form.reset()
 			setIngredients([])
-			setImages([])
-			setImageFiles([])
 			router.replace('/')
 		} catch (error) {
 			toast.error(t_toasts('error'))
@@ -107,7 +91,7 @@ export default function NewRecipePage() {
 			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
 				<GoBack text={'recipes'} />
 			</div>
-			<div className='flex my-5 w-10/12 sm:w-2/4 lg:w-2/6 flex-col border-4 border-forest-200/15 p-4 rounded-3xl text-forest-400'>
+			<div className='flex my-5 bg-forest-100 w-10/12 sm:w-2/4 lg:w-2/6 flex-col border-4 border-forest-150 p-4 rounded-3xl text-forest-400'>
 				<Form {...form}>
 					<form
 						onSubmit={form.handleSubmit(onSubmit)}
@@ -122,7 +106,7 @@ export default function NewRecipePage() {
 										<Input
 											{...field}
 											autoComplete='off'
-											className='border-2 text-center py-5 bg-forest-200/15'
+											className='border-2 text-center py-5 bg-forest-50 text-forest-300 text-lg md:text-xl font-title font-black placeholder:font-normal placeholder:font-sans placeholder:text-forest-200 placeholder:text-sm'
 											placeholder={t('recipe-name')}
 											disabled={loading}
 										/>
@@ -131,16 +115,14 @@ export default function NewRecipePage() {
 								</FormItem>
 							)}
 						/>
-						<div className='my-5'>
-							<RecipeImageInput
-								images={images}
-								onChange={setImages}
-								files={imageFiles}
-								onFilesChange={setImageFiles}
-								coverIndex={coverIndex}
-								onCoverChange={setCoverIndex}
-								disabled={loading}
-							/>
+						<div className='my-5 flex flex-col items-center justify-center gap-1.5 py-6 px-3 rounded-xl bg-forest-150 border-2 border-dashed border-forest-200/25'>
+							<ImageIcon size={24} className='text-forest-200' />
+							<span className='text-xs text-center text-forest-200'>
+								{t('images-after-create')}
+							</span>
+						</div>
+						<div className='w-full flex justify-center my-3'>
+							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
 						</div>
 						<FormField
 							control={form.control}
@@ -169,12 +151,15 @@ export default function NewRecipePage() {
 							render={() => (
 								<FormItem className='my-5'>
 									<FormControl>
-										<div className='flex my-5 bg-forest-200/15 rounded-2xl overflow-hidden shadow-sm'>
-											<div className='bg-forest-200 p-2 flex items-center justify-center'>
-												<Clock color='#fff' size={24} />
+										<div className='flex my-5 bg-forest-50 rounded-2xl overflow-hidden shadow-center-sm'>
+											<div className='bg-forest-200 p-2 flex items-center justify-center border-2 rounded-2xl rounded-r-none border-r-0 border-forest-150'>
+												<Clock
+													className='stroke-white'
+													size={24}
+												/>
 											</div>
-											<div className='flex px-5 w-full items-center rounded-r-2xl justify-between border-2 border-l-0 border-forest-200/15'>
-												<span className='font-bold text-forest-200/75 leading-4'>
+											<div className='flex px-5 w-full items-center rounded-r-2xl justify-between border-2 border-l-0 border-forest-150'>
+												<span className='font-bold text-forest-300 leading-4'>
 													{t('time')}
 												</span>
 												<FormField
@@ -208,7 +193,7 @@ export default function NewRecipePage() {
 																		)}
 																		autoComplete='off'
 																		type='number'
-																		className='rounded border-none shadow-none focus-visible:ring-0 text-right'
+																		className='rounded border-none shadow-none! focus-visible:ring-0 text-right'
 																		placeholder={t(
 																			'minutes',
 																		)}
@@ -228,6 +213,9 @@ export default function NewRecipePage() {
 								</FormItem>
 							)}
 						/>
+						<div className='w-full flex justify-center my-3'>
+							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
+						</div>
 						<FormField
 							control={form.control}
 							name='ingredients'
@@ -242,6 +230,9 @@ export default function NewRecipePage() {
 								</FormItem>
 							)}
 						/>
+						<div className='w-full flex justify-center my-3'>
+							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
+						</div>
 						<FormField
 							control={form.control}
 							name='instructions'
@@ -252,7 +243,7 @@ export default function NewRecipePage() {
 										<Textarea
 											{...field}
 											onKeyDown={(e) => e.stopPropagation()}
-											className='border-2 bg-forest-200/15 text-forest-400 placeholder:text-forest-200'
+											className='border-2 bg-forest-50 text-forest-200 placeholder:text-forest-200'
 											placeholder={t('instructions-add')}
 											disabled={loading}
 										/>
@@ -261,6 +252,9 @@ export default function NewRecipePage() {
 								</FormItem>
 							)}
 						/>
+						<div className='w-full flex justify-center my-3'>
+							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
+						</div>
 						<div className='my-5'>
 							<FormLabel>{t('source-links')}</FormLabel>
 							<SourceLinksInput
@@ -291,13 +285,4 @@ export default function NewRecipePage() {
 			</div>
 		</div>
 	)
-}
-
-/** Reorder array so the cover image is first */
-function reorderByCover<T>(arr: T[], coverIdx: number): T[] {
-	if (coverIdx === 0 || coverIdx >= arr.length) return arr
-	const copy = [...arr]
-	const [cover] = copy.splice(coverIdx, 1)
-	copy.unshift(cover)
-	return copy
 }

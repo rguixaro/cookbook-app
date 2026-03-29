@@ -92,8 +92,8 @@ export const {
 
 			if (session.user) {
 				session.user.name = token.name
-				session.user.email = token.email!
-				session.user.isPrivate = token.isPrivate as boolean
+				session.user.email = token.email ?? ''
+				session.user.isPrivate = token.isPrivate === true
 			}
 
 			return session
@@ -108,12 +108,16 @@ export const {
 				Date.now() - (token.lastVerified as number) > 60 * 60 * 1000 // 1 hour
 
 			if (shouldRefresh) {
-				const dbUser = await getUserById(token.sub)
-				if (!dbUser) return { ...token, sub: undefined } // user deleted
-				token.name = dbUser.name
-				token.email = dbUser.email
-				token.isPrivate = dbUser.isPrivate
-				token.lastVerified = Date.now()
+				try {
+					const dbUser = await getUserById(token.sub)
+					if (!dbUser) return { ...token, sub: undefined } // user deleted
+					token.name = dbUser.name
+					token.email = dbUser.email
+					token.isPrivate = dbUser.isPrivate
+					token.lastVerified = Date.now()
+				} catch {
+					return token // return stale token on DB error
+				}
 			}
 
 			return token

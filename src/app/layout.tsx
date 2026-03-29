@@ -29,16 +29,17 @@ export default async function RootLayout({
 		<html lang={locale} suppressHydrationWarning>
 			<body
 				className={cn(
-					'font-sans antialiased bg-[#fefff2] selection:bg-forest-200/15',
+					'font-sans antialiased bg-forest-50 selection:bg-forest-150',
 					'flex flex-col items-center',
 				)}>
 				<SessionProvider session={session}>
 					<NextIntlClientProvider messages={messages}>
 						<ProfileProvider initialName={userName || ''}>
-							<CookiesProvider />
-							<Header />
-							{children}
-							<ToasterProvider />
+							<CookiesProvider>
+								<Header />
+								{children}
+								<ToasterProvider />
+							</CookiesProvider>
 						</ProfileProvider>
 					</NextIntlClientProvider>
 				</SessionProvider>

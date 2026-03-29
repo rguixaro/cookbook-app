@@ -54,7 +54,7 @@ export const SocialLogin = () => {
 			{socialProviders.map((sp) => (
 				<button
 					key={sp.provider}
-					className='flex p-4 items-center justify-center space-x-5 bg-forest-200/15 hover:bg-forest-200/35 rounded-3xl transition-colors duration-300 shadow'
+					className='flex p-4 items-center justify-center space-x-5 bg-forest-100 hover:bg-forest-150 rounded-3xl transition-colors duration-300 shadow-center'
 					disabled={loading}
 					onClick={() => handleSocialLogin(sp.provider)}>
 					{sp.icon}

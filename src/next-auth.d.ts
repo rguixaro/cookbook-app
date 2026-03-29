@@ -12,6 +12,8 @@ declare module 'next-auth' {
 
 declare module 'next-auth/jwt' {
 	interface JWT {
+		isPrivate?: boolean
+		lastVerified?: number
 		user?: {
 			username: string | undefined
 		} & DefaultSession['user']

@@ -4,6 +4,7 @@ import { useState, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import { toast } from 'sonner'
 
+import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { handleSignOut } from '@/server/actions'
 import {
 	Dialog,
@@ -29,11 +30,13 @@ export const LogoutAccount = (props: LogoutAccountProps) => {
 
 	async function handleLogoutAccount() {
 		setLoading(true)
-		toast.promise(handleSignOut, {
-			loading: t('account-logout-logging-out'),
-			success: t('account-logout-logged-out'),
-			error: t('account-logout-error'),
-		})
+		try {
+			await handleSignOut()
+		} catch (error) {
+			if (isRedirectError(error)) throw error
+			toast.error(t('account-logout-error'))
+			setLoading(false)
+		}
 	}
 
 	return (

@@ -21,7 +21,8 @@
 		"error": "Se ha producido un error.",
 		"error-recipe-exists": "Ya existe una receta con este nombre.",
 		"profile-updated": "Perfil actualizado con éxito.",
-		"error-recipe-name-invalid": "El nombre de la receta debe contener letras o números."
+		"error-recipe-name-invalid": "El nombre de la receta debe contener letras, números o emojis.",
+		"error-file-too-large": "El archivo es demasiado grande. El tamaño máximo es 10 MB."
 	},
 	"errors": {
 		"recipe-name-too-short": "El nombre de la receta es demasiado corto.",
@@ -65,7 +66,8 @@
 		"recipe-count": "{count, plural, one {# receta} other {# recetas}}",
 		"source-links": "Enlaces de la receta",
 		"source-links-placeholder": "https://ejemplo.com/receta",
-		"sources": "Fuentes"
+		"sources": "Fuentes",
+		"images-after-create": "Podrás añadir imágenes después de crear la receta"
 	},
 	"RecipeCategories": {
 		"starter": "Entrante",

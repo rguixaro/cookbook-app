@@ -44,7 +44,7 @@ export async function fetchRecipes(params: {
 		// Build base where clause
 		const authorFilter = userId ? { authorId: userId } : undefined
 
-		// For own feed (no userId): merge own + saved recipes
+		// For own feed (no userId): merge own + saved recipes (excluding private authors)
 		let ownFeedOr: Prisma.RecipeWhereInput[] | undefined
 		if (!userId) {
 			const user = await db.user.findUnique({
@@ -53,7 +53,13 @@ export async function fetchRecipes(params: {
 			})
 			const savedIds = user?.savedRecipes ?? []
 			ownFeedOr = savedIds.length
-				? [{ authorId: currentUserId }, { id: { in: savedIds } }]
+				? [
+						{ authorId: currentUserId },
+						{
+							id: { in: savedIds },
+							author: { isPrivate: false },
+						},
+					]
 				: [{ authorId: currentUserId }]
 		}
 
@@ -73,7 +79,9 @@ export async function fetchRecipes(params: {
 			...(ownFeedOr && { OR: ownFeedOr }),
 			...(search && {
 				name: {
-					contains: search.slice(0, 50),
+					contains: search
+						.slice(0, 50)
+						.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
 					mode: 'insensitive' as const,
 				},
 			}),
@@ -268,21 +276,23 @@ export const saveRecipe = async (
 				},
 			})
 		} else {
-			/** Save: add to savedRecipes if not already present */
+			/** Save: add to savedRecipes atomically (only if not already present) */
 			const user = await db.user.findUnique({
 				where: { id: userId },
 				select: { savedRecipes: true },
 			})
-			if (!user) return { error: true }
+			if (user && user.savedRecipes.length >= 500) return { error: true }
 
-			if (!user.savedRecipes.includes(id)) {
-				await db.user.update({
-					where: { id: userId },
-					data: { savedRecipes: { push: id } },
-				})
-			}
+			await db.user.updateMany({
+				where: {
+					id: userId,
+					NOT: { savedRecipes: { has: id } },
+				},
+				data: { savedRecipes: { push: id } },
+			})
 		}
 
+		revalidatePath('/')
 		return { error: false }
 	} catch {
 		return { error: true }
@@ -329,21 +339,23 @@ export const favouriteRecipe = async (
 				},
 			})
 		} else {
-			/** Favourite: add to favouriteRecipes if not already present */
+			/** Favourite: add to favouriteRecipes atomically (only if not already present) */
 			const user = await db.user.findUnique({
 				where: { id: userId },
 				select: { favouriteRecipes: true },
 			})
-			if (!user) return { error: true }
+			if (user && user.favouriteRecipes.length >= 500) return { error: true }
 
-			if (!user.favouriteRecipes.includes(id)) {
-				await db.user.update({
-					where: { id: userId },
-					data: { favouriteRecipes: { push: id } },
-				})
-			}
+			await db.user.updateMany({
+				where: {
+					id: userId,
+					NOT: { favouriteRecipes: { has: id } },
+				},
+				data: { favouriteRecipes: { push: id } },
+			})
 		}
 
+		revalidatePath('/')
 		return { error: false }
 	} catch {
 		return { error: true }
@@ -371,9 +383,7 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 
 		if (recipe.images.length > 0) {
 			const { deleteRecipeImages } = await import('@/lib/s3')
-			await deleteRecipeImages(recipe.images).catch((e) =>
-				console.error('[S3] Failed to delete recipe images:', e),
-			)
+			await deleteRecipeImages(recipe.images).catch(() => {})
 		}
 
 		await db.recipe.delete({
@@ -442,17 +452,32 @@ export const uploadRecipeImages = async (
 		const totalImages = recipe.images.length + files.length
 		if (totalImages > 3) return { error: true }
 
-		const { uploadRecipeImage } = await import('@/lib/s3')
+		const { uploadRecipeImage, deleteRecipeImages } = await import('@/lib/s3')
 		const fileKeys = await Promise.all(
 			files.map((file) => uploadRecipeImage(file, recipeId)),
 		)
 
-		const updatedImages = [...recipe.images, ...fileKeys]
-
-		await db.recipe.update({
+		// Re-check current image count to guard against concurrent uploads
+		const freshRecipe = await db.recipe.findFirst({
 			where: { id: recipeId, authorId: currentUser.user.id },
-			data: { images: updatedImages },
+			select: { images: true },
 		})
+		if (!freshRecipe || freshRecipe.images.length + fileKeys.length > 3) {
+			await deleteRecipeImages(fileKeys).catch(() => {})
+			return { error: true }
+		}
+
+		const updatedImages = [...freshRecipe.images, ...fileKeys]
+
+		try {
+			await db.recipe.update({
+				where: { id: recipeId, authorId: currentUser.user.id },
+				data: { images: updatedImages },
+			})
+		} catch {
+			await deleteRecipeImages(fileKeys).catch(() => {})
+			return { error: true }
+		}
 
 		revalidatePath('/')
 		revalidatePath('/recipes')

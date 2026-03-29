@@ -1,3 +1,3 @@
 export * from './toaster-provider'
 export * from './profile-provider'
-export * from './cookie-provider'
+export { CookiesProvider, useCookiesReady } from './cookie-provider'

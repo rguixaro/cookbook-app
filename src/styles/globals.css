@@ -45,6 +45,7 @@
 }
 
 @theme {
+	--color-forest-50: #fefff2;
 	--color-forest-100: #eaf0e2;
 	--color-forest-150: #d9e3d4;
 	--color-forest-200: #789b84;
@@ -116,4 +117,17 @@ input::-webkit-inner-spin-button {
 input[type='number'] {
 	-moz-appearance: textfield;
 	appearance: textfield;
+}
+
+/* Custom centered shadows */
+.shadow-center {
+	box-shadow: 0 0 12px 2px rgba(0, 0, 0, 0.08);
+}
+
+.shadow-center-sm {
+	box-shadow: 0 0 12px 1px rgba(0, 0, 0, 0.04);
+}
+
+.shadow-center-lg {
+	box-shadow: 0 0 20px 4px rgba(0, 0, 0, 0.1);
 }

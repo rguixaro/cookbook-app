@@ -8,8 +8,7 @@ import { Icon } from '@/components/recipes/icon'
 import { toPng } from 'html-to-image'
 import { toast } from 'sonner'
 
-import { TypographyH1, TypographyH4 } from '@/ui'
-import { cn, IconProps } from '@/utils'
+import { cn, IconProps, SITE_URL } from '@/utils'
 
 type DownloadableRecipe = {
 	slug: string
@@ -67,7 +66,6 @@ export const RecipeDownload = ({
 				cacheBust: true,
 				backgroundColor: '#fefff2',
 				quality: 1,
-				width: 384,
 				skipFonts: true,
 				fontEmbedCSS: fontFaces.join('\n'),
 			})
@@ -87,148 +85,167 @@ export const RecipeDownload = ({
 	return (
 		<button
 			onClick={onButtonClick}
-			className='relative hover:bg-forest-200/15 p-1 rounded-xl transition-colors duration-300'>
+			className='relative hover:bg-forest-100 p-1 rounded-xl transition-colors duration-300'>
 			<ArrowDownToLine size={24} className='text-forest-200' />
-			<div className='fixed -left-[9999px] opacity-0 pointer-events-none w-96'>
+			<div className='fixed -left-2499.75 top-0 opacity-0 pointer-events-none w-96'>
 				<div
 					ref={ref}
-					className='w-full flex flex-col items-center justify-center overflow-hidden p-8'>
+					className='w-full flex flex-col items-center justify-center overflow-hidden p-5'>
 					<div
 						className={cn(
-							'w-full my-3 flex flex-col items-center justify-center bg-forest-200/15 rounded-3xl border-4 border-forest-400/15',
+							'w-full my-3 flex flex-col items-center justify-center bg-forest-150 border-4 border-forest-150 rounded-3xl shadow-center-sm',
 						)}>
-						<div className='bg-[#fefff2] rounded-[20px] p-4 w-full flex items-center justify-center'>
-							<Icon name={recipe.category} />
-							<span className='ms-2 text-lg text-forest-300 font-black leading-4 font-title'>
-								{recipe.name}
-							</span>
+						<div className='w-full border-b-8 border-forest-150 bg-forest-150 rounded-t-[20px]'>
+							<div className='bg-forest-50 rounded-[20px] p-4 shadow-center-sm w-full flex items-center justify-center'>
+								<Icon name={recipe.category} />
+								<span className='ms-2 text-lg text-forest-300 font-black leading-4 font-title whitespace-nowrap'>
+									{recipe.name}
+								</span>
+							</div>
 						</div>
-						{recipe.images && recipe.images.length > 0 && (
-							<div className='w-full px-4 pt-4'>
-								{recipe.images.length === 1 ? (
-									<img
-										src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
-										alt='Recipe photo'
-										className='w-full aspect-[4/3] object-cover rounded-xl'
-									/>
-								) : recipe.images.length === 2 ? (
-									<div className='grid grid-cols-2 gap-2'>
-										{recipe.images.slice(0, 2).map((img, i) => (
-											<img
-												key={i}
-												src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
-												alt={`Recipe photo ${i + 1}`}
-												className='w-full aspect-square object-cover rounded-xl'
-											/>
-										))}
-									</div>
-								) : (
-									<div className='flex flex-col gap-2'>
+						<div className='bg-forest-100 rounded-[20px]'>
+							{recipe.images && recipe.images.length > 0 && (
+								<div className='w-full px-4 pt-4'>
+									{recipe.images.length === 1 ? (
 										<img
 											src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
-											alt='Recipe photo 1'
-											className='w-full aspect-[4/3] object-cover rounded-xl'
+											alt='Recipe photo'
+											className='w-full aspect-4/3 object-cover rounded-xl'
 										/>
+									) : recipe.images.length === 2 ? (
 										<div className='grid grid-cols-2 gap-2'>
 											{recipe.images
-												.slice(1, 3)
+												.slice(0, 2)
 												.map((img, i) => (
 													<img
 														key={i}
 														src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
-														alt={`Recipe photo ${i + 2}`}
+														alt={`Recipe photo ${i + 1}`}
 														className='w-full aspect-square object-cover rounded-xl'
 													/>
 												))}
 										</div>
+									) : (
+										<div className='flex flex-col gap-2'>
+											<img
+												src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
+												alt='Recipe photo 1'
+												className='w-full aspect-4/3 object-cover rounded-xl'
+											/>
+											<div className='grid grid-cols-2 gap-2'>
+												{recipe.images
+													.slice(1, 3)
+													.map((img, i) => (
+														<img
+															key={i}
+															src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
+															alt={`Recipe photo ${i + 2}`}
+															className='w-full aspect-square object-cover rounded-xl'
+														/>
+													))}
+											</div>
+										</div>
+									)}
+								</div>
+							)}
+							<div
+								className={cn(
+									'w-full mb-2 p-5 flex flex-col items-center justify-center',
+								)}>
+								{recipe.time && (
+									<div className='flex mb-3 items-center bg-forest-200 text-white px-2 py-1 rounded-xl'>
+										<p className='font-extrabold text-sm'>
+											{t('time')}
+										</p>
+										<Clock
+											{...IconProps}
+											className='stroke-white ms-5 mr-1'
+										/>
+										<span className='text-xs font-bold'>{`${recipe.time}'`}</span>
 									</div>
 								)}
-							</div>
-						)}
-						<div
-							className={cn(
-								'w-full p-5 flex flex-col items-center justify-center',
-							)}>
-							{recipe.time && (
-								<div className='flex mb-3 items-center bg-forest-200 text-white px-2 py-1 rounded-xl'>
-									<p className='font-extrabold'>{t('time')}</p>
-									<Clock
-										{...IconProps}
-										className='stroke-white ms-5 mr-1'
-									/>
-									<span className='text-xs font-bold'>{`${recipe.time}'`}</span>
-								</div>
-							)}
-							<div className='text-sm'>
-								<p className='font-extrabold text-forest-300'>
-									{t('ingredients')}
-								</p>
-								<span className='font-normal'>
-									{recipe.ingredients.map((ingredient, index) => (
-										<div
-											key={index}
-											className='font-normal text-forest-400'>
-											{ingredient}
-										</div>
-									))}
-								</span>
-							</div>
-							<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
-							<div className='text-sm'>
-								<p className='font-extrabold text-forest-300'>
-									{t('instructions')}
-								</p>
-								<span className='font-normal text-justify text-forest-400'>
-									{recipe.instructions}
-								</span>
-							</div>
-							{recipe.sourceUrls && recipe.sourceUrls.length > 0 && (
-								<div className='w-full px-5 pb-3'>
-									<div className='h-1.5 w-3/4 mx-auto my-2 rounded bg-forest-400/15' />
-									<p className='font-extrabold text-forest-300 text-xs text-center'>
-										{t('sources')}
+								<div>
+									<p className='font-extrabold text-forest-300 text-sm mb-2'>
+										{t('ingredients')}
 									</p>
-									<div className='flex flex-col items-center gap-0.5 mt-1'>
-										{recipe.sourceUrls.map((url, index) => (
-											<div
-												key={index}
-												className='flex items-center gap-1 text-forest-200'>
-												<ExternalLink
-													size={10}
-													className='shrink-0'
-												/>
-												<span className='text-xs truncate'>
-													{new URL(url).hostname.replace(
-														'www.',
-														'',
-													)}
+									<div className='flex flex-wrap gap-1.5'>
+										{recipe.ingredients.map(
+											(ingredient, index) => (
+												<span
+													key={index}
+													className='inline-flex items-center text-xs font-semibold text-forest-300 bg-forest-150 px-2.5 py-1 rounded-lg'>
+													{ingredient}
 												</span>
-											</div>
-										))}
+											),
+										)}
 									</div>
 								</div>
-							)}
-						</div>
-						<div className='w-full flex items-center justify-center gap-3 bg-[#fefff2] rounded-[20px] px-3 py-2.5 shadow-sm'>
-							<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-sm'>
-								<Image
-									src={author.image}
-									referrerPolicy='no-referrer'
-									alt='Profile image'
-									width={32}
-									height={32}
-								/>
+								<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
+								<div className='text-sm'>
+									<p className='font-extrabold text-forest-300'>
+										{t('instructions')}
+									</p>
+									<span className='font-normal text-justify text-forest-400'>
+										{recipe.instructions}
+									</span>
+								</div>
+								{recipe.sourceUrls &&
+									recipe.sourceUrls.length > 0 && (
+										<>
+											<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
+											<div className='text-sm'>
+												<p className='font-extrabold text-forest-300'>
+													{t('sources')}
+												</p>
+												<div className='flex flex-col gap-1 mt-1'>
+													{recipe.sourceUrls.map(
+														(url, index) => (
+															<div
+																key={index}
+																className='flex items-center gap-1.5 text-forest-200'>
+																<ExternalLink
+																	size={14}
+																	className='shrink-0'
+																/>
+																<span className='truncate text-sm'>
+																	{new URL(
+																		url,
+																	).hostname.replace(
+																		'www.',
+																		'',
+																	)}
+																</span>
+															</div>
+														),
+													)}
+												</div>
+											</div>
+										</>
+									)}
 							</div>
-							<span className='font-extrabold font-title text-forest-300 text-sm truncate'>
-								{`@${author.name}`}
-							</span>
 						</div>
-					</div>
-					<div className='mt-3 text-center'>
-						<p className='text-sm text-forest-300'>{t('more-on')}</p>
-						<p className='text-forest-300 font-extrabold font-title'>
-							cookbook.rguixaro.dev
-						</p>
+						<div className='w-full block border-t-8 border-forest-150 bg-forest-150 rounded-b-[20px]'>
+							<div className='w-full flex items-center justify-center gap-3 bg-forest-50 rounded-[20px] px-3 py-2.5'>
+								<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-center-sm'>
+									<Image
+										src={author.image}
+										referrerPolicy='no-referrer'
+										alt='Profile image'
+										width={32}
+										height={32}
+									/>
+								</div>
+								<span className='font-extrabold font-title text-forest-300 leading-4 text-sm whitespace-nowrap'>
+									{`@${author.name}`}
+								</span>
+							</div>
+						</div>
+						<div className='my-3 text-center'>
+							<p className='text-sm text-forest-300'>{t('more-on')}</p>
+							<p className='text-forest-300 font-extrabold font-title'>
+								{new URL(SITE_URL).host}
+							</p>
+						</div>
 					</div>
 				</div>
 			</div>

@@ -7,7 +7,7 @@
 		"profile-not-found": "Perfil no trobat",
 		"no-recipes": "No s'han trobat receptes",
 		"no-profiles": "No s'han trobat perfils",
-		"start-profile-search": "Comença a escriure el nom d'un usuario per veure les seves receptes"
+		"start-profile-search": "Comença a escriure el nom d'un usuari per veure les seves receptes"
 	},
 	"toasts": {
 		"recipe-created": "Recepta creada amb èxit.",
@@ -21,7 +21,8 @@
 		"error": "S'ha produït un error.",
 		"error-recipe-exists": "Ja existeix una recepta amb aquest nom.",
 		"profile-updated": "Perfil actualitzat amb èxit.",
-		"error-recipe-name-invalid": "El nom de la recepta ha de contenir lletres o números."
+		"error-recipe-name-invalid": "El nom de la recepta ha de contenir lletres, números o emojis.",
+		"error-file-too-large": "El fitxer és massa gran. La mida màxima és 10 MB."
 	},
 	"errors": {
 		"recipe-name-too-short": "El nom de la recepta és massa curt.",
@@ -65,7 +66,8 @@
 		"recipe-count": "{count, plural, one {# recepta} other {# receptes}}",
 		"source-links": "Enllaços de la recepta",
 		"source-links-placeholder": "https://exemple.com/recepta",
-		"sources": "Fonts"
+		"sources": "Fonts",
+		"images-after-create": "Podràs afegir imatges després de crear la recepta"
 	},
 	"RecipeCategories": {
 		"starter": "Entrant",
@@ -97,7 +99,7 @@
 		"account-delete-text": "Això eliminarà permanentment el teu compte i totes les teves receptes.",
 		"account-delete-prompt": "Per confirmar-ho, escriu la teva adreça de correu:",
 		"account-deleting": "El teu compte s'està eliminant...",
-		"account-deleted": "El teu compte s'ha eliminar.",
+		"account-deleted": "El teu compte s'ha eliminat.",
 		"account-delete-error": "Hi ha hagut un error en eliminar el compte.",
 		"account-logout": "Tancar la sessió",
 		"account-logout-text": "Estàs segur que vols tancar la sessió?",

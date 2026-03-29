@@ -2,6 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
+import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { LoaderIcon } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -37,15 +38,15 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 			return
 		}
 		setLoading(true)
-		toast.promise(deleteProfile, {
-			loading: t('deleting'),
-			description: t('account-deleting'),
-			success: () => {
-				setLoading(false)
-				return t('account-deleted')
-			},
-			error: t('account-delete-error'),
-		})
+		try {
+			const result = await deleteProfile()
+			if (!result) throw new Error()
+			toast.success(t('account-deleted'))
+		} catch (error) {
+			if (isRedirectError(error)) throw error
+			toast.error(t('account-delete-error'))
+			setLoading(false)
+		}
 	}
 
 	return (

@@ -7,6 +7,7 @@ import { Search, X } from 'lucide-react'
 import { useDebounce } from '@/hooks'
 import { cn } from '@/utils'
 import { useTranslations } from 'next-intl'
+import { SearchButton } from '../layout'
 
 export const SearchProfiles = () => {
 	const t = useTranslations('ProfilesPage')
@@ -66,7 +67,7 @@ export const SearchProfiles = () => {
 					id='profile-search-input'
 					className={cn(
 						'w-full h-8 text-sm pl-9 pr-9 rounded-xl',
-						'bg-forest-200/15 border-l-[5px] border-forest-200 ring-2 ring-forest-200',
+						'bg-forest-100 border-l-[5px] border-forest-200 ring-2 ring-forest-200',
 						'text-forest-200 font-medium placeholder-forest-200/75 focus:outline-none',
 					)}
 				/>
@@ -74,7 +75,8 @@ export const SearchProfiles = () => {
 					type='button'
 					onClick={clearInput}
 					className={cn(
-						'absolute right-3 top-1/2 -translate-y-1/2 text-forest-300 transition-all duration-200 ease-in-out',
+						'absolute right-3 top-1/2 -translate-y-1/2',
+						'text-forest-300 transition-all duration-200 ease-in-out',
 						value
 							? 'opacity-100 translate-x-0'
 							: 'opacity-0 translate-x-2 pointer-events-none',
