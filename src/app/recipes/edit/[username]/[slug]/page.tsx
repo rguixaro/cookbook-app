@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
 
 import { auth } from '@/auth'
 
@@ -15,7 +15,7 @@ export default async function EditRecipePage({
 	params: Promise<{ username: string; slug: string }>
 }) {
 	const session = await auth()
-	if (!session) return null
+	if (!session) redirect('/auth')
 
 	const { slug, username } = await params
 

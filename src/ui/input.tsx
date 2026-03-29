@@ -6,7 +6,7 @@ export type InputProps = React.InputHTMLAttributes<HTMLInputElement>
 export type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement>
 
 export const InputGlobalStyles =
-	'flex h-9 w-full rounded-2xl border border-forest-200/15 bg-transparent px-3 py-1 text-sm text-forest-200 shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-forest-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-200 disabled:cursor-not-allowed disabled:opacity-50 transition-shadow duration-200'
+	'flex h-9 w-full rounded-2xl border border-forest-150 bg-transparent px-3 py-1 text-sm text-forest-200 shadow-center-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-forest-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-forest-150 disabled:cursor-not-allowed disabled:opacity-50 transition-shadow duration-200'
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
 	({ className, type, ...props }, ref) => {
@@ -29,7 +29,7 @@ const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
 				className={cn(
 					InputGlobalStyles,
 					'resize-none',
-					'min-h-[100px]',
+					'min-h-25',
 					className,
 				)}
 				ref={ref}

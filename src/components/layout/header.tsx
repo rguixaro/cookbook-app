@@ -21,7 +21,7 @@ export const Header = () => {
 		<Link
 			href='/'
 			className='flex h-24 w-full justify-center items-center sticky top-0 cursor-pointer rounded-b-2xl z-50'>
-			<div className='text-center h-full rounded-b-2xl border-b-4 border-forest-200 w-11/12 sm:w-3/5 lg:w-3/8 bg-[#fefff2]'>
+			<div className='text-center h-full rounded-b-2xl border-b-4 border-forest-200 w-11/12 sm:w-3/5 lg:w-3/8 bg-forest-50'>
 				<TypographyH1 className='font-title text-forest-300 pb-5'>
 					{displayName ? (
 						<span className='text-4xl text-forest-200'>{`${displayName}'s `}</span>

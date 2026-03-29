@@ -18,14 +18,14 @@ export const FavouriteStatus = ({
 	const [isFavourited, setIsFavourited] = useState<boolean>(initial)
 
 	async function onFavouriteRecipe() {
+		const prev = isFavourited
+		setIsFavourited(!prev)
 		try {
-			const { error } = await favouriteRecipe(recipeId, isFavourited)
+			const { error } = await favouriteRecipe(recipeId, prev)
 			if (error) throw new Error()
-			toast.success(
-				t(isFavourited ? 'recipe-unfavourited' : 'recipe-favourited'),
-			)
-			setIsFavourited((prev) => !prev)
+			toast.success(t(prev ? 'recipe-unfavourited' : 'recipe-favourited'))
 		} catch {
+			setIsFavourited(prev)
 			toast.error(t('error'))
 		}
 	}
@@ -33,7 +33,7 @@ export const FavouriteStatus = ({
 	return (
 		<button
 			onClick={() => onFavouriteRecipe()}
-			className='hover:bg-forest-200/15 p-1 rounded-xl transition-colors duration-300'>
+			className='hover:bg-forest-100 p-1 rounded-xl transition-colors duration-300'>
 			<HeartIcon filled={isFavourited} />
 		</button>
 	)

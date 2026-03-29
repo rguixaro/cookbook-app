@@ -14,7 +14,7 @@ export function UserButton({ className }: UserButtonProps) {
 		<Link
 			href='/profile'
 			className={cn(
-				'w-8 h-8 ms-2 rounded-xl hover:bg-forest-200/15 z-10 flex items-center justify-center ',
+				'w-8 h-8 ms-2 rounded-xl hover:bg-forest-100 z-10 flex items-center justify-center ',
 				className,
 			)}>
 			<User className='w-full h-full p-1 text-forest-200' />

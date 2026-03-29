@@ -10,7 +10,7 @@ export const AddRecipe = ({ className }: { className?: string }) => {
 		<Link
 			href='/recipes/new'
 			className={cn(
-				'bg-forest-200 py-3 px-5 rounded-2xl shadow text-white',
+				'bg-forest-200 py-3 px-5 rounded-2xl shadow-center text-white',
 				className,
 			)}>
 			<span className='text-base font-bold'>{t('add')}</span>

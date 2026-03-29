@@ -2,7 +2,9 @@
 
 import { useRef } from 'react'
 import Image, { ImageLoader } from 'next/image'
+import { useTranslations } from 'next-intl'
 import { ImagePlus, Star, X } from 'lucide-react'
+import { toast } from 'sonner'
 
 import { cn } from '@/utils'
 
@@ -45,6 +47,7 @@ export function RecipeImageInput({
 	onCoverChange,
 	disabled,
 }: RecipeImageInputProps) {
+	const t = useTranslations('toasts')
 	const inputRef = useRef<HTMLInputElement>(null)
 	const targetSlot = useRef<number>(0)
 
@@ -56,6 +59,7 @@ export function RecipeImageInput({
 
 		if (file.size > MAX_FILE_SIZE) {
 			e.target.value = ''
+			toast.error(t('error-file-too-large'))
 			return
 		}
 
@@ -193,6 +197,7 @@ function FilledSlot({
 				src={src}
 				alt='Recipe image'
 				fill
+				sizes='(max-width: 640px) 80vw, (max-width: 1024px) 40vw, 25vw'
 				className='object-cover'
 				{...(isRemoteUrl(src) ? { loader: proxyLoader } : {})}
 			/>
@@ -201,18 +206,13 @@ function FilledSlot({
 					<button
 						type='button'
 						onClick={onCover}
-						className={cn(
-							'absolute top-2 left-2 p-1 rounded-lg transition-colors duration-200',
-							isCover
-								? 'bg-forest-200 text-white'
-								: 'bg-forest-400/50 text-white/70 hover:bg-forest-400/70 hover:text-white',
-						)}>
+						className='absolute top-2 left-2 p-1 rounded-lg transition-colors duration-200 bg-forest-200 hover:bg-forest-300 text-white'>
 						<Star size={14} className={isCover ? 'fill-white' : ''} />
 					</button>
 					<button
 						type='button'
 						onClick={onRemove}
-						className='absolute top-2 right-2 bg-forest-400/70 hover:bg-forest-400/90 text-white p-1 rounded-lg transition-colors duration-200'>
+						className='absolute top-2 right-2 bg-forest-200 hover:bg-forest-300 text-white p-1 rounded-lg transition-colors duration-200'>
 						<X size={14} />
 					</button>
 				</>
@@ -236,15 +236,14 @@ function EmptySlot({
 			onClick={onClick}
 			disabled={disabled}
 			className={cn(
-				'w-full rounded-xl border-2 border-dashed border-forest-200/30',
-				'bg-forest-200/5 flex items-center justify-center',
+				'w-full rounded-xl border-2 border-dashed border-forest-200/25',
+				'bg-forest-150 flex items-center justify-center',
 				'transition-colors duration-200',
-				!disabled &&
-					'hover:border-forest-200/50 hover:bg-forest-200/10 cursor-pointer',
+				!disabled && 'hover:border-forest-200/50 cursor-pointer',
 				disabled && 'opacity-50 cursor-not-allowed',
 				aspect,
 			)}>
-			<ImagePlus size={22} className='text-forest-200/40' />
+			<ImagePlus size={22} className='text-forest-200' />
 		</button>
 	)
 }

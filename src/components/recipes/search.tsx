@@ -148,6 +148,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 					<input
 						type='text'
 						ref={inputRef}
+						maxLength={50}
 						placeholder={t('search')}
 						onBlur={onBlur}
 						value={inputValue}
@@ -156,7 +157,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 							handleSearch(e)
 						}}
 						className={cn(
-							'relative block w-0 h-8 text-sm z-10 bg-forest-200/15 text-forest-200 font-medium placeholder-forest-200/75',
+							'relative block w-0 h-8 text-sm z-10 bg-forest-100 text-forest-200 font-medium placeholder-forest-200/75',
 							'transition-all duration-500 border-l-[5px] border-forest-200 rounded-xl focus:outline-none ring-2 ring-forest-200 ps-9 pe-3',
 							debouncedStatus === 'hidden'
 								? 'opacity-0 pointer-events-none'
@@ -169,7 +170,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 						className={cn(
 							'absolute top-1/2 -translate-y-1/2 transition-transform',
 							debouncedStatus !== 'hidden'
-								? 'translate-x-1 bg-forest-200/15'
+								? 'translate-x-1 bg-forest-150'
 								: 'translate-x-0',
 						)}
 						iconClassName={cn(

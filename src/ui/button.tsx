@@ -18,17 +18,17 @@ interface IconRefProps {
 export type ButtonIconProps = IconProps | IconRefProps
 
 const buttonVariants = cva(
-	'inline-flex items-center space-x-3 justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-forest-200/15',
+	'inline-flex items-center space-x-3 justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-forest-150',
 	{
 		variants: {
 			variant: {
 				default:
-					'bg-forest-200 text-neutral-50 shadow hover:bg-forest-200/90',
+					'bg-forest-200 text-neutral-50 shadow-center-sm hover:bg-forest-300',
 				destructive:
-					'bg-red-500 text-neutral-50 shadow-sm hover:bg-red-500/90',
+					'bg-red-500 text-neutral-50 shadow-center-sm hover:bg-red-600',
 				outline:
-					'bg-forest-200/15 border-2 border-forest-200/15 shadow-sm hover:bg-forest-200/60 text-forest-300 font-bold shadow hover:text-white',
-				ghost: 'hover:bg-forest-200/15',
+					'bg-forest-100 border-2 border-forest-150 hover:bg-forest-150 text-forest-300 font-bold shadow-center-sm',
+				ghost: 'hover:bg-forest-150',
 			},
 			size: {
 				default: 'h-9 px-4 py-2',
@@ -45,7 +45,8 @@ const buttonVariants = cva(
 )
 
 export interface ButtonProps
-	extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+	extends
+		React.ButtonHTMLAttributes<HTMLButtonElement>,
 		VariantProps<typeof buttonVariants> {
 	asChild?: boolean
 }

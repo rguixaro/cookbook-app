@@ -25,21 +25,25 @@ export const CategorySelector = ({ value, setValue }: CategorySelectorProps) => 
 						onClick={() => setValue(categoryName as Categories)}
 						key={categoryName}
 						className={cn(
-							'relative snap-center flex flex-col min-w-18 py-3 mx-1 bg-forest-200/15 rounded-2xl items-center justify-center shadow-sm',
-							'transition-all duration-400 hover:scale-[1.05] border-2 border-forest-200/15',
-							isActive && 'border-forest-200 ',
+							'relative snap-center flex flex-col min-w-18 py-3 mx-1 bg-forest-50 rounded-2xl items-center justify-center shadow-center-sm',
+							'transition-all duration-400 hover:scale-[1.05] border-2 border-forest-150',
+							isActive && 'border-forest-200',
 						)}>
 						<Icon name={categoryName} size={24} />
-						<span className='text-xs text-forest-200/75 pt-3'>
+						<span
+							className={cn(
+								'text-xs text-forest-200 pt-3',
+								isActive && 'font-bold',
+							)}>
 							{t(categoryName.toLowerCase())}
 						</span>
 						<div
 							className={cn(
-								'absolute -top-1 -right-1 bg-[#fefff2] border-2 border-forest-200 rounded',
+								'absolute -top-1 -right-1 bg-forest-50 border-2 border-forest-200 rounded-lg',
 								'transition-opacity duration-300',
 								isActive ? 'opacity-100' : 'opacity-0',
 							)}>
-							<Check size={14} color={'#789B84'} />
+							<Check size={16} className='stroke-forest-200' />
 						</div>
 					</button>
 				)

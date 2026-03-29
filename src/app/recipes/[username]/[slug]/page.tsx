@@ -68,8 +68,10 @@ export default async function RecipePage({
 	const query = (await searchParams)?.query
 	const category = (await searchParams)?.category
 
-	const paramQuery = query ? `?search=${query}` : ''
-	const paramCategory = category ? `${query ? '&' : '?'}category=${category}` : ''
+	const paramQuery = query ? `?search=${encodeURIComponent(query)}` : ''
+	const paramCategory = category
+		? `${query ? '&' : '?'}category=${encodeURIComponent(category)}`
+		: ''
 
 	const user = await getUserByUsername(username)
 	const recipe = user ? await getRecipeByAuthAndSlug(user.id, slug) : null
@@ -126,91 +128,98 @@ export default async function RecipePage({
 			</div>
 			<div
 				className={cn(
-					'w-10/12 sm:w-2/4 lg:w-2/6 mb-2 mt-5 flex flex-col items-center justify-center bg-forest-200/15 rounded-3xl border-4 border-forest-400/15',
+					'w-10/12 sm:w-2/4 lg:w-2/6 mb-2 mt-5 rounded-3xl border-4',
+					'flex flex-col items-center justify-center shadow-center-sm border-forest-150 bg-forest-150',
 				)}>
-				<div className='bg-[#fefff2] rounded-[20px] p-4 shadow-sm w-full flex items-center justify-center'>
-					<Icon name={recipe.category} />
-					<span className='ms-2 text-lg md:text-xl text-forest-300 font-black leading-4 font-title'>
-						{recipe.name}
-					</span>
+				<div className='w-full border-b-8 border-forest-150 bg-forest-150 rounded-t-[20px]'>
+					<div className='bg-forest-50 rounded-[20px] p-4 shadow-center-sm w-full flex items-center justify-center'>
+						<Icon name={recipe.category} />
+						<span className='ms-2 text-lg md:text-xl text-forest-300 font-black leading-4 font-title'>
+							{recipe.name}
+						</span>
+					</div>
 				</div>
-				{recipe.images?.length ? (
-					<RecipeGallery images={recipe.images} />
-				) : (
-					<RecipeGalleryPlaceholder />
-				)}
-				<div
-					className={cn(
-						'w-full mb-2 p-5 flex flex-col items-center justify-center',
-					)}>
-					{recipe.time && (
-						<div className='flex mb-3 items-center bg-forest-200 text-white px-2 py-1 rounded-xl'>
-							<p className='font-extrabold'>{t('time')}</p>
-							<Clock
-								{...IconProps}
-								className='stroke-white  ms-5 mr-1'
-							/>
-							<span className='text-xs md:text-sm font-bold'>{`${recipe.time}'`}</span>
-						</div>
+				<div className='bg-forest-100 rounded-[20px]'>
+					{recipe.images?.length ? (
+						<RecipeGallery images={recipe.images} />
+					) : (
+						<RecipeGalleryPlaceholder />
 					)}
-					<div className='text-sm md:text-base'>
-						<p className='font-extrabold text-forest-300'>
-							{t('ingredients')}
-						</p>
-						<span className='font-normal'>
-							{recipe.ingredients.map((ingredient, index) => (
-								<div
-									key={index}
-									className='font-normal text-forest-400'>
-									{ingredient}
-								</div>
-							))}
-						</span>
-					</div>
-					<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
-					<div className='text-sm md:text-base'>
-						<p className='font-extrabold text-forest-300'>
-							{t('instructions')}
-						</p>
-						<span className='font-normal text-justify text-forest-400'>
-							{recipe.instructions}
-						</span>
-					</div>
-					{recipe.sourceUrls && recipe.sourceUrls.length > 0 && (
-						<>
-							<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
-							<div className='text-sm md:text-base'>
-								<p className='font-extrabold text-forest-300'>
-									{t('sources')}
-								</p>
-								<div className='flex flex-col gap-1 mt-1'>
-									{recipe.sourceUrls.map((url, index) => (
-										<a
-											key={index}
-											href={url}
-											target='_blank'
-											rel='noopener noreferrer'
-											className='flex items-center gap-1.5 text-forest-200 hover:text-forest-300 transition-colors'>
-											<ExternalLink
-												size={14}
-												className='shrink-0'
-											/>
-											<span className='truncate text-sm'>
-												{new URL(url).hostname.replace(
-													'www.',
-													'',
-												)}
-											</span>
-										</a>
-									))}
-								</div>
+					<div
+						className={cn(
+							'w-full mb-2 p-5 flex flex-col items-center justify-center',
+						)}>
+						{recipe.time && (
+							<div className='flex mb-3 items-center bg-forest-200 text-white px-2 py-1 rounded-xl'>
+								<p className='font-extrabold text-sm'>{t('time')}</p>
+								<Clock
+									{...IconProps}
+									className='stroke-white  ms-5 mr-1'
+								/>
+								<span className='text-xs md:text-sm font-bold'>{`${recipe.time}'`}</span>
 							</div>
-						</>
-					)}
+						)}
+						<div>
+							<p className='font-extrabold text-forest-300 text-sm md:text-base mb-2'>
+								{t('ingredients')}
+							</p>
+							<div className='flex flex-wrap justify-center gap-1.5'>
+								{recipe.ingredients.map((ingredient, index) => (
+									<span
+										key={index}
+										className='inline-flex items-center text-xs font-semibold text-forest-300 bg-forest-150 px-2.5 py-1 rounded-lg'>
+										{ingredient}
+									</span>
+								))}
+							</div>
+						</div>
+						<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
+						<div className='text-sm md:text-base'>
+							<p className='font-extrabold text-forest-300'>
+								{t('instructions')}
+							</p>
+							<span className='font-normal text-justify text-forest-400'>
+								{recipe.instructions}
+							</span>
+						</div>
+						{recipe.sourceUrls && recipe.sourceUrls.length > 0 && (
+							<>
+								<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
+								<div className='text-sm md:text-base'>
+									<p className='font-extrabold text-forest-300'>
+										{t('sources')}
+									</p>
+									<div className='flex flex-col gap-1 mt-1'>
+										{recipe.sourceUrls.map((url, index) => (
+											<a
+												key={index}
+												href={url}
+												target='_blank'
+												rel='noopener noreferrer'
+												className='flex items-center gap-1.5 text-forest-200 hover:text-forest-300 transition-colors'>
+												<ExternalLink
+													size={14}
+													className='shrink-0'
+												/>
+												<span className='truncate text-sm'>
+													{new URL(url).hostname.replace(
+														'www.',
+														'',
+													)}
+												</span>
+											</a>
+										))}
+									</div>
+								</div>
+							</>
+						)}
+					</div>
 				</div>
-				<Link href={`/profiles/${username}`} className='w-full block'>
-					<div className='flex items-center justify-center gap-3 bg-[#fefff2] rounded-[20px] px-3 py-2.5 shadow-sm transition-colors duration-200 '>
-						<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-sm'>
+				<Link
+					href={`/profiles/${username}`}
+					className='w-full block border-t-8 border-forest-150 bg-forest-150 rounded-b-[20px]'>
+					<div className='flex items-center justify-center gap-3 bg-forest-50 rounded-[20px] px-3 py-2.5 transition-colors duration-200 '>
+						<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-center-sm'>
 							<Image
 								src={author.image}
 								referrerPolicy='no-referrer'
