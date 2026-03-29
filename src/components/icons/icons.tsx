@@ -22,7 +22,15 @@ export const GoogleLogo = (props: SharedLogoProps) => (
 			d='M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251'></path>
 	</svg>
 )
-export const HeartIcon = ({ filled = false, size = 24, color = '#789B84' }: { filled?: boolean; size?: number; color?: string }) => (
+export const HeartIcon = ({
+	filled = false,
+	size = 24,
+	color = '#789b84',
+}: {
+	filled?: boolean
+	size?: number
+	color?: string
+}) => (
 	<svg
 		xmlns='http://www.w3.org/2000/svg'
 		width={size}
@@ -46,12 +54,12 @@ export const BookmarkIcon = ({ filled = false }: { filled?: boolean }) => (
 		height='24'
 		viewBox='0 0 24 24'
 		fill='none'
-		stroke='#789B84'
+		stroke='#789b84'
 		strokeWidth='2'
 		strokeLinecap='round'
 		strokeLinejoin='round'>
 		<path
-			fill={filled ? '#789B84' : 'transparent'}
+			fill={filled ? '#789b84' : 'transparent'}
 			d='m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z'
 		/>
 	</svg>

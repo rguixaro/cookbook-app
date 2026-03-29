@@ -11,8 +11,8 @@ export function formatLongSentence(sentence: string): string {
 				.trim()
 				.replace(
 					/^(\w)(.+)/,
-					(match, p1, p2) => p1.toUpperCase() + p2.toLowerCase()
-				)
+					(match, p1, p2) => p1.toUpperCase() + p2.toLowerCase(),
+				),
 		)
 		.join('. ')
 		.trim()
@@ -30,7 +30,7 @@ export function slugify(str: string): string {
 		.normalize('NFD')
 		.replace(/[\u0300-\u036f]/g, '')
 		.replace(/\s+/g, '-')
-		.replace(/[^a-z0-9-]/g, '')
+		.replace(/[^a-z0-9\p{Emoji_Presentation}\p{Extended_Pictographic}-]/gu, '')
 		.replace(/-+/g, '-')
 		.replace(/^-+|-+$/g, '')
 }

@@ -1,6 +1,6 @@
-'use client';
+'use client'
 
-import { Toaster } from 'sonner';
+import { Toaster } from 'sonner'
 
 /**
  * Toaster Provider component.
@@ -13,9 +13,9 @@ export const ToasterProvider = () => {
 			theme={'light'}
 			toastOptions={{
 				classNames: {
-					toast: 'font-sans! font-bold! bg-forest-200! border-forest-200/15! text-white!',
+					toast: 'font-sans! font-bold! bg-forest-200! border-forest-150! text-white!',
 				},
 			}}
 		/>
-	);
-};
+	)
+}

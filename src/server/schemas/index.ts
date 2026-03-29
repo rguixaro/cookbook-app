@@ -69,9 +69,11 @@ export const CreateRecipeSchema = z.object({
 })
 
 export const UpdateProfileSchema = z.object({
-	name: z.string().min(1, { message: 'username-required' }).max(40, {
-		message: 'username-too-long',
-	}),
+	name: z
+		.string()
+		.trim()
+		.min(1, { message: 'username-required' })
+		.max(40, { message: 'username-too-long' }),
 	isPrivate: z.boolean().optional(),
 })
 

@@ -34,6 +34,7 @@ import {
 	Textarea,
 } from '@/ui'
 import { Recipe } from '@/types'
+import { cn } from '@/utils'
 
 interface EditRecipeProps {
 	recipe: Recipe
@@ -43,7 +44,7 @@ const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN ?? ''
 
 /**
  * Extract the S3 file key from a full CloudFront URL.
- * e.g. "https://assets.rguixaro.dev/cookbook/images/recipe_abc/uuid.jpg" → "images/recipe_abc/uuid.jpg"
+ * e.g. "https://assets.example.com/cookbook/images/recipe_abc/uuid.jpg" → "images/recipe_abc/uuid.jpg"
  */
 function extractKey(url: string): string | null {
 	if (!CLOUDFRONT_DOMAIN) return null
@@ -114,10 +115,13 @@ export const EditRecipe = (props: EditRecipeProps) => {
 
 			let uploadedKeys: string[] = []
 			if (newFiles.length > 0) {
-				// First, clear existing images to make room, then re-set everything
 				const formData = new FormData()
 				newFiles.forEach(({ file }) => formData.append('images', file))
 				const result = await uploadRecipeImages(props.recipe.id, formData)
+				if (result.error) {
+					toast.error(t_toasts('error'))
+					return
+				}
 				uploadedKeys = result.images?.slice(-newFiles.length) ?? []
 			}
 
@@ -167,7 +171,12 @@ export const EditRecipe = (props: EditRecipeProps) => {
 					to={`/recipes/${props.recipe.authorUsername}/${props.recipe.slug}`}
 				/>
 			</div>
-			<div className='flex my-5 w-10/12 sm:w-2/4 lg:w-2/6 flex-col border-4 border-forest-200/15 p-4 rounded-3xl text-forest-400'>
+			<div
+				className={cn(
+					'flex my-5 w-10/12 sm:w-2/4 lg:w-2/6',
+					'flex-col  p-4 rounded-3xl shadow-center-sm',
+					'bg-forest-100 border-4 border-forest-150 text-forest-400',
+				)}>
 				<Form {...form}>
 					<form
 						onSubmit={form.handleSubmit(onSubmit)}
@@ -182,7 +191,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 										<Input
 											{...field}
 											autoComplete='off'
-											className='border-2 text-center py-5 bg-forest-200/15'
+											className='border-2 text-center py-5 bg-forest-50 text-forest-300 text-lg md:text-xl font-title font-black placeholder:font-normal placeholder:font-sans placeholder:text-forest-200 placeholder:text-sm'
 											placeholder={t('recipe-name')}
 											disabled={loading}
 										/>
@@ -201,6 +210,9 @@ export const EditRecipe = (props: EditRecipeProps) => {
 								onCoverChange={setCoverIndex}
 								disabled={loading}
 							/>
+						</div>
+						<div className='w-full flex justify-center my-3'>
+							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
 						</div>
 						<FormField
 							control={form.control}
@@ -229,12 +241,15 @@ export const EditRecipe = (props: EditRecipeProps) => {
 							render={() => (
 								<FormItem className='my-5'>
 									<FormControl>
-										<div className='flex my-5 bg-forest-200/15 rounded-2xl overflow-hidden shadow-sm'>
-											<div className='bg-forest-200 p-2 flex items-center justify-center'>
-												<Clock color='#fff' size={24} />
+										<div className='flex my-5 bg-forest-50 rounded-2xl overflow-hidden shadow-center-sm'>
+											<div className='bg-forest-200 p-2 flex items-center justify-center border-2 rounded-2xl rounded-r-none border-r-0 border-forest-150'>
+												<Clock
+													className='stroke-white'
+													size={24}
+												/>
 											</div>
-											<div className='flex px-5 w-full items-center rounded-r-2xl justify-between border-2 border-l-0 border-forest-200/15'>
-												<span className='font-bold text-forest-200/75 leading-4'>
+											<div className='flex px-5 w-full items-center rounded-r-2xl justify-between border-2 border-l-0 border-forest-150'>
+												<span className='font-bold text-forest-200 leading-4'>
 													{t('time')}
 												</span>
 												<FormField
@@ -268,7 +283,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 																		)}
 																		autoComplete='off'
 																		type='number'
-																		className='rounded border-none shadow-none focus-visible:ring-0 text-right'
+																		className='rounded border-none shadow-none! focus-visible:ring-0 text-right'
 																		placeholder={t(
 																			'minutes',
 																		)}
@@ -288,6 +303,9 @@ export const EditRecipe = (props: EditRecipeProps) => {
 								</FormItem>
 							)}
 						/>
+						<div className='w-full flex justify-center my-3'>
+							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
+						</div>
 						<FormField
 							control={form.control}
 							name='ingredients'
@@ -302,6 +320,9 @@ export const EditRecipe = (props: EditRecipeProps) => {
 								</FormItem>
 							)}
 						/>
+						<div className='w-full flex justify-center my-3'>
+							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
+						</div>
 						<FormField
 							control={form.control}
 							name='instructions'
@@ -312,7 +333,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 										<Textarea
 											{...field}
 											onKeyDown={(e) => e.stopPropagation()}
-											className='border-2 bg-forest-200/15'
+											className='border-2 bg-forest-50'
 											placeholder={t('instructions-add')}
 											disabled={loading}
 										/>
@@ -321,6 +342,9 @@ export const EditRecipe = (props: EditRecipeProps) => {
 								</FormItem>
 							)}
 						/>
+						<div className='w-full flex justify-center my-3'>
+							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
+						</div>
 						<div className='my-5'>
 							<FormLabel>{t('source-links')}</FormLabel>
 							<SourceLinksInput

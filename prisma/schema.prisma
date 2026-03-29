@@ -82,5 +82,7 @@ model User {
     accounts            Account[]
     sessions            Session[]
     recipes             Recipe[]
+
+    @@index([isPrivate])
 }
 

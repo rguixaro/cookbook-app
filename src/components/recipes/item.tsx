@@ -124,12 +124,12 @@ export function ItemRecipe({
 				viewport={{ once: true, amount: 0.01 }}>
 				<div
 					className={cn(
-						'w-full my-2 flex shadow-sm overflow-hidden',
+						'w-full my-2 flex shadow-center-sm overflow-hidden',
 						'bg-forest-100 border-4 border-forest-150 rounded-2xl',
 					)}>
 					<div className='flex flex-col flex-1 min-w-0 bg-forest-150'>
-						<div className='bg-forest-100 rounded-xl rounded-b-none'>
-							<div className='flex items-center w-full bg-[#fefff2] px-4 py-2 rounded-xl'>
+						<div className='bg-forest-150 rounded-xl rounded-b-none border-b-4 border-forest-150'>
+							<div className='flex items-center w-full bg-forest-50 px-4 py-2 rounded-xl'>
 								<Icon name={recipe.category} />
 								<span className='ms-2 text-base md:text-lg text-forest-200 font-extrabold leading-5 line-clamp-2'>
 									{recipe.name}
@@ -138,7 +138,7 @@ export function ItemRecipe({
 						</div>
 						<div
 							ref={chipsRef}
-							className='flex flex-wrap items-center gap-1.5 px-3 py-2 bg-forest-100'>
+							className='flex flex-wrap items-center gap-1.5 px-3 py-2 bg-forest-100 rounded-t-xl'>
 							{recipe.time && (
 								<span className='shrink-0 inline-flex items-center bg-forest-200 px-2 py-0.5 rounded-lg'>
 									<Clock
@@ -157,7 +157,7 @@ export function ItemRecipe({
 								</span>
 							))}
 							{hiddenCount > 0 && (
-								<span className='shrink-0 text-xs font-semibold text-forest-200/50'>
+								<span className='shrink-0 text-xs font-semibold text-forest-200'>
 									{`+${hiddenCount}`}
 								</span>
 							)}
@@ -174,6 +174,7 @@ export function ItemRecipe({
 								src={recipe.images[0]}
 								alt={recipe.name}
 								fill
+								sizes='96px'
 								loader={proxyLoader}
 								className='object-cover rounded-xl'
 							/>

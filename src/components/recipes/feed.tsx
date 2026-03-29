@@ -13,22 +13,19 @@ import type { RecipeSchema } from '@/server/schemas'
 
 function RecipeSkeleton() {
 	return (
-		<div className='w-full my-2 flex shadow-sm bg-forest-200/15 border-4 border-forest-200/15 rounded-2xl overflow-hidden animate-pulse'>
+		<div className='w-full my-2 flex shadow-center-sm bg-forest-100 border-4 border-forest-150 rounded-2xl overflow-hidden animate-pulse'>
 			<div className='flex flex-col flex-1 min-w-0'>
-				<div className='flex items-center w-full bg-[#fefff2] px-4 py-3 rounded-l-xl shadow-sm'>
-					<div className='w-6 h-6 bg-forest-200/20 rounded' />
-					<div className='ms-2 h-4 w-2/3 bg-forest-200/20 rounded' />
+				<div className='flex items-center w-full bg-forest-50 px-4 py-3 rounded-l-xl shadow-center-sm'>
+					<div className='w-6 h-6 bg-forest-150 rounded' />
+					<div className='ms-2 h-4 w-2/3 bg-forest-150 rounded' />
 				</div>
 				<div className='flex flex-wrap gap-1.5 px-3 py-2.5'>
 					{[1, 2, 3].map((i) => (
-						<div
-							key={i}
-							className='h-5 w-16 bg-forest-200/10 rounded-lg'
-						/>
+						<div key={i} className='h-5 w-16 bg-forest-150 rounded-lg' />
 					))}
 				</div>
 			</div>
-			<div className='w-24 shrink-0 bg-forest-200/10' />
+			<div className='w-24 shrink-0 bg-forest-150' />
 		</div>
 	)
 }
@@ -118,6 +115,8 @@ export const RecipesFeed = ({
 				<>
 					{recipes.length === 0 ? (
 						<>
+							<RecipeSkeleton />
+							<RecipeSkeleton />
 							<RecipeSkeleton />
 							<RecipeSkeleton />
 							<RecipeSkeleton />

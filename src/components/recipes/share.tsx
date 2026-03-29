@@ -30,7 +30,7 @@ export const RecipeShare = ({ recipe }: { recipe: Recipe | null }) => {
 			onClick={handleCopy(
 				`${SITE_URL}/recipes/${recipe.authorUsername}/${recipe.slug}`,
 			)}
-			className='hover:bg-forest-200/15 p-1 rounded-xl transition-colors duration-300'>
+			className='hover:bg-forest-100 p-1 rounded-xl transition-colors duration-300'>
 			<Share2Icon size={24} className='text-forest-200' />
 		</button>
 	)

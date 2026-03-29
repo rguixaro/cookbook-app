@@ -75,7 +75,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 		return (
 			<button
 				onClick={handleCopy(`${SITE_URL}/profiles/${props.username}`)}
-				className='bg-forest-200 text-white font-bold rounded-xl text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-200/75 shadow'>
+				className='bg-forest-200 text-white font-bold rounded-xl text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-300 shadow-center'>
 				<span>{t('share')}</span>
 			</button>
 		)
@@ -115,12 +115,12 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 										<span
 											className={`w-11 h-6 rounded-full transition-colors ${
 												field.value
-													? 'bg-forest-400'
-													: 'bg-forest-200/50'
+													? 'bg-forest-300'
+													: 'bg-forest-150'
 											}`}
 										/>
 										<span
-											className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-md transform transition-transform ${
+											className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-center-md transform transition-transform ${
 												field.value
 													? 'translate-x-5'
 													: 'translate-x-0'

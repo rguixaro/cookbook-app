@@ -38,9 +38,9 @@ export function ItemProfile({
 				whileInView='onscreen'
 				variants={motions}
 				viewport={{ once: true, amount: 0.01 }}>
-				<div className='my-1 bg-forest-200/15 border-4 border-forest-200/15 rounded-2xl shadow-sm'>
-					<div className='flex items-center gap-3 bg-[#fefff2] rounded-xl px-4 py-2 shadow-sm'>
-						<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-sm'>
+				<div className='my-1 bg-forest-100 border-4 border-forest-150 rounded-2xl shadow-center-sm'>
+					<div className='flex items-center gap-3 bg-forest-50 rounded-xl px-4 py-2 shadow-center-m'>
+						<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-center-sm'>
 							<Image
 								src={profile.image}
 								referrerPolicy='no-referrer'

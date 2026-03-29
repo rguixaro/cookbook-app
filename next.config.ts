@@ -3,6 +3,11 @@ import createNextIntlPlugin from 'next-intl/plugin'
 
 const withNextIntl = createNextIntlPlugin()
 
+const cloudfrontDomain = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN ?? ''
+const cloudfrontHostname = cloudfrontDomain
+	? new URL(cloudfrontDomain).hostname
+	: ''
+
 const nextConfig: NextConfig = {
 	poweredByHeader: false,
 	pageExtensions: ['ts', 'tsx'],
@@ -21,10 +26,9 @@ const nextConfig: NextConfig = {
 				protocol: 'https',
 				hostname: 'lh3.googleusercontent.com',
 			},
-			{
-				protocol: 'https',
-				hostname: 'assets.rguixaro.dev',
-			},
+			...(cloudfrontHostname
+			? [{ protocol: 'https' as const, hostname: cloudfrontHostname }]
+			: []),
 		],
 		localPatterns: [
 			{
@@ -63,9 +67,9 @@ const nextConfig: NextConfig = {
 							"default-src 'self'",
 							"script-src 'self' 'unsafe-inline' 'unsafe-eval'",
 							"style-src 'self' 'unsafe-inline'",
-							"img-src 'self' data: blob: https://lh3.googleusercontent.com https://assets.rguixaro.dev",
+							`img-src 'self' data: blob: https://lh3.googleusercontent.com${cloudfrontDomain ? ` ${cloudfrontDomain}` : ''}`,
 							"font-src 'self'",
-							`connect-src 'self' https://assets.rguixaro.dev${process.env.NODE_ENV === 'development' ? ' ws://127.0.0.1:* ws://localhost:*' : ''}`,
+							`connect-src 'self'${cloudfrontDomain ? ` ${cloudfrontDomain}` : ''}${process.env.NODE_ENV === 'development' ? ' ws://127.0.0.1:* ws://localhost:*' : ''}`,
 							"frame-ancestors 'none'",
 						].join('; '),
 					},

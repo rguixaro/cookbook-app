@@ -33,6 +33,7 @@ export const updateProfile = async (values: unknown): Promise<void | null> => {
 		await unstable_update({ user: { name, isPrivate } })
 		revalidatePath('/')
 		revalidatePath('/profile')
+		revalidatePath('/profiles', 'layout')
 	} catch {
 		return null
 	}
@@ -50,19 +51,49 @@ export const deleteProfile = async (): Promise<null | true> => {
 	if (!currentUser) return null
 
 	try {
-		// Collect all S3 image keys before Prisma cascade-deletes the recipes
+		// Collect recipe IDs and S3 image keys before cascade delete
 		const recipes = await db.recipe.findMany({
 			where: { authorId: currentUser.user.id },
-			select: { images: true },
+			select: { id: true, images: true },
 		})
+		const recipeIds = recipes.map((r) => r.id)
 		const allImageKeys = recipes.flatMap((r) => r.images)
+
 		if (allImageKeys.length > 0) {
-			await deleteRecipeImages(allImageKeys).catch((e) =>
-				console.error(
-					'[S3] Failed to delete user images on profile deletion:',
-					e,
+			await deleteRecipeImages(allImageKeys).catch(() => {})
+		}
+
+		// Clean dangling saved/favourite references from other users
+		if (recipeIds.length > 0) {
+			const affectedUsers = await db.user.findMany({
+				where: {
+					OR: [
+						{ savedRecipes: { hasSome: recipeIds } },
+						{ favouriteRecipes: { hasSome: recipeIds } },
+					],
+				},
+				select: { id: true, savedRecipes: true, favouriteRecipes: true },
+			})
+
+			await Promise.all(
+				affectedUsers.map((user) =>
+					db.user.update({
+						where: { id: user.id },
+						data: {
+							savedRecipes: {
+								set: user.savedRecipes.filter(
+									(r) => !recipeIds.includes(r),
+								),
+							},
+							favouriteRecipes: {
+								set: user.favouriteRecipes.filter(
+									(r) => !recipeIds.includes(r),
+								),
+							},
+						},
+					}),
 				),
-			)
+			).catch(() => {})
 		}
 
 		await db.user.delete({ where: { id: currentUser.user.id } })

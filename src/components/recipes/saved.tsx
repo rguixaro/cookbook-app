@@ -18,12 +18,14 @@ export const SavedStatus = ({
 	const [isRecipeSaved, setIsSaved] = useState<boolean>(initial)
 
 	async function onSaveRecipe() {
+		const prev = isRecipeSaved
+		setIsSaved(!prev)
 		try {
-			const { error } = await saveRecipe(recipeId, isRecipeSaved)
+			const { error } = await saveRecipe(recipeId, prev)
 			if (error) throw new Error()
-			toast.success(t(isRecipeSaved ? 'recipe-deleted' : 'recipe-saved'))
-			setIsSaved((prev) => !prev)
+			toast.success(t(prev ? 'recipe-deleted' : 'recipe-saved'))
 		} catch {
+			setIsSaved(prev)
 			toast.error(t('error'))
 		}
 	}
@@ -31,7 +33,7 @@ export const SavedStatus = ({
 	return (
 		<button
 			onClick={() => onSaveRecipe()}
-			className='hover:bg-forest-200/15 p-1 rounded-xl transition-colors duration-300'>
+			className='hover:bg-forest-100 p-1 rounded-xl transition-colors duration-300'>
 			<BookmarkIcon filled={isRecipeSaved} />
 		</button>
 	)

@@ -56,9 +56,9 @@ export default async function ProfilePage({
 			</div>
 			<div className='flex flex-col items-center w-full'>
 				<SyncProfileName name={profile.name ?? ''} />
-				<div className='mb-2 mt-3 bg-forest-200/15 border-4 border-forest-200/15 rounded-2xl shadow-sm'>
-					<div className='flex items-center gap-4 bg-[#fefff2] rounded-xl px-3 py-3 shadow-sm'>
-						<div className='w-14 h-14 shrink-0 rounded-xl overflow-hidden shadow-sm'>
+				<div className='mb-2 mt-3 bg-forest-100 border-4 border-forest-150 rounded-2xl shadow-center-sm'>
+					<div className='flex items-center gap-4 bg-forest-50 rounded-xl px-3 py-3 shadow-center-sm'>
+						<div className='w-14 h-14 shrink-0 rounded-xl overflow-hidden shadow-center-sm'>
 							<Image
 								src={profile.image ?? ''}
 								referrerPolicy='no-referrer'
