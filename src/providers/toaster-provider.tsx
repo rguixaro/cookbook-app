@@ -9,11 +9,11 @@ import { Toaster } from 'sonner'
 export const ToasterProvider = () => {
 	return (
 		<Toaster
-			position='bottom-right'
+			position='bottom-center'
 			theme={'light'}
 			toastOptions={{
 				classNames: {
-					toast: 'font-sans! font-bold! bg-forest-200! border-forest-150! text-white!',
+					toast: 'font-sans! font-bold! border-0! rounded-2xl! bg-forest-200! text-white! shadow-center-sm!',
 				},
 			}}
 		/>
