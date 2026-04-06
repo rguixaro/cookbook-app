@@ -51,7 +51,7 @@ export function RecipeImageInput({
 	const inputRef = useRef<HTMLInputElement>(null)
 	const targetSlot = useRef<number>(0)
 
-	const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10 MB — matches server limit
+	const MAX_FILE_SIZE = 10 * 1024 * 1024
 
 	const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
@@ -74,7 +74,6 @@ export function RecipeImageInput({
 			nextImages[slot] = result
 			nextFiles[slot] = file
 
-			// Filter out empty slots while keeping alignment
 			const filtered = nextImages.reduce<{
 				imgs: string[]
 				fls: (File | null)[]
@@ -94,7 +93,6 @@ export function RecipeImageInput({
 		}
 		reader.readAsDataURL(file)
 
-		// Reset so the same file can be re-selected
 		e.target.value = ''
 	}
 
@@ -110,7 +108,6 @@ export function RecipeImageInput({
 		const nextFiles = files.filter((_, i) => i !== index)
 		onChange(nextImages)
 		onFilesChange(nextFiles)
-		// Adjust cover index if needed
 		if (coverIndex === index) {
 			onCoverChange(0)
 		} else if (coverIndex > index) {
@@ -237,7 +234,7 @@ function EmptySlot({
 			disabled={disabled}
 			className={cn(
 				'w-full rounded-xl border-2 border-dashed border-forest-200/25',
-				'bg-forest-150 flex items-center justify-center',
+				'bg-forest-50 flex items-center justify-center',
 				'transition-colors duration-200',
 				!disabled && 'hover:border-forest-200/50 cursor-pointer',
 				disabled && 'opacity-50 cursor-not-allowed',
