@@ -128,11 +128,11 @@ export default async function RecipePage({
 			</div>
 			<div
 				className={cn(
-					'w-10/12 sm:w-2/4 lg:w-2/6 mb-2 mt-5 rounded-3xl border-4',
+					'w-10/12 sm:w-2/4 lg:w-2/6 my-5 rounded-3xl border-8',
 					'flex flex-col items-center justify-center shadow-center-sm border-forest-150 bg-forest-150',
 				)}>
 				<div className='w-full border-b-8 border-forest-150 bg-forest-150 rounded-t-[20px]'>
-					<div className='bg-forest-50 rounded-[20px] p-4 shadow-center-sm w-full flex items-center justify-center'>
+					<div className='bg-forest-50 rounded-[20px] p-4 shadow-center-sm w-full min-h-12.5 flex items-center justify-center'>
 						<Icon name={recipe.category} />
 						<span className='ms-2 text-lg md:text-xl text-forest-300 font-black leading-4 font-title'>
 							{recipe.name}
@@ -150,7 +150,7 @@ export default async function RecipePage({
 							'w-full mb-2 p-5 flex flex-col items-center justify-center',
 						)}>
 						{recipe.time && (
-							<div className='flex mb-3 items-center bg-forest-200 text-white px-2 py-1 rounded-xl'>
+							<div className='flex mb-3 items-center bg-forest-200 text-white px-3 py-1 rounded-xl'>
 								<p className='font-extrabold text-sm'>{t('time')}</p>
 								<Clock
 									{...IconProps}
@@ -173,9 +173,9 @@ export default async function RecipePage({
 								))}
 							</div>
 						</div>
-						<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
+						<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
 						<div className='text-sm md:text-base'>
-							<p className='font-extrabold text-forest-300'>
+							<p className='font-extrabold text-forest-300 mb-2'>
 								{t('instructions')}
 							</p>
 							<span className='font-normal text-justify text-forest-400'>
@@ -184,7 +184,7 @@ export default async function RecipePage({
 						</div>
 						{recipe.sourceUrls && recipe.sourceUrls.length > 0 && (
 							<>
-								<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
+								<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
 								<div className='text-sm md:text-base'>
 									<p className='font-extrabold text-forest-300'>
 										{t('sources')}

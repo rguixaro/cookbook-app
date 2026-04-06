@@ -27,6 +27,10 @@ export default async function RootLayout({
 
 	return (
 		<html lang={locale} suppressHydrationWarning>
+			<head>
+				<link rel='icon' type='image/svg+xml' href='/images/favicon.svg' />
+				<link rel='alternate icon' href='/images/favicon.png' />
+			</head>
 			<body
 				className={cn(
 					'font-sans antialiased bg-forest-50 selection:bg-forest-150',

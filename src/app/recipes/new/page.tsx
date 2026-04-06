@@ -28,6 +28,7 @@ import {
 	Input,
 	Textarea,
 } from '@/ui'
+import { cn } from '@/utils'
 
 export default function NewRecipePage() {
 	const t = useTranslations('RecipesPage')
@@ -87,26 +88,31 @@ export default function NewRecipePage() {
 	}
 
 	return (
-		<div className='flex flex-col items-center pt-2 my-2 text-forest-400 z-0 w-full'>
+		<div className='flex flex-col items-center pt-2 my-2 text-center w-full z-0'>
 			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
 				<GoBack text={'recipes'} />
 			</div>
-			<div className='flex my-5 bg-forest-100 w-10/12 sm:w-2/4 lg:w-2/6 flex-col border-4 border-forest-150 p-4 rounded-3xl text-forest-400'>
+			<div
+				className={cn(
+					'flex my-5 w-10/12 sm:w-2/4 lg:w-2/6',
+					'flex-col rounded-3xl shadow-center-sm',
+					'bg-forest-150 border-8 border-forest-150 text-forest-400',
+				)}>
 				<Form {...form}>
 					<form
 						onSubmit={form.handleSubmit(onSubmit)}
 						onKeyDown={(e) => checkKeyDown(e)}
-						className='w-full mt-2'>
+						className='w-full'>
 						<FormField
 							control={form.control}
 							name='name'
 							render={({ field }) => (
-								<FormItem className='text-left mb-2'>
+								<FormItem className='text-left border-b-8 border-forest-150 bg-forest-150 rounded-t-[20px]'>
 									<FormControl>
 										<Input
 											{...field}
 											autoComplete='off'
-											className='border-2 text-center py-5 bg-forest-50 text-forest-300 text-lg md:text-xl font-title font-black placeholder:font-normal placeholder:font-sans placeholder:text-forest-200 placeholder:text-sm'
+											className='text-center bg-forest-50 text-forest-300 text-lg md:text-xl font-title font-black leading-4 placeholder:font-normal placeholder:font-sans placeholder:text-forest-200 placeholder:text-sm placeholder:leading-normal border-0 rounded-[20px] focus-visible:ring-0 shadow-none h-12.5 px-4'
 											placeholder={t('recipe-name')}
 											disabled={loading}
 										/>
@@ -115,170 +121,174 @@ export default function NewRecipePage() {
 								</FormItem>
 							)}
 						/>
-						<div className='my-5 flex flex-col items-center justify-center gap-1.5 py-6 px-3 rounded-xl bg-forest-150 border-2 border-dashed border-forest-200/25'>
-							<ImageIcon size={24} className='text-forest-200' />
-							<span className='text-xs text-center text-forest-200'>
-								{t('images-after-create')}
-							</span>
-						</div>
-						<div className='w-full flex justify-center my-3'>
-							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
-						</div>
-						<FormField
-							control={form.control}
-							name='category'
-							render={() => (
-								<FormItem className='my-5'>
-									<FormLabel>{t('categories')}</FormLabel>
-									<FormControl>
-										<CategorySelector
-											value={form.getValues('category')}
-											setValue={(value) =>
-												form.setValue(
-													'category',
-													value as Categories,
-												)
-											}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<FormField
-							control={form.control}
-							name='time'
-							render={() => (
-								<FormItem className='my-5'>
-									<FormControl>
-										<div className='flex my-5 bg-forest-50 rounded-2xl overflow-hidden shadow-center-sm'>
-											<div className='bg-forest-200 p-2 flex items-center justify-center border-2 rounded-2xl rounded-r-none border-r-0 border-forest-150'>
-												<Clock
-													className='stroke-white'
-													size={24}
-												/>
-											</div>
-											<div className='flex px-5 w-full items-center rounded-r-2xl justify-between border-2 border-l-0 border-forest-150'>
-												<span className='font-bold text-forest-300 leading-4'>
-													{t('time')}
-												</span>
-												<FormField
-													control={form.control}
-													name='time'
-													render={({ field }) => {
-														return (
-															<FormItem className='my-2'>
-																<FormControl>
-																	<Input
-																		{...field}
-																		value={
-																			field.value ||
-																			''
-																		}
-																		{...form.register(
-																			'time',
-																			{
-																				setValueAs:
-																					(
-																						v,
-																					) =>
-																						v ===
-																						''
-																							? undefined
-																							: parseInt(
-																									v,
-																									10,
-																								),
-																			},
-																		)}
-																		autoComplete='off'
-																		type='number'
-																		className='rounded border-none shadow-none! focus-visible:ring-0 text-right'
-																		placeholder={t(
-																			'minutes',
-																		)}
-																		disabled={
-																			loading
-																		}
-																	/>
-																</FormControl>
-															</FormItem>
-														)
-													}}
-												/>
-											</div>
-										</div>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<div className='w-full flex justify-center my-3'>
-							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
-						</div>
-						<FormField
-							control={form.control}
-							name='ingredients'
-							render={() => (
-								<FormItem className='my-5'>
-									<FormLabel>{t('ingredients')}</FormLabel>
-									<IngredientSelector
-										values={ingredients}
-										setValues={setIngredients}
-									/>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<div className='w-full flex justify-center my-3'>
-							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
-						</div>
-						<FormField
-							control={form.control}
-							name='instructions'
-							render={({ field }) => (
-								<FormItem className='my-5'>
-									<FormLabel>{t('instructions')}</FormLabel>
-									<FormControl>
-										<Textarea
-											{...field}
-											onKeyDown={(e) => e.stopPropagation()}
-											className='border-2 bg-forest-50 text-forest-200 placeholder:text-forest-200'
-											placeholder={t('instructions-add')}
-											disabled={loading}
-										/>
-									</FormControl>
-									<FormMessage />
-								</FormItem>
-							)}
-						/>
-						<div className='w-full flex justify-center my-3'>
-							<div className='h-1.5 w-3/4 rounded bg-forest-400/15' />
-						</div>
-						<div className='my-5'>
-							<FormLabel>{t('source-links')}</FormLabel>
-							<SourceLinksInput
-								values={sourceUrls}
-								setValues={setSourceUrls}
+						<div className='p-4 bg-forest-100 rounded-[20px]'>
+							<div className='mb-5 flex flex-col items-center justify-center gap-1.5 py-6 px-3 rounded-xl bg-forest-150 border-2 border-dashed border-forest-200/25'>
+								<ImageIcon size={24} className='text-forest-200' />
+								<span className='text-xs text-center text-forest-200'>
+									{t('images-after-create')}
+								</span>
+							</div>
+							<div className='w-full flex justify-center my-3'>
+								<div className='h-2 w-3/4 rounded bg-forest-150' />
+							</div>
+							<FormField
+								control={form.control}
+								name='category'
+								render={() => (
+									<FormItem className='my-5'>
+										<FormLabel>{t('categories')}</FormLabel>
+										<FormControl>
+											<CategorySelector
+												value={form.getValues('category')}
+												setValue={(value) =>
+													form.setValue(
+														'category',
+														value as Categories,
+													)
+												}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
 							/>
-						</div>
-						<div className='w-full flex justify-center mt-5'>
-							<Button
-								type='submit'
-								className='w-full'
-								disabled={loading}>
-								<div className='flex items-center space-x-3'>
-									{loading && (
-										<LoaderIcon
-											size={16}
-											className='animate-spin'
+							<FormField
+								control={form.control}
+								name='time'
+								render={() => (
+									<FormItem className='my-5'>
+										<FormControl>
+											<div className='flex my-5 bg-forest-50 rounded-2xl overflow-hidden shadow-center-sm'>
+												<div className='bg-forest-200 p-2 flex items-center justify-center border-2 rounded-2xl rounded-r-none border-r-0 border-forest-150'>
+													<Clock
+														className='stroke-white'
+														size={24}
+													/>
+												</div>
+												<div className='flex px-5 w-full items-center rounded-r-2xl justify-between border-2 border-l-0 border-forest-150'>
+													<span className='font-bold text-forest-300 leading-4'>
+														{t('time')}
+													</span>
+													<FormField
+														control={form.control}
+														name='time'
+														render={({ field }) => {
+															return (
+																<FormItem className='my-2'>
+																	<FormControl>
+																		<Input
+																			{...field}
+																			value={
+																				field.value ||
+																				''
+																			}
+																			{...form.register(
+																				'time',
+																				{
+																					setValueAs:
+																						(
+																							v,
+																						) =>
+																							v ===
+																							''
+																								? undefined
+																								: parseInt(
+																										v,
+																										10,
+																									),
+																				},
+																			)}
+																			autoComplete='off'
+																			type='number'
+																			className='rounded border-none shadow-none! focus-visible:ring-0 text-right'
+																			placeholder={t(
+																				'minutes',
+																			)}
+																			disabled={
+																				loading
+																			}
+																		/>
+																	</FormControl>
+																</FormItem>
+															)
+														}}
+													/>
+												</div>
+											</div>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<div className='w-full flex justify-center my-3'>
+								<div className='h-2 w-3/4 rounded bg-forest-150' />
+							</div>
+							<FormField
+								control={form.control}
+								name='ingredients'
+								render={() => (
+									<FormItem className='my-5'>
+										<FormLabel>{t('ingredients')}</FormLabel>
+										<IngredientSelector
+											values={ingredients}
+											setValues={setIngredients}
 										/>
-									)}
-									<span className='text-base font-bold'>
-										{loading ? t('creating') : t('create')}
-									</span>
-								</div>
-							</Button>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<div className='w-full flex justify-center my-3'>
+								<div className='h-2 w-3/4 rounded bg-forest-150' />
+							</div>
+							<FormField
+								control={form.control}
+								name='instructions'
+								render={({ field }) => (
+									<FormItem className='my-5'>
+										<FormLabel>{t('instructions')}</FormLabel>
+										<FormControl className='my-2'>
+											<Textarea
+												{...field}
+												onKeyDown={(e) =>
+													e.stopPropagation()
+												}
+												className='border-2 bg-forest-50 text-forest-200 placeholder:text-forest-200'
+												placeholder={t('instructions-add')}
+												disabled={loading}
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+							<div className='w-full flex justify-center my-3'>
+								<div className='h-2 w-3/4 rounded bg-forest-150' />
+							</div>
+							<div className='my-5'>
+								<FormLabel>{t('source-links')}</FormLabel>
+								<SourceLinksInput
+									values={sourceUrls}
+									setValues={setSourceUrls}
+								/>
+							</div>
+							<div className='w-full flex justify-center mt-5'>
+								<Button
+									type='submit'
+									className='w-full'
+									disabled={loading}>
+									<div className='flex items-center space-x-3'>
+										{loading && (
+											<LoaderIcon
+												size={16}
+												className='animate-spin'
+											/>
+										)}
+										<span className='text-base font-bold'>
+											{loading ? t('creating') : t('create')}
+										</span>
+									</div>
+								</Button>
+							</div>
 						</div>
 					</form>
 				</Form>
