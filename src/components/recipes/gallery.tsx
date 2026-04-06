@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
 import Image, { ImageLoader } from 'next/image'
-import { ImageIcon } from 'lucide-react'
+import { useState } from 'react'
+import { ImageIcon, LoaderIcon } from 'lucide-react'
+import { useCookiesReady } from '@/providers/cookie-provider'
 
 /**
  * Custom image loader that routes through the proxy API
@@ -20,6 +21,7 @@ const proxyLoader: ImageLoader = ({ src, width, quality }) => {
  * Falls back to empty-state placeholder when no images.
  */
 export function RecipeGallery({ images }: { images: string[] }) {
+	const cookiesReady = useCookiesReady()
 	if (!images.length) return null
 
 	const count = Math.min(images.length, 3)
@@ -28,13 +30,10 @@ export function RecipeGallery({ images }: { images: string[] }) {
 		return (
 			<div className='w-full px-4 pt-3'>
 				<div className='relative aspect-4/3 w-full overflow-hidden rounded-xl bg-forest-150'>
-					<Image
+					<GalleryImage
 						src={images[0]}
 						alt='Recipe photo'
-						fill
 						sizes='(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 33vw'
-						loader={proxyLoader}
-						className='object-cover'
 					/>
 				</div>
 			</div>
@@ -49,13 +48,10 @@ export function RecipeGallery({ images }: { images: string[] }) {
 						<div
 							key={i}
 							className='relative aspect-square overflow-hidden rounded-xl bg-forest-150'>
-							<Image
+							<GalleryImage
 								src={src}
 								alt={`Recipe photo ${i + 1}`}
-								fill
 								sizes='(max-width: 640px) 46vw, (max-width: 1024px) 25vw, 16vw'
-								loader={proxyLoader}
-								className='object-cover'
 							/>
 						</div>
 					))}
@@ -68,13 +64,10 @@ export function RecipeGallery({ images }: { images: string[] }) {
 		<div className='w-full px-4 pt-3'>
 			<div className='flex flex-col gap-2'>
 				<div className='relative aspect-4/3 w-full overflow-hidden rounded-xl bg-forest-150'>
-					<Image
+					<GalleryImage
 						src={images[0]}
 						alt='Recipe photo 1'
-						fill
 						sizes='(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 33vw'
-						loader={proxyLoader}
-						className='object-cover'
 					/>
 				</div>
 				<div className='grid grid-cols-2 gap-2'>
@@ -82,19 +75,48 @@ export function RecipeGallery({ images }: { images: string[] }) {
 						<div
 							key={i}
 							className='relative aspect-square overflow-hidden rounded-xl bg-forest-150'>
-							<Image
+							<GalleryImage
 								src={src}
 								alt={`Recipe photo ${i + 2}`}
-								fill
 								sizes='(max-width: 640px) 46vw, (max-width: 1024px) 25vw, 16vw'
-								loader={proxyLoader}
-								className='object-cover'
 							/>
 						</div>
 					))}
 				</div>
 			</div>
 		</div>
+	)
+}
+
+/** Image with a centered spinner that disappears once loaded. */
+function GalleryImage({
+	src,
+	alt,
+	sizes,
+}: {
+	src: string
+	alt: string
+	sizes: string
+}) {
+	const [loaded, setLoaded] = useState(false)
+
+	return (
+		<>
+			{!loaded && (
+				<div className='absolute inset-0 flex items-center justify-center'>
+					<LoaderIcon size={32} className='animate-spin text-forest-200' />
+				</div>
+			)}
+			<Image
+				src={src}
+				alt={alt}
+				fill
+				sizes={sizes}
+				loader={proxyLoader}
+				className='object-cover'
+				onLoad={() => setLoaded(true)}
+			/>
+		</>
 	)
 }
 
@@ -107,27 +129,6 @@ export function RecipeGalleryPlaceholder() {
 			<div className='flex items-center justify-center aspect-3/1 w-full rounded-xl bg-forest-150 border-2 border-dashed border-forest-200/25'>
 				<ImageIcon size={24} className='text-forest-200' />
 			</div>
-		</div>
-	)
-}
-
-/**
- * Small thumbnail for recipe list item cards.
- * Shows the first image or a placeholder icon.
- */
-export function RecipeThumbnail({ src }: { src?: string }) {
-	if (!src) return null
-
-	return (
-		<div className='w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-forest-150'>
-			<Image
-				src={src}
-				alt='Recipe thumbnail'
-				width={48}
-				height={48}
-				loader={proxyLoader}
-				className='object-cover w-full h-full'
-			/>
 		</div>
 	)
 }

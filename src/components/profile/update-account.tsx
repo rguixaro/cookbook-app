@@ -71,21 +71,19 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			.catch(() => toast.error(t_toasts('error')))
 	}
 
-	const ShareComponent = () => {
-		return (
-			<button
-				onClick={handleCopy(`${SITE_URL}/profiles/${props.username}`)}
-				className='bg-forest-200 text-white font-bold rounded-xl text-xs md:text-sm px-2 py-1 transition-colors duration-300 hover:bg-forest-300 shadow-center'>
-				<span>{t('share')}</span>
-			</button>
-		)
-	}
-
 	return (
 		<ProfileCard
 			title={t('title')}
 			description={t('description')}
-			action={<ShareComponent />}>
+			action={
+				<LogoutAccount
+					trigger={
+						<Button size='sm' className='mt-4 mb-4 w-fit self-center'>
+							<span className='font-bold'>{t('account-logout')}</span>
+						</Button>
+					}
+				/>
+			}>
 			<Form {...hookForm}>
 				<form
 					onSubmit={hookForm.handleSubmit(onSubmit)}
@@ -98,11 +96,11 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 								<FormLabel className='font-bold'>
 									{t('private')}
 								</FormLabel>
-								<FormDescription className='text-sm opacity-70 mb-2'>
+								<FormDescription className='text-sm mb-2'>
 									{t('private-description')}
 								</FormDescription>
 								<FormControl className='space-y-2'>
-									<label className='relative inline-flex items-center cursor-pointer'>
+									<label className='relative inline-flex items-start cursor-pointer justify-between w-full'>
 										<input
 											type='checkbox'
 											className='sr-only'
@@ -126,6 +124,18 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 													: 'translate-x-0'
 											}`}
 										/>
+										{!field.value && (
+											<Button
+												type='button'
+												size='sm'
+												onClick={handleCopy(
+													`${SITE_URL}/profiles/${props.username}`,
+												)}>
+												<span className='font-bold'>
+													{t('share')}
+												</span>
+											</Button>
+										)}
 									</label>
 								</FormControl>
 								<FormMessage />
@@ -144,6 +154,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 									<Input
 										placeholder={t('name')}
 										disabled={loading}
+										className='rounded-2xl py-5 bg-forest-50 border-2 my-2'
 										{...field}
 									/>
 								</FormControl>
@@ -153,29 +164,17 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 					/>
 					<FormItem>
 						<FormLabel className='font-bold'>{t('email')}</FormLabel>
+						<FormDescription className='flex items-center space-x-2 my-2 text-forest-400'>
+							<AlertTriangleIcon size={18} />
+							<span>{t('email-hint')}</span>
+						</FormDescription>
 						<Input
 							placeholder={t('email')}
 							value={props.email}
+							className='rounded-2xl py-5 bg-forest-50 border-2 my-2'
 							disabled
 						/>
-						<FormDescription className='flex items-center gap-2 pl-1 text-forest-400'>
-							<AlertTriangleIcon size={24} />
-							<span>{t('email-hint')}</span>
-						</FormDescription>
 					</FormItem>
-					<DeleteAccount
-						email={props.email}
-						trigger={
-							<Button
-								variant='destructive'
-								size='sm'
-								className='mb-8 w-fit'>
-								<span className='font-bold'>
-									{t('account-delete')}
-								</span>
-							</Button>
-						}
-					/>
 					<div className='flex items-center'>
 						<Button
 							type='submit'
@@ -188,25 +187,23 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							{loading ? (
 								<LoaderIcon size={16} className='animate-spin' />
 							) : (
-								<SaveIcon size={16} />
+								<span className='font-bold'>{t('save')}</span>
 							)}
-							<span className='font-bold'>
-								{loading ? t('saving') : t('save')}
-							</span>
 						</Button>
 					</div>
+					<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
+					<DeleteAccount
+						email={props.email}
+						trigger={
+							<Button variant='ghost' size='sm' className='w-fit'>
+								<span className='font-bold underline'>
+									{t('account-delete')}
+								</span>
+							</Button>
+						}
+					/>
 				</form>
 			</Form>
-			<LogoutAccount
-				trigger={
-					<Button
-						variant='outline'
-						size='sm'
-						className='mt-4 mb-4 w-fit self-center'>
-						<span>{t('account-logout')}</span>
-					</Button>
-				}
-			/>
 		</ProfileCard>
 	)
 }

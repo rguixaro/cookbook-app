@@ -9,6 +9,7 @@ import { motion, Variants } from 'motion/react'
 import Image, { ImageLoader } from 'next/image'
 
 import { RecipeSchema } from '@/server/schemas'
+import { useCookiesReady } from '@/providers/cookie-provider'
 
 const proxyLoader: ImageLoader = ({ src, width, quality }) => {
 	return `/api/proxy?url=${encodeURIComponent(src)}&w=${width}${quality ? `&q=${quality}` : ''}`
@@ -51,6 +52,7 @@ export function ItemRecipe({
 	category?: string
 }) {
 	const t = useTranslations('RecipesPage')
+	const cookiesReady = useCookiesReady()
 	const chipsRef = useRef<HTMLDivElement>(null)
 	const [visibleCount, setVisibleCount] = useState<number | null>(null)
 	const ceilingRef = useRef<number>(Infinity)
@@ -68,7 +70,6 @@ export function ItemRecipe({
 
 		const tops = children.map((c) => Math.round(c.getBoundingClientRect().top))
 
-		// Group tops within 6px as the same row (badges/chips may differ slightly in height)
 		const ROW_THRESHOLD = 6
 		const uniqueTops: number[] = []
 		for (const t of tops) {
@@ -81,14 +82,12 @@ export function ItemRecipe({
 		const timeSlots = recipe.time ? 1 : 0
 
 		if (uniqueTops.length > 2) {
-			// Overflows — record that this ingredient count doesn't fit
 			const badgePresent =
 				visibleCount !== null && visibleCount < allChips.length
 			const ingredientCount =
 				children.length - timeSlots - (badgePresent ? 1 : 0)
 			ceilingRef.current = Math.min(ceilingRef.current, ingredientCount)
 
-			// Cut at row-3 boundary, reserving 1 slot for the +N badge
 			const row3Top = uniqueTops[2]
 			const thirdRowStart = tops.findIndex(
 				(t) => Math.abs(t - row3Top) <= ROW_THRESHOLD,
@@ -100,7 +99,6 @@ export function ItemRecipe({
 			visibleCount < allChips.length &&
 			visibleCount + 1 < ceilingRef.current
 		) {
-			// Fits in ≤ 2 rows but still truncating — try one more chip
 			setVisibleCount(visibleCount + 1)
 		}
 	}, [visibleCount, allChips.length, recipe.time])
@@ -125,13 +123,13 @@ export function ItemRecipe({
 				<div
 					className={cn(
 						'w-full my-2 flex shadow-center-sm overflow-hidden',
-						'bg-forest-100 border-4 border-forest-150 rounded-2xl',
+						'bg-forest-100 border-8 border-forest-150 rounded-2xl',
 					)}>
 					<div className='flex flex-col flex-1 min-w-0 bg-forest-150'>
-						<div className='bg-forest-150 rounded-xl rounded-b-none border-b-4 border-forest-150'>
+						<div className='bg-forest-150 rounded-xl rounded-b-none border-b-8 border-forest-150'>
 							<div className='flex items-center w-full bg-forest-50 px-4 py-2 rounded-xl'>
 								<Icon name={recipe.category} />
-								<span className='ms-2 text-base md:text-lg text-forest-200 font-extrabold leading-5 line-clamp-2'>
+								<span className='ms-2 font-title text-base md:text-lg text-forest-200 font-extrabold leading-5 line-clamp-2'>
 									{recipe.name}
 								</span>
 							</div>
@@ -140,7 +138,7 @@ export function ItemRecipe({
 							ref={chipsRef}
 							className='flex flex-wrap items-center gap-1.5 px-3 py-2 bg-forest-100 rounded-t-xl'>
 							{recipe.time && (
-								<span className='shrink-0 inline-flex items-center bg-forest-200 px-2 py-0.5 rounded-lg'>
+								<span className='shrink-0 inline-flex items-center bg-forest-200 px-3 py-0.5 rounded-lg'>
 									<Clock
 										{...IconProps}
 										size={13}
@@ -168,8 +166,8 @@ export function ItemRecipe({
 							</span>
 						</div>
 					</div>
-					{recipe.images?.[0] && (
-						<div className='w-24 shrink-0 relative border-l-4 border-transparent bg-forest-150'>
+					{cookiesReady && recipe.images?.[0] && (
+						<div className='w-28 shrink-0 relative border-l-8 border-transparent bg-forest-150'>
 							<Image
 								src={recipe.images[0]}
 								alt={recipe.name}

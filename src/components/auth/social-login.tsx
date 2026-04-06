@@ -24,7 +24,6 @@ export const SocialLogin = () => {
 	const rawCallbackUrl = searchParams.get('callbackUrl')
 	const callbackUrl = (() => {
 		if (!rawCallbackUrl) return null
-		// Only allow relative paths — reject absolute URLs to prevent open redirect
 		if (
 			rawCallbackUrl.startsWith('/') &&
 			rawCallbackUrl[1] !== '/' &&
@@ -54,7 +53,7 @@ export const SocialLogin = () => {
 			{socialProviders.map((sp) => (
 				<button
 					key={sp.provider}
-					className='flex p-4 items-center justify-center space-x-5 bg-forest-100 hover:bg-forest-150 rounded-3xl transition-colors duration-300 shadow-center'
+					className='flex p-4 items-center justify-center space-x-5 bg-forest-100 hover:bg-forest-150 rounded-3xl transition-colors duration-300'
 					disabled={loading}
 					onClick={() => handleSocialLogin(sp.provider)}>
 					{sp.icon}

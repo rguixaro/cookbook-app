@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-const REFRESH_INTERVAL = 5 * 60 * 60 * 1000 // 5 hours
+const REFRESH_INTERVAL = 5 * 60 * 60 * 1000
+const RETRY_INTERVAL = 30 * 1000
 const MAX_RETRIES = 3
 
 /** Check if CloudFront signed cookies already exist in the browser. */
@@ -11,48 +12,62 @@ function hasCookies(): boolean {
 /**
  * Hook to manage CloudFront cookies.
  * Skips refresh if cookies already exist. Refreshes every 5 hours (cookies expire after 6).
- * Retries with exponential backoff on failure.
+ * Retries with exponential backoff on failure, then falls back to a slower retry interval.
  * Re-refreshes when the tab regains visibility after being idle, only if cookies are missing.
  */
 export function useCookies(enabled: boolean = true) {
 	const [ready, setReady] = useState(false)
 	const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
+	const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-	const refreshCookies = useCallback(async (force = false) => {
-		if (!force && hasCookies()) {
-			setReady(true)
-			return
-		}
-
-		for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-			try {
-				const response = await fetch('/api/cookies/refresh', {
-					method: 'POST',
-					credentials: 'include',
-				})
-
-				if (response.ok) {
-					setReady(true)
-					return
-				}
-
-				console.error('[Cookies] Refresh failed:', response.statusText)
-			} catch (e) {
-				console.error('[Cookies] Refresh error:', e)
-			}
-
-			if (attempt < MAX_RETRIES - 1) {
-				await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt))
-			}
+	const clearRetry = useCallback(() => {
+		if (retryRef.current) {
+			clearTimeout(retryRef.current)
+			retryRef.current = null
 		}
 	}, [])
+
+	const refreshCookies = useCallback(
+		async (force = false) => {
+			if (!force && hasCookies()) {
+				setReady(true)
+				return
+			}
+
+			for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+				try {
+					const response = await fetch('/api/cookies/refresh', {
+						method: 'POST',
+						credentials: 'include',
+					})
+
+					if (response.ok) {
+						clearRetry()
+						setReady(true)
+						return
+					}
+
+					console.error('[Cookies] Refresh failed:', response.statusText)
+				} catch (e) {
+					console.error('[Cookies] Refresh error:', e)
+				}
+
+				if (attempt < MAX_RETRIES - 1) {
+					await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt))
+				}
+			}
+
+			clearRetry()
+			retryRef.current = setTimeout(() => refreshCookies(true), RETRY_INTERVAL)
+		},
+		[clearRetry],
+	)
 
 	useEffect(() => {
 		if (!enabled) return
 
 		refreshCookies()
 
-		// Force refresh on interval to renew before expiry
 		intervalRef.current = setInterval(
 			() => refreshCookies(true),
 			REFRESH_INTERVAL,
@@ -60,6 +75,7 @@ export function useCookies(enabled: boolean = true) {
 
 		const handleVisibilityChange = () => {
 			if (document.visibilityState === 'visible') {
+				clearRetry()
 				refreshCookies()
 			}
 		}
@@ -68,9 +84,10 @@ export function useCookies(enabled: boolean = true) {
 
 		return () => {
 			if (intervalRef.current) clearInterval(intervalRef.current)
+			clearRetry()
 			document.removeEventListener('visibilitychange', handleVisibilityChange)
 		}
-	}, [enabled, refreshCookies])
+	}, [enabled, refreshCookies, clearRetry])
 
 	return ready
 }

@@ -56,7 +56,12 @@ export const RecipeDownload = ({
 				fonts.map(async (f) => {
 					const res = await fetch(f.url)
 					const buf = await res.arrayBuffer()
-					const base64 = btoa(String.fromCharCode(...new Uint8Array(buf)))
+					const bytes = new Uint8Array(buf)
+					let binary = ''
+					for (let i = 0; i < bytes.length; i++) {
+						binary += String.fromCharCode(bytes[i])
+					}
+					const base64 = btoa(binary)
 					const format = f.url.endsWith('.otf') ? 'opentype' : 'truetype'
 					return `@font-face { font-family: '${f.family || 'Montserrat'}'; src: url(data:font/${format};base64,${base64}) format('${format}'); font-weight: ${f.weight}; }`
 				}),
@@ -93,12 +98,12 @@ export const RecipeDownload = ({
 					className='w-full flex flex-col items-center justify-center overflow-hidden p-5'>
 					<div
 						className={cn(
-							'w-full my-3 flex flex-col items-center justify-center bg-forest-150 border-4 border-forest-150 rounded-3xl shadow-center-sm',
+							'w-full my-3 flex flex-col items-center justify-center bg-forest-150 border-8 border-forest-150 rounded-3xl shadow-center-sm',
 						)}>
 						<div className='w-full border-b-8 border-forest-150 bg-forest-150 rounded-t-[20px]'>
-							<div className='bg-forest-50 rounded-[20px] p-4 shadow-center-sm w-full flex items-center justify-center'>
+							<div className='bg-forest-50 rounded-[20px] p-4 shadow-center-sm w-full min-h-12.5 flex items-center justify-center'>
 								<Icon name={recipe.category} />
-								<span className='ms-2 text-lg text-forest-300 font-black leading-4 font-title whitespace-nowrap'>
+								<span className='ms-2 text-lg md:text-xl text-forest-300 font-black leading-4 font-title'>
 									{recipe.name}
 								</span>
 							</div>
@@ -153,7 +158,7 @@ export const RecipeDownload = ({
 									'w-full mb-2 p-5 flex flex-col items-center justify-center',
 								)}>
 								{recipe.time && (
-									<div className='flex mb-3 items-center bg-forest-200 text-white px-2 py-1 rounded-xl'>
+									<div className='flex mb-3 items-center bg-forest-200 text-white px-3 py-1 rounded-xl'>
 										<p className='font-extrabold text-sm'>
 											{t('time')}
 										</p>
@@ -168,7 +173,7 @@ export const RecipeDownload = ({
 									<p className='font-extrabold text-forest-300 text-sm mb-2'>
 										{t('ingredients')}
 									</p>
-									<div className='flex flex-wrap gap-1.5'>
+									<div className='flex flex-wrap justify-center gap-1.5'>
 										{recipe.ingredients.map(
 											(ingredient, index) => (
 												<span
@@ -180,7 +185,7 @@ export const RecipeDownload = ({
 										)}
 									</div>
 								</div>
-								<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
+								<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
 								<div className='text-sm'>
 									<p className='font-extrabold text-forest-300'>
 										{t('instructions')}
@@ -192,7 +197,7 @@ export const RecipeDownload = ({
 								{recipe.sourceUrls &&
 									recipe.sourceUrls.length > 0 && (
 										<>
-											<div className='h-1.5 w-3/4 my-3 rounded bg-forest-400/15' />
+											<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
 											<div className='text-sm'>
 												<p className='font-extrabold text-forest-300'>
 													{t('sources')}
@@ -235,7 +240,7 @@ export const RecipeDownload = ({
 										height={32}
 									/>
 								</div>
-								<span className='font-extrabold font-title text-forest-300 leading-4 text-sm whitespace-nowrap'>
+								<span className='font-extrabold font-title text-forest-300 leading-4 text-sm truncate'>
 									{`@${author.name}`}
 								</span>
 							</div>

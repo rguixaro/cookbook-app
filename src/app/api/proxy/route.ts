@@ -38,11 +38,16 @@ export async function GET(req: Request) {
 			headers: { cookie: cfCookies },
 		})
 
-		if (!response.ok)
+		if (!response.ok) {
+			console.error(
+				`[Proxy] CloudFront returned ${response.status} for ${targetUrl.pathname}`,
+				response.status === 403 ? '— cookies may be expired or invalid' : '',
+			)
 			return NextResponse.json(
 				{ error: 'Failed to fetch image' },
 				{ status: response.status },
 			)
+		}
 
 		const contentType = response.headers.get('content-type') || ''
 		const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']

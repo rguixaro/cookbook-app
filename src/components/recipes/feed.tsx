@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Loader, Utensils } from 'lucide-react'
+import { Loader, LoaderIcon, Utensils } from 'lucide-react'
 
 import { fetchRecipes } from '@/server/actions'
 import { useInfiniteScroll } from '@/hooks'
@@ -13,7 +13,7 @@ import type { RecipeSchema } from '@/server/schemas'
 
 function RecipeSkeleton() {
 	return (
-		<div className='w-full my-2 flex shadow-center-sm bg-forest-100 border-4 border-forest-150 rounded-2xl overflow-hidden animate-pulse'>
+		<div className='w-full my-2 flex shadow-center-sm bg-forest-100 border-8 border-forest-150 rounded-2xl overflow-hidden animate-pulse'>
 			<div className='flex flex-col flex-1 min-w-0'>
 				<div className='flex items-center w-full bg-forest-50 px-4 py-3 rounded-l-xl shadow-center-sm'>
 					<div className='w-6 h-6 bg-forest-150 rounded' />
@@ -25,7 +25,9 @@ function RecipeSkeleton() {
 					))}
 				</div>
 			</div>
-			<div className='w-24 shrink-0 bg-forest-150' />
+			<div className='w-28 shrink-0 bg-forest-150 flex items-center justify-center'>
+				<LoaderIcon size={24} className='animate-spin' />
+			</div>
 		</div>
 	)
 }
@@ -64,7 +66,6 @@ export const RecipesFeed = ({
 				userId,
 			})
 
-			// Discard stale responses
 			if (fetchIdRef.current !== id) return
 
 			setRecipes((prev) => {
@@ -82,7 +83,6 @@ export const RecipesFeed = ({
 		[searchParam, categoryParam, favouritesParam, userId],
 	)
 
-	// Reset and fetch page 1 when filters change
 	useEffect(() => {
 		setRecipes([])
 		setNextCursor(null)

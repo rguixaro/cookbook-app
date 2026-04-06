@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { getTranslations } from 'next-intl/server'
-import { UtensilsCrossed } from 'lucide-react'
 
 export const metadata: Metadata = {
 	title: 'Sign In — CookBook',
@@ -8,7 +7,7 @@ export const metadata: Metadata = {
 }
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/ui'
-import { SocialLogin } from '@/components/auth'
+import { LoginIcon, SocialLogin } from '@/components/auth'
 import { cn } from '@/utils'
 
 export default async function LoginPage() {
@@ -21,7 +20,7 @@ export default async function LoginPage() {
 				'duration-300 animate-in fade-in-15 slide-in-from-bottom-3',
 			)}>
 			<CardHeader className='flex items-center justify-center text-center text-forest-300'>
-				<UtensilsCrossed size={48} />
+				<LoginIcon />
 				<CardTitle className='text-2xl md:text-3xl font-medium duration-500 animate-in fade-in-20 py-5'>
 					{t('login-to')}
 					<p className='font-title font-bold text-3xl md:text-4xl'>
