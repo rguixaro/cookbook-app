@@ -55,16 +55,16 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 			<DialogContent>
 				<DialogHeader>
 					<DialogTitle>{t('account-delete')}</DialogTitle>
-					<DialogDescription>
+					<DialogDescription className='flex flex-col space-y-2'>
 						<span className='text-red-500 font-semibold'>
 							{t('account-delete-attention')}
 						</span>{' '}
-						{t('account-delete-text')}
+						<span>{t('account-delete-text')}</span>
 					</DialogDescription>
 				</DialogHeader>
 				<form onSubmit={handleDeleteAccount}>
 					<div className='flex flex-col space-y-3 text-forest-400'>
-						<p className='text-sm text-center'>
+						<p className='text-sm'>
 							{t('account-delete-prompt')}{' '}
 							<span className='font-semibold'>{props.email}</span>
 						</p>
@@ -91,7 +91,9 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 								{loading && (
 									<LoaderIcon size={16} className='animate-spin' />
 								)}
-								<span>{loading ? t('deleting') : t('delete')}</span>
+								<span className='font-bold'>
+									{loading ? t('deleting') : t('delete')}
+								</span>
 							</Button>
 						</DialogFooter>
 					</div>

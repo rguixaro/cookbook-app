@@ -12,16 +12,17 @@ interface ProfileCardProps {
 
 export const ProfileCard = (props: ProfileCardProps) => {
 	return (
-		<div className='flex my-5 w-full flex-col border-4 bg-forest-50 border-forest-150 p-4 rounded-3xl text-forest-400'>
-			<div className='mb-10 flex flex-col space-y-3'>
+		<div className='flex my-5 w-full flex-col border-8 bg-forest-100 border-forest-150 p-4 rounded-3xl text-forest-400'>
+			<div className='flex flex-col space-y-3'>
 				<div className='flex items-center justify-between space-x-2'>
 					<TypographyH4 className='my-0 text-forest-300'>
 						{props.title}
 					</TypographyH4>
 					{props.action}
 				</div>
-				<p className='text-sm opacity-70'>{props.description}</p>
+				<p className='text-sm'>{props.description}</p>
 			</div>
+			<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
 			{props.children}
 		</div>
 	)

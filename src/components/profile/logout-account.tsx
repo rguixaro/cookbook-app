@@ -52,7 +52,7 @@ export const LogoutAccount = (props: LogoutAccountProps) => {
 						<Button
 							variant='ghost'
 							disabled={loading}
-							className='font-bold text-forest-400 mt-2 md:mt-0'>
+							className='font-bold text-forest-400 md:mt-0'>
 							{t('cancel')}
 						</Button>
 					</DialogClose>
@@ -60,7 +60,7 @@ export const LogoutAccount = (props: LogoutAccountProps) => {
 						{loading && (
 							<LoaderIcon size={16} className='animate-spin' />
 						)}
-						<span>{t('account-logout')}</span>
+						<span className='font-bold'>{t('account-logout')}</span>
 					</Button>
 				</DialogFooter>
 			</DialogContent>
