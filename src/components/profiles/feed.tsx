@@ -10,12 +10,15 @@ export const ProfilesFeed = async ({ searchParam }: { searchParam?: string }) =>
 	return (
 		<div className='w-full flex flex-col items-center space-y-4'>
 			{profiles.map((profile) => (
-				<ItemProfile key={profile.id} profile={profile} query={searchParam} />
+				<ItemProfile
+					key={profile.id}
+					profile={profile}
+					query={searchParam}
+				/>
 			))}
-			<Info
-				enabled={searchParam != null && profiles?.length === 0}
-				mode='profiles'
-			/>
+			{profiles.length === 0 && (
+				<Info enabled={searchParam != null} mode='profiles' />
+			)}
 		</div>
 	)
 }

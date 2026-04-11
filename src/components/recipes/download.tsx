@@ -158,13 +158,13 @@ export const RecipeDownload = ({
 									'w-full mb-2 p-5 flex flex-col items-center justify-center',
 								)}>
 								{recipe.time && (
-									<div className='flex mb-3 items-center bg-forest-200 text-white px-3 py-1 rounded-xl'>
+									<div className='flex mb-3 items-center bg-forest-200 text-forest-50 px-3 py-1 rounded-xl'>
 										<p className='font-extrabold text-sm'>
 											{t('time')}
 										</p>
 										<Clock
 											{...IconProps}
-											className='stroke-white ms-5 mr-1'
+											className='stroke-forest-50 ms-5 mr-1'
 										/>
 										<span className='text-xs font-bold'>{`${recipe.time}'`}</span>
 									</div>

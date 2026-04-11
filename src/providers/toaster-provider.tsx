@@ -13,7 +13,7 @@ export const ToasterProvider = () => {
 			theme={'light'}
 			toastOptions={{
 				classNames: {
-					toast: 'font-sans! font-bold! border-0! rounded-2xl! bg-forest-200! text-white! shadow-center-sm!',
+					toast: 'font-sans! font-bold! border-0! rounded-2xl! bg-forest-200! text-forest-50! shadow-center-sm!',
 				},
 			}}
 		/>
