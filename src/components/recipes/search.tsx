@@ -9,9 +9,9 @@ import { useTranslations } from 'next-intl'
 import { ListFilter, X } from 'lucide-react'
 
 import { useDebounce } from '@/hooks'
-import { UserButton, SocialButton, SearchButton } from '@/components/layout'
+import { UserButton, SocialButton } from '@/components/layout'
 import { Categories as CategoriesType } from '@/types'
-import { Button } from '@/ui'
+import { Button, SearchInput } from '@/ui'
 import { HeartIcon } from '@/components/icons'
 import { cn } from '@/utils'
 import { Categories } from './categories'
@@ -136,71 +136,52 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 	}, [searchParams])
 
 	return (
-		<div className='w-11/12 sm:w-3/5 lg:w-3/8 flex flex-col my-2'>
-			<div className='w-full flex items-end justify-between mb-2'>
-				<div
-					className={cn(
-						'h-8 flex duration-1000 transition-transform relative',
+		<div className='w-11/12 sm:w-3/5 lg:w-3/8 flex flex-col my-4'>
+			<div className='w-full flex items-end justify-between mb-4'>
+				<SearchInput
+					placeholder={t('search')}
+					value={inputValue}
+					inputRef={inputRef}
+					onBlur={onBlur}
+					onSearchButtonClick={onStatusChange}
+					onChange={(e) => {
+						setInputValue(e.target.value)
+						handleSearch(e)
+					}}
+					onClear={() => {
+						setInputValue('')
+						if (inputRef.current) {
+							inputRef.current.value = ''
+							handleSearch({
+								target: inputRef.current,
+							} as React.ChangeEvent<HTMLInputElement>)
+						}
+						onStatusChange()
+					}}
+					wrapperClassName={cn(
+						'duration-1000 transition-transform',
 						debouncedStatus !== 'hidden'
 							? 'translate-x-0.5'
 							: 'translate-x-0',
-					)}>
-					<input
-						type='text'
-						ref={inputRef}
-						maxLength={50}
-						placeholder={t('search')}
-						onBlur={onBlur}
-						value={inputValue}
-						onChange={(e) => {
-							setInputValue(e.target.value)
-							handleSearch(e)
-						}}
-						className={cn(
-							'relative block w-0 h-8 text-sm z-10 bg-forest-100 text-forest-200 font-medium placeholder-forest-200/75',
-							'transition-all duration-500 border-l-[5px] border-forest-200 rounded-xl focus:outline-none ring-2 ring-forest-200 ps-9 pe-3',
-							debouncedStatus === 'hidden'
-								? 'opacity-0 pointer-events-none'
-								: 'w-full pointer-events-auto',
-						)}
-						required
-					/>
-					<SearchButton
-						onClick={onStatusChange}
-						className={cn(
-							'absolute top-1/2 -translate-y-1/2 transition-transform',
-							debouncedStatus !== 'hidden'
-								? 'translate-x-1 bg-forest-150'
-								: 'translate-x-0',
-						)}
-						iconClassName={cn(
-							debouncedStatus === 'visible' && 'rotate-90',
-							debouncedStatus === 'hidden'
-								? 'text-forest-200'
-								: 'text-forest-300',
-						)}
-					/>
-					<button
-						type='button'
-						onClick={() => {
-							setInputValue('')
-							if (inputRef.current) {
-								inputRef.current.value = ''
-								handleSearch({
-									target: inputRef.current,
-								} as React.ChangeEvent<HTMLInputElement>)
-							}
-							onStatusChange()
-						}}
-						className={cn(
-							'absolute top-1/2 right-0 -translate-y-1/2 z-30 text-forest-300 transition-all duration-200 ease-in-out',
-							inputValue
-								? 'opacity-100 -translate-x-2'
-								: 'opacity-0 translate-x-2 pointer-events-none',
-						)}>
-						<X className='w-4 h-4' />
-					</button>
-				</div>
+					)}
+					inputClassName={cn(
+						'w-0',
+						debouncedStatus === 'hidden'
+							? 'opacity-0 pointer-events-none'
+							: 'w-full pointer-events-auto',
+					)}
+					searchButtonClassName={cn(
+						debouncedStatus !== 'hidden'
+							? 'translate-x-1 bg-forest-150 border-l-4 border-forest-200'
+							: 'translate-x-0',
+					)}
+					searchIconClassName={cn(
+						debouncedStatus === 'visible' && 'rotate-90',
+						debouncedStatus === 'hidden'
+							? 'text-forest-200'
+							: 'text-forest-300',
+					)}
+				/>
 				{withAvatar && (
 					<div className='flex flex-row'>
 						<SocialButton />
@@ -214,8 +195,8 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 					selected={category}
 					trigger={
 						<Button size={'sm'}>
-							<ListFilter size={16} />
-							<span className='text-base font-bold'>
+							<ListFilter size={16} className='stroke-forest-50' />
+							<span className='text-base font-bold text-forest-50'>
 								{t('categories')}
 							</span>
 						</Button>
@@ -236,7 +217,7 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 								x: -25,
 								transition: { duration: 0.3 },
 							}}
-							className='bg-forest-200/75 rounded-xl text-white flex items-center'>
+							className='bg-forest-200/75 rounded-xl text-forest-50 flex items-center'>
 							<button
 								onClick={handleRemoveCategory}
 								className='flex items-center justify-center px-3 space-x-2'>
@@ -248,14 +229,10 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 						</motion.div>
 					)}
 				</AnimatePresence>
-				<div className='flex-grow' />
+				<div className='grow' />
 				<Button size={'sm'} onClick={handleToggleFavourites}>
-					<HeartIcon
-						filled={isFavourites}
-						size={16}
-						color='currentColor'
-					/>
-					<span className={cn('text-base font-bold')}>
+					<HeartIcon filled={isFavourites} size={16} />
+					<span className={cn('text-base font-bold text-forest-50')}>
 						{t('favourites')}
 					</span>
 				</Button>

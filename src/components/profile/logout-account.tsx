@@ -60,7 +60,9 @@ export const LogoutAccount = (props: LogoutAccountProps) => {
 						{loading && (
 							<LoaderIcon size={16} className='animate-spin' />
 						)}
-						<span className='font-bold'>{t('account-logout')}</span>
+						<span className='font-bold text-forest-50'>
+							{t('account-logout')}
+						</span>
 					</Button>
 				</DialogFooter>
 			</DialogContent>

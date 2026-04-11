@@ -56,24 +56,26 @@ export default async function ProfilePage({
 			</div>
 			<div className='flex flex-col items-center w-full'>
 				<SyncProfileName name={profile.name ?? ''} />
-				<div className='mb-2 mt-3 bg-forest-100 border-4 border-forest-150 rounded-2xl shadow-center-sm'>
-					<div className='flex items-center gap-4 bg-forest-50 rounded-xl px-3 py-3 shadow-center-sm'>
-						<div className='w-14 h-14 shrink-0 rounded-xl overflow-hidden shadow-center-sm'>
-							<Image
-								src={profile.image ?? ''}
-								referrerPolicy='no-referrer'
-								alt='Profile image'
-								width={56}
-								height={56}
-							/>
-						</div>
-						<div className='flex flex-col min-w-0'>
-							<span className='font-extrabold font-title text-forest-300 text-base md:text-lg truncate'>
-								{`@${profile.name}`}
-							</span>
+				<div className='mb-2 mt-3 bg-forest-150 border-8 border-forest-150 rounded-2xl shadow-center-sm'>
+					<div className='border-b-8 border-forest-150 rounded-none'>
+						<div className='flex items-center gap-4 bg-forest-50 rounded-xl px-3 py-3'>
+							<div className='w-14 h-14 shrink-0 rounded-xl overflow-hidden'>
+								<Image
+									src={profile.image ?? ''}
+									referrerPolicy='no-referrer'
+									alt='Profile image'
+									width={56}
+									height={56}
+								/>
+							</div>
+							<div className='w-full py-2 rounded-xl'>
+								<span className='font-black font-title text-forest-300 text-lg md:text-xl truncate leading-4'>
+									{`@${profile.name}`}
+								</span>
+							</div>
 						</div>
 					</div>
-					<div className='flex items-center justify-center gap-3 px-3 py-3 text-forest-300 text-sm font-medium'>
+					<div className='flex items-center justify-center gap-3 px-3 py-3 bg-forest-100 rounded-xl text-forest-300 text-sm font-medium'>
 						<div className='flex items-center gap-1'>
 							<ChefHat size={14} />
 							<span className='font-bold'>

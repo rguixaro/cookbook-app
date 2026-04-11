@@ -78,7 +78,9 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			action={
 				<LogoutAccount
 					trigger={
-						<Button size='sm' className='mt-4 mb-4 w-fit self-center'>
+						<Button
+							size='sm'
+							className='mt-4 mb-4 w-fit self-center text-forest-50'>
 							<span className='font-bold'>{t('account-logout')}</span>
 						</Button>
 					}
@@ -118,7 +120,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 											}`}
 										/>
 										<span
-											className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full shadow-center-md transform transition-transform ${
+											className={`absolute left-0.5 top-0.5 w-5 h-5 bg-forest-50 rounded-full shadow-center-md transform transition-transform ${
 												field.value
 													? 'translate-x-5'
 													: 'translate-x-0'
@@ -131,7 +133,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 												onClick={handleCopy(
 													`${SITE_URL}/profiles/${props.username}`,
 												)}>
-												<span className='font-bold'>
+												<span className='font-bold text-forest-50'>
 													{t('share')}
 												</span>
 											</Button>
