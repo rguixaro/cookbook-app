@@ -228,10 +228,7 @@ export const getProfilesByName = cache(async (name: string) => {
 			where: {
 				id: { not: userId },
 				isPrivate: false,
-				name: {
-					contains: name,
-					mode: 'insensitive',
-				},
+				name: { contains: name, mode: 'insensitive' },
 			},
 			select: {
 				id: true,
@@ -239,11 +236,7 @@ export const getProfilesByName = cache(async (name: string) => {
 				username: true,
 				image: true,
 				isPrivate: true,
-				_count: {
-					select: {
-						recipes: true,
-					},
-				},
+				_count: { select: { recipes: true } },
 			},
 			take: 10,
 		})

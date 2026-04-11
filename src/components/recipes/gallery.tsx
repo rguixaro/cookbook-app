@@ -28,7 +28,7 @@ export function RecipeGallery({ images }: { images: string[] }) {
 
 	if (count === 1) {
 		return (
-			<div className='w-full px-4 pt-3'>
+			<div className='w-full p-3'>
 				<div className='relative aspect-4/3 w-full overflow-hidden rounded-xl bg-forest-150'>
 					<GalleryImage
 						src={images[0]}

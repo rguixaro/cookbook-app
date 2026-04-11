@@ -70,7 +70,7 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 						</p>
 						<Input
 							type='email'
-							className='input'
+							className='rounded-2xl py-5 bg-forest-50 border-2 my-2'
 							onChange={(e) => setConfirmEmail(e.target.value)}
 							placeholder={t('email')}
 							disabled={loading}
@@ -91,7 +91,7 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 								{loading && (
 									<LoaderIcon size={16} className='animate-spin' />
 								)}
-								<span className='font-bold'>
+								<span className='font-bold text-forest-50'>
 									{loading ? t('deleting') : t('delete')}
 								</span>
 							</Button>
