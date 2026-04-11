@@ -136,7 +136,7 @@ export const RecipesFeed = ({
 			{referred ? (
 				isEmpty && (
 					<div className='mt-10 h-32 flex flex-col items-center justify-center text-forest-200 text-center'>
-						<Utensils size={24} />
+						<Utensils size={48} />
 						<TypographyH4 className='mt-2 mb-5'>
 							{t('no-recipes')}
 						</TypographyH4>

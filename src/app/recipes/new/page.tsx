@@ -161,7 +161,7 @@ export default function NewRecipePage() {
 											<div className='flex my-5 bg-forest-50 rounded-2xl overflow-hidden shadow-center-sm'>
 												<div className='bg-forest-200 p-2 flex items-center justify-center border-2 rounded-2xl rounded-r-none border-r-0 border-forest-150'>
 													<Clock
-														className='stroke-white'
+														className='stroke-forest-50'
 														size={24}
 													/>
 												</div>
@@ -283,7 +283,7 @@ export default function NewRecipePage() {
 												className='animate-spin'
 											/>
 										)}
-										<span className='text-base font-bold'>
+										<span className='text-base font-bold text-forest-50'>
 											{loading ? t('creating') : t('create')}
 										</span>
 									</div>

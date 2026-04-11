@@ -25,7 +25,7 @@ export const GoogleLogo = (props: SharedLogoProps) => (
 export const HeartIcon = ({
 	filled = false,
 	size = 24,
-	color = '#789b84',
+	color = '#fefff2',
 }: {
 	filled?: boolean
 	size?: number

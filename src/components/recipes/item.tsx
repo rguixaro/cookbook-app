@@ -134,36 +134,38 @@ export function ItemRecipe({
 								</span>
 							</div>
 						</div>
-						<div
-							ref={chipsRef}
-							className='flex flex-wrap items-center gap-1.5 px-3 py-2 bg-forest-100 rounded-t-xl'>
-							{recipe.time && (
-								<span className='shrink-0 inline-flex items-center bg-forest-200 px-3 py-0.5 rounded-lg'>
-									<Clock
-										{...IconProps}
-										size={13}
-										className='stroke-white'
-									/>
-									<span className='text-xs font-bold text-white ms-1'>{`${recipe.time}'`}</span>
+						<div className='bg-forest-100 rounded-xl px-3 py-2 space-y-2'>
+							<div
+								ref={chipsRef}
+								className='flex flex-wrap items-center gap-1.5'>
+								{recipe.time && (
+									<span className='shrink-0 inline-flex items-center bg-forest-200 px-3 py-0.5 rounded-lg'>
+										<Clock
+											{...IconProps}
+											size={12}
+											className='stroke-forest-50'
+										/>
+										<span className='text-xs font-bold text-forest-50 ms-1'>{`${recipe.time}'`}</span>
+									</span>
+								)}
+								{chipsToRender.map((name, i) => (
+									<span
+										key={i}
+										className='inline-flex items-center text-xs font-semibold text-forest-300 bg-forest-150 px-2 py-0.5 rounded-lg'>
+										<span className='truncate'>{name}</span>
+									</span>
+								))}
+								{hiddenCount > 0 && (
+									<span className='shrink-0 text-xs font-semibold text-forest-200'>
+										{`+${hiddenCount}`}
+									</span>
+								)}
+							</div>
+							<div className='w-full'>
+								<span className='text-forest-300 text-xs md:text-sm line-clamp-2 leading-4'>
+									{recipe.instructions}
 								</span>
-							)}
-							{chipsToRender.map((name, i) => (
-								<span
-									key={i}
-									className='inline-flex items-center text-xs font-semibold text-forest-300 bg-forest-150 px-2 py-0.5 rounded-lg'>
-									<span className='truncate'>{name}</span>
-								</span>
-							))}
-							{hiddenCount > 0 && (
-								<span className='shrink-0 text-xs font-semibold text-forest-200'>
-									{`+${hiddenCount}`}
-								</span>
-							)}
-						</div>
-						<div className='w-full px-3 pb-2 bg-forest-100 rounded-br-xl'>
-							<span className='text-forest-300 text-xs md:text-sm line-clamp-2 leading-4'>
-								{recipe.instructions}
-							</span>
+							</div>
 						</div>
 					</div>
 					{cookiesReady && recipe.images?.[0] && (

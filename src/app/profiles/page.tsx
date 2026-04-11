@@ -33,8 +33,8 @@ export default async function ProfilesPage({
 			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
 				<GoBack />
 			</div>
+			<SearchProfiles />
 			<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
-				<SearchProfiles />
 				<Suspense fallback={<LoadingSkeleton />}>
 					<ProfilesFeed searchParam={searchParam} />
 				</Suspense>

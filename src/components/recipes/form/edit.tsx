@@ -194,7 +194,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 								</FormItem>
 							)}
 						/>
-						<div className='p-4 bg-forest-100 rounded-[20px]'>
+						<div className='p-3 bg-forest-100 rounded-[20px]'>
 							<div className='mb-5'>
 								<RecipeImageInput
 									images={images}
@@ -239,7 +239,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 											<div className='flex my-5 bg-forest-50 rounded-2xl overflow-hidden shadow-center-sm'>
 												<div className='bg-forest-200 p-2 flex items-center justify-center border-2 rounded-2xl rounded-r-none border-r-0 border-forest-150'>
 													<Clock
-														className='stroke-white'
+														className='stroke-forest-50'
 														size={24}
 													/>
 												</div>
@@ -361,7 +361,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 												className='animate-spin'
 											/>
 										)}
-										<span className='text-base font-bold'>
+										<span className='text-base font-bold text-forest-50'>
 											{loading ? t('updating') : t('update')}
 										</span>
 									</div>
