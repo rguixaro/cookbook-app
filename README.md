@@ -1,23 +1,39 @@
-# CookBook
+# <img src="public/images/logo.svg" alt="CookBook" height="28"> CookBook
 
 A web application to write down, organize, and share recipes in a simple and easy
 manner.
 
+**[cookbook.rguixaro.dev](https://cookbook.rguixaro.dev)**
+
 ## Tech Stack
 
-- [**Next.js 16 (App Router)**](https://nextjs.org) | React-based framework.
-- [**Auth.js v5**](https://authjs.dev/) | Authentication for the Web.
-- [**Prisma**](https://prisma.io) | Next-generation Node.js and TypeScript ORM.
-- [**MongoDB**](https://www.mongodb.com/) | Document-oriented database.
-- [**TypeScript**](https://www.typescriptlang.org/) | JavaScript with syntax for
-  types.
-- [**Tailwind CSS**](https://tailwindcss.com) & [**Radix**](https://radix-ui.com) |
-  Design System.
-- [**AWS S3**](https://aws.amazon.com/s3/) &
-  [**CloudFront**](https://aws.amazon.com/cloudfront/) | Image storage and CDN.
-- [**Lucide Icons**](https://lucide.dev) | Icon toolkit.
+[Next.js 16](https://nextjs.org) | [Auth.js v5](https://authjs.dev/) |
+[Prisma](https://prisma.io) | [MongoDB](https://www.mongodb.com/) |
+[TypeScript](https://www.typescriptlang.org/) |
+[Tailwind CSS](https://tailwindcss.com) | [Radix UI](https://radix-ui.com) |
+[AWS S3](https://aws.amazon.com/s3/) &
+[CloudFront](https://aws.amazon.com/cloudfront/) | [Sentry](https://sentry.io) |
+[Lucide Icons](https://lucide.dev)
+
+## Features
+
+- **Recipe management** — create, edit, and delete recipes with ingredients,
+  instructions, cooking time, categories, and source URLs
+- **Image gallery** — upload up to 3 images per recipe, stored on S3 and served via
+  CloudFront CDN
+- **Search & filter** — search recipes by name, filter by category (8 types) or
+  favourites
+- **Social** — favourite and save recipes from other users, browse public chef
+  profiles
+- **Sharing** — share recipe links or download them as a styled PNG image
+- **Privacy controls** — toggle profile visibility to restrict access to your recipes
+- **i18n** — English, Spanish, and Catalan
+- **Auth** — Google OAuth via Auth.js
 
 ## Getting Started
+
+<details>
+<summary>Prerequisites and setup</summary>
 
 ### Prerequisites
 
@@ -56,6 +72,21 @@ manner.
     ```bash
     npm run dev
     ```
+
+</details>
+
+## Testing
+
+Unit and component tests run automatically on every push and PR to `main`/`develop`
+via [GitHub Actions](.github/workflows/test.yml).
+
+```bash
+npm test              # unit & component tests (Vitest)
+npm run test:coverage # tests + coverage report (HTML in coverage/)
+npm run test:watch    # watch mode
+npm run test:e2e      # e2e tests (Playwright — auto-starts dev server)
+npm run test:e2e:ui   # e2e with interactive UI
+```
 
 ## License
 
