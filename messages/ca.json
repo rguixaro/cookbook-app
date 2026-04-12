@@ -22,7 +22,7 @@
 		"error-recipe-exists": "Ja existeix una recepta amb aquest nom",
 		"profile-updated": "Perfil actualitzat amb èxit",
 		"error-recipe-name-invalid": "El nom de la recepta ha de contenir lletres, números o emojis",
-		"error-file-too-large": "El fitxer és massa gran. La mida màxima és 10 MB"
+		"error-file-too-large": "El fitxer és massa gran. La mida màxima és 50 MB"
 	},
 	"errors": {
 		"recipe-name-too-short": "El nom de la recepta és massa curt.",

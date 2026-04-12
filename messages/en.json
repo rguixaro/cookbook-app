@@ -22,7 +22,7 @@
 		"error-recipe-exists": "A recipe with this name already exists",
 		"profile-updated": "Profile updated successfully",
 		"error-recipe-name-invalid": "Recipe name must contain letters, numbers, or emojis",
-		"error-file-too-large": "File is too large. Maximum size is 10 MB"
+		"error-file-too-large": "File is too large. Maximum size is 50 MB"
 	},
 	"errors": {
 		"recipe-name-too-short": "Recipe name is too short.",
