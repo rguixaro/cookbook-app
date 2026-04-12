@@ -16,14 +16,14 @@ export async function uploadRecipeImage(
 	file: File,
 	recipeId: string,
 ): Promise<string> {
-	const MAX_SIZE = 10 * 1024 * 1024
-	if (file.size > MAX_SIZE) throw new Error('File too large (max 10 MB)')
+	const MAX_SIZE = 50 * 1024 * 1024
+	if (file.size > MAX_SIZE) throw new Error('File too large (max 50 MB)')
 
 	const arrayBuffer = await file.arrayBuffer()
 	const buffer = new Uint8Array(arrayBuffer)
 
 	const metadata = await sharp(buffer).metadata()
-	const ALLOWED_FORMATS = ['jpeg', 'png', 'webp', 'gif']
+	const ALLOWED_FORMATS = ['jpeg', 'png', 'webp', 'gif', 'heif']
 	if (!metadata.format || !ALLOWED_FORMATS.includes(metadata.format)) {
 		throw new Error('File is not a valid image')
 	}

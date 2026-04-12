@@ -51,7 +51,7 @@ export function RecipeImageInput({
 	const inputRef = useRef<HTMLInputElement>(null)
 	const targetSlot = useRef<number>(0)
 
-	const MAX_FILE_SIZE = 10 * 1024 * 1024
+	const MAX_FILE_SIZE = 50 * 1024 * 1024
 
 	const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const file = e.target.files?.[0]
