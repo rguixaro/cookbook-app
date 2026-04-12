@@ -7,7 +7,7 @@ import { env } from '@/env.mjs'
 
 const secrets = new SecretsManagerClient({ region: env.AMAZON_REGION })
 
-const CACHE_TTL = 60 * 60 * 1000 // 1 hour
+const CACHE_TTL = 60 * 60 * 1000
 let cached: { key: string; expiresAt: number } | null = null
 
 /**

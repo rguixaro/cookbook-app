@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
 	],
 	experimental: {
 		optimizePackageImports: ['lucide-react'],
+		serverActions: { bodySizeLimit: '10mb' },
 	},
 	images: {
 		remotePatterns: [
@@ -29,25 +30,15 @@ const nextConfig: NextConfig = {
 				? [{ protocol: 'https' as const, hostname: cloudfrontHostname }]
 				: []),
 		],
-		localPatterns: [
-			{
-				pathname: '/api/proxy',
-			},
-		],
+		localPatterns: [{ pathname: '/api/proxy' }],
 	},
 	async headers() {
 		return [
 			{
 				source: '/(.*)',
 				headers: [
-					{
-						key: 'X-Frame-Options',
-						value: 'DENY',
-					},
-					{
-						key: 'X-Content-Type-Options',
-						value: 'nosniff',
-					},
+					{ key: 'X-Frame-Options', value: 'DENY' },
+					{ key: 'X-Content-Type-Options', value: 'nosniff' },
 					{
 						key: 'Referrer-Policy',
 						value: 'strict-origin-when-cross-origin',
@@ -84,10 +75,5 @@ export default withSentryConfig(withNextIntl(nextConfig), {
 	silent: !process.env.CI,
 	widenClientFileUpload: true,
 	tunnelRoute: '/monitoring',
-	webpack: {
-		automaticVercelMonitors: false,
-		treeshake: {
-			removeDebugLogging: true,
-		},
-	},
+	webpack: { treeshake: { removeDebugLogging: true } },
 })

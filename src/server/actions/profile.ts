@@ -1,6 +1,7 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
+import * as Sentry from '@sentry/nextjs'
 
 import { auth, signOut, unstable_update } from '@/auth'
 import { db } from '@/server/db'
@@ -34,7 +35,8 @@ export const updateProfile = async (values: unknown): Promise<void | null> => {
 		revalidatePath('/')
 		revalidatePath('/profile')
 		revalidatePath('/profiles', 'layout')
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { action: 'updateProfile' } })
 		return null
 	}
 }
@@ -51,7 +53,6 @@ export const deleteProfile = async (): Promise<null | true> => {
 	if (!currentUser) return null
 
 	try {
-		// Collect recipe IDs and S3 image keys before cascade delete
 		const recipes = await db.recipe.findMany({
 			where: { authorId: currentUser.user.id },
 			select: { id: true, images: true },
@@ -60,10 +61,14 @@ export const deleteProfile = async (): Promise<null | true> => {
 		const allImageKeys = recipes.flatMap((r) => r.images)
 
 		if (allImageKeys.length > 0) {
-			await deleteRecipeImages(allImageKeys).catch(() => {})
+			await deleteRecipeImages(allImageKeys).catch((error) =>
+				Sentry.captureException(error, {
+					level: 'warning',
+					tags: { action: 'deleteProfile', step: 's3-cleanup' },
+				}),
+			)
 		}
 
-		// Clean dangling saved/favourite references from other users
 		if (recipeIds.length > 0) {
 			const affectedUsers = await db.user.findMany({
 				where: {
@@ -93,13 +98,19 @@ export const deleteProfile = async (): Promise<null | true> => {
 						},
 					}),
 				),
-			).catch(() => {})
+			).catch((error) =>
+				Sentry.captureException(error, {
+					level: 'warning',
+					tags: { action: 'deleteProfile', step: 'dangling-refs' },
+				}),
+			)
 		}
 
 		await db.user.delete({ where: { id: currentUser.user.id } })
 		await signOut()
 		return true
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { action: 'deleteProfile' } })
 		return null
 	}
 }

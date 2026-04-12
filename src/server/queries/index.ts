@@ -1,4 +1,5 @@
 import { cache } from 'react'
+import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
 import { db } from '@/server/db'
@@ -23,7 +24,8 @@ export const getUserByUsername = cache(async (username: string) => {
 			where: { username },
 			select: { id: true, username: true },
 		})
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { query: 'getUserByUsername' } })
 		return null
 	}
 })
@@ -43,7 +45,8 @@ export const getSavedRecipeIds = cache(async (): Promise<string[]> => {
 			select: { savedRecipes: true },
 		})
 		return user?.savedRecipes ?? []
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { query: 'getSavedRecipeIds' } })
 		return []
 	}
 })
@@ -63,7 +66,8 @@ export const getFavouriteRecipeIds = cache(async (): Promise<string[]> => {
 			select: { favouriteRecipes: true },
 		})
 		return user?.favouriteRecipes ?? []
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { query: 'getFavouriteRecipeIds' } })
 		return []
 	}
 })
@@ -81,7 +85,6 @@ export const getRecipesByUserId = cache(async (userId?: string) => {
 
 	const authorId = userId || currentUser.user?.id
 
-	/** If viewing another user's recipes, check their privacy setting */
 	if (userId && userId !== currentUser.user?.id) {
 		const targetUser = await db.user.findUnique({
 			where: { id: userId },
@@ -139,7 +142,6 @@ export const getRecipeByAuthAndSlug = cache(
 		/** Not authenticated */
 		if (!currentUser) return null
 
-		/** If viewing another user's recipe, check their privacy setting */
 		if (authorId !== currentUser.user?.id) {
 			const author = await db.user.findUnique({
 				where: { id: authorId },
@@ -201,7 +203,10 @@ export const getProfileByUsername = cache(
 				},
 			})
 			return { profile }
-		} catch {
+		} catch (error) {
+			Sentry.captureException(error, {
+				tags: { query: 'getProfileByUsername' },
+			})
 			return { profile: null }
 		}
 	},
@@ -220,7 +225,6 @@ export const getProfilesByName = cache(async (name: string) => {
 	if (!currentUser) return null
 	const userId = currentUser.user?.id
 
-	/** Empty name */
 	if (!name.trim()) return []
 
 	try {
@@ -250,7 +254,8 @@ export const getProfilesByName = cache(async (name: string) => {
 		}))
 
 		return { profiles: mappedProfiles }
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { query: 'getProfilesByName' } })
 		return null
 	}
 })

@@ -36,7 +36,7 @@ import {
 } from './index'
 
 const mockAuth = vi.mocked(auth)
-const mockDb = vi.mocked(db)
+const mockDb = vi.mocked(db, true)
 
 const mockSession = { user: { id: 'user-1' } }
 
@@ -49,16 +49,10 @@ describe('toImageUrls', () => {
 		const original = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN
 		process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN = 'https://cdn.example.com'
 
-		// toImageUrls reads CLOUDFRONT_DOMAIN at module load time, so we need to
-		// re-import. For simplicity, test the function logic directly.
-		// The module-level const is already set, so we test with whatever env was set.
 		const result = toImageUrls(['images/a.jpg', 'images/b.jpg'])
 
-		// Restore
 		process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN = original
 
-		// The function uses the module-level constant, so the result depends on
-		// what was set when the module was first imported
 		expect(Array.isArray(result)).toBe(true)
 	})
 
@@ -168,7 +162,6 @@ describe('getRecipesByUserId', () => {
 	it('returns own recipes when no userId provided', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.recipe.findMany.mockResolvedValue([makeRecipe('r1')] as any)
-		// getSavedRecipeIds is called internally — mock the user lookup for it
 		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
 
 		const result = await getRecipesByUserId()
@@ -204,7 +197,6 @@ describe('getRecipesByUserId', () => {
 
 	it('includes saved recipes for own feed', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		// First findMany call: own recipes, second: saved recipes
 		mockDb.recipe.findMany
 			.mockResolvedValueOnce([makeRecipe('own-1')] as any)
 			.mockResolvedValueOnce([makeRecipe('saved-1')] as any)

@@ -34,7 +34,7 @@ import { deleteRecipeImages } from '@/lib/s3'
 import { updateProfile, deleteProfile } from './profile'
 
 const mockAuth = vi.mocked(auth)
-const mockDb = vi.mocked(db)
+const mockDb = vi.mocked(db, true)
 
 const mockSession = { user: { id: 'user-1' } }
 

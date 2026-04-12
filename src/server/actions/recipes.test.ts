@@ -54,7 +54,7 @@ import {
 } from './recipes'
 
 const mockAuth = vi.mocked(auth)
-const mockDb = vi.mocked(db)
+const mockDb = vi.mocked(db, true)
 
 const mockSession = { user: { id: 'user-1' } }
 
@@ -137,14 +137,12 @@ describe('fetchRecipes', () => {
 
 		const result = await fetchRecipes({ userId: 'user-1' })
 		expect(result.recipes).toHaveLength(1)
-		// findUnique should NOT be called for privacy check on own user
 		expect(mockDb.user.findUnique).not.toHaveBeenCalled()
 	})
 
 	it('provides nextCursor when more results exist', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
-		// Return 11 results (PAGE_SIZE + 1) to trigger pagination
 		const recipes = Array.from({ length: 11 }, (_, i) => makeRecipe(`r${i}`))
 		mockDb.recipe.findMany.mockResolvedValue(recipes as any)
 
@@ -160,7 +158,7 @@ describe('fetchRecipes', () => {
 
 		await fetchRecipes({ take: 100 })
 		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
-			expect.objectContaining({ take: 51 }), // safeTake (50) + 1
+			expect.objectContaining({ take: 51 }),
 		)
 	})
 

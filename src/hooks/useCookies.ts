@@ -1,12 +1,30 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import * as Sentry from '@sentry/nextjs'
 
 const REFRESH_INTERVAL = 5 * 60 * 60 * 1000
 const RETRY_INTERVAL = 30 * 1000
 const MAX_RETRIES = 3
 
-/** Check if CloudFront signed cookies already exist in the browser. */
+/** Check if CloudFront signed cookies exist and match this app's expected resource. */
 function hasCookies(): boolean {
-	return document.cookie.split(';').some((c) => c.trim().startsWith('CloudFront-'))
+	const match = document.cookie
+		.split(';')
+		.map((c) => c.trim())
+		.find((c) => c.startsWith('CloudFront-Policy='))
+
+	if (!match) return false
+
+	try {
+		const value = match.split('=')[1]
+		const decoded = JSON.parse(
+			atob(value.replaceAll('_', '/').replaceAll('-', '+')),
+		)
+		const resource: string = decoded?.Statement?.[0]?.Resource ?? ''
+		const expected = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN ?? ''
+		return resource.startsWith(expected)
+	} catch {
+		return false
+	}
 }
 
 /**
@@ -47,9 +65,15 @@ export function useCookies(enabled: boolean = true) {
 						return
 					}
 
-					console.error('[Cookies] Refresh failed:', response.statusText)
+					Sentry.captureMessage(
+						`CloudFront cookie refresh failed: ${response.status}`,
+						{
+							level: 'warning',
+							tags: { hook: 'useCookies' },
+						},
+					)
 				} catch (e) {
-					console.error('[Cookies] Refresh error:', e)
+					Sentry.captureException(e, { tags: { hook: 'useCookies' } })
 				}
 
 				if (attempt < MAX_RETRIES - 1) {
