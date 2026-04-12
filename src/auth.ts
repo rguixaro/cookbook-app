@@ -53,7 +53,6 @@ const adapter: Adapter = {
 			}
 		}
 
-		// Fallback: use a random suffix to guarantee uniqueness
 		const fallback = `${prefix}-${crypto.randomUUID().slice(0, 8)}`
 		const user = await db.user.create({
 			data: {
@@ -105,18 +104,18 @@ export const {
 				trigger === 'signIn' ||
 				trigger === 'update' ||
 				!token.lastVerified ||
-				Date.now() - (token.lastVerified as number) > 60 * 60 * 1000 // 1 hour
+				Date.now() - (token.lastVerified as number) > 60 * 60 * 1000
 
 			if (shouldRefresh) {
 				try {
 					const dbUser = await getUserById(token.sub)
-					if (!dbUser) return { ...token, sub: undefined } // user deleted
+					if (!dbUser) return { ...token, sub: undefined }
 					token.name = dbUser.name
 					token.email = dbUser.email
 					token.isPrivate = dbUser.isPrivate
 					token.lastVerified = Date.now()
 				} catch {
-					return token // return stale token on DB error
+					return token
 				}
 			}
 
