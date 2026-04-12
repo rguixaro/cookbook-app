@@ -4,9 +4,11 @@ import { useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
 import { ArrowDownToLine, Clock, ExternalLink } from 'lucide-react'
-import { Icon } from '@/components/recipes/icon'
+import * as Sentry from '@sentry/nextjs'
 import { toPng } from 'html-to-image'
 import { toast } from 'sonner'
+
+import { Icon } from '@/components/recipes/icon'
 
 import { cn, IconProps, SITE_URL } from '@/utils'
 
@@ -79,8 +81,8 @@ export const RecipeDownload = ({
 			link.download = `${recipe.slug}.png`
 			link.href = dataUrl
 			link.click()
-		} catch (_err) {
-			console.log(_err)
+		} catch (error) {
+			Sentry.captureException(error, { tags: { component: 'RecipeDownload' } })
 			toast.error(t_toasts('error'))
 		}
 	}, [ref, recipe, t_toasts])

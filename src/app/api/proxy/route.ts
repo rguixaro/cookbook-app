@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
 
@@ -26,7 +27,6 @@ export async function GET(req: Request) {
 			return NextResponse.json({ error: 'Invalid url host' }, { status: 400 })
 		}
 
-		// Only forward CloudFront signed cookies
 		const allCookies = req.headers.get('cookie') || ''
 		const cfCookies = allCookies
 			.split(';')
@@ -58,7 +58,7 @@ export async function GET(req: Request) {
 			)
 		}
 
-		const MAX_SIZE = 10 * 1024 * 1024 // 10MB
+		const MAX_SIZE = 10 * 1024 * 1024
 		const contentLength = response.headers.get('content-length')
 		if (contentLength && parseInt(contentLength, 10) > MAX_SIZE) {
 			return NextResponse.json(
@@ -81,7 +81,8 @@ export async function GET(req: Request) {
 				'Cache-Control': 'private, max-age=3600',
 			},
 		})
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { route: 'api/proxy' } })
 		return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
 	}
 }

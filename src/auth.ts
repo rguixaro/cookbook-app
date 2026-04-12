@@ -2,6 +2,7 @@ import { PrismaAdapter } from '@auth/prisma-adapter'
 import type { Adapter, AdapterUser } from 'next-auth/adapters'
 import NextAuth from 'next-auth'
 import { Prisma } from '@prisma/client'
+import * as Sentry from '@sentry/nextjs'
 
 import AuthConfig from '@/auth.config'
 import { db } from '@/server/db'
@@ -114,7 +115,10 @@ export const {
 					token.email = dbUser.email
 					token.isPrivate = dbUser.isPrivate
 					token.lastVerified = Date.now()
-				} catch {
+				} catch (error) {
+					Sentry.captureException(error, {
+						tags: { callback: 'jwt', step: 'token-refresh' },
+					})
 					return token
 				}
 			}

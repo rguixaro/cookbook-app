@@ -2,6 +2,7 @@
 
 import { Prisma } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
+import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
 import { db } from '@/server/db'
@@ -31,7 +32,6 @@ export async function fetchRecipes(params: {
 	const safeTake = Math.min(take, 50)
 	const currentUserId = currentUser.user.id
 
-	// If viewing another user's recipes, check privacy
 	if (userId && userId !== currentUserId) {
 		const targetUser = await db.user.findUnique({
 			where: { id: userId },
@@ -41,10 +41,8 @@ export async function fetchRecipes(params: {
 	}
 
 	try {
-		// Build base where clause
 		const authorFilter = userId ? { authorId: userId } : undefined
 
-		// For own feed (no userId): merge own + saved recipes (excluding private authors)
 		let ownFeedOr: Prisma.RecipeWhereInput[] | undefined
 		if (!userId) {
 			const user = await db.user.findUnique({
@@ -63,7 +61,6 @@ export async function fetchRecipes(params: {
 				: [{ authorId: currentUserId }]
 		}
 
-		// Favourites filter
 		let favouriteIds: string[] | undefined
 		if (favourites) {
 			const user = await db.user.findUnique({
@@ -114,7 +111,8 @@ export async function fetchRecipes(params: {
 			recipes,
 			nextCursor: hasMore ? (results[results.length - 1]?.id ?? null) : null,
 		}
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { action: 'fetchRecipes' } })
 		return empty
 	}
 }
@@ -170,6 +168,7 @@ export const createRecipe = async (values: unknown): Promise<createRecipeResult>
 				return { error: true, message: 'error-recipe-exists' }
 			}
 		}
+		Sentry.captureException(e, { tags: { action: 'createRecipe' } })
 		return { error: true, message: 'error' }
 	}
 }
@@ -224,6 +223,7 @@ export const updateRecipe = async (
 				return { error: true, message: 'error-recipe-exists' }
 			}
 		}
+		Sentry.captureException(e, { tags: { action: 'updateRecipe' } })
 		return { error: true, message: 'error' }
 	}
 
@@ -234,7 +234,7 @@ export const updateRecipe = async (
 }
 
 /**
- * Save or unsave recipe.
+ * Save or remove from saved a recipe.
  * Auth required.
  * @param id {string}
  * @param isSaved {boolean} - true if recipe is saved, false if unsaved
@@ -257,7 +257,6 @@ export const saveRecipe = async (
 		const userId = currentUser.user.id
 
 		if (isSaved) {
-			/** Unsave: remove from savedRecipes and favouriteRecipes */
 			const user = await db.user.findUnique({
 				where: { id: userId },
 				select: { savedRecipes: true, favouriteRecipes: true },
@@ -276,7 +275,6 @@ export const saveRecipe = async (
 				},
 			})
 		} else {
-			/** Save: add to savedRecipes atomically (only if not already present) */
 			const user = await db.user.findUnique({
 				where: { id: userId },
 				select: { savedRecipes: true },
@@ -294,13 +292,14 @@ export const saveRecipe = async (
 
 		revalidatePath('/')
 		return { error: false }
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { action: 'saveRecipe' } })
 		return { error: true }
 	}
 }
 
 /**
- * Favourite or unfavourite recipe.
+ * Favourite or remove from favourites a recipe.
  * Auth required.
  * @param id {string}
  * @param isFavourited {boolean} - true if recipe is already favourited
@@ -323,7 +322,6 @@ export const favouriteRecipe = async (
 		const userId = currentUser.user.id
 
 		if (isFavourited) {
-			/** Unfavourite: remove from favouriteRecipes */
 			const user = await db.user.findUnique({
 				where: { id: userId },
 				select: { favouriteRecipes: true },
@@ -339,7 +337,6 @@ export const favouriteRecipe = async (
 				},
 			})
 		} else {
-			/** Favourite: add to favouriteRecipes atomically (only if not already present) */
 			const user = await db.user.findUnique({
 				where: { id: userId },
 				select: { favouriteRecipes: true },
@@ -357,7 +354,8 @@ export const favouriteRecipe = async (
 
 		revalidatePath('/')
 		return { error: false }
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { action: 'favouriteRecipe' } })
 		return { error: true }
 	}
 }
@@ -383,14 +381,18 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 
 		if (recipe.images.length > 0) {
 			const { deleteRecipeImages } = await import('@/lib/s3')
-			await deleteRecipeImages(recipe.images).catch(() => {})
+			await deleteRecipeImages(recipe.images).catch((error) =>
+				Sentry.captureException(error, {
+					level: 'warning',
+					tags: { action: 'deleteRecipe', step: 's3-cleanup' },
+				}),
+			)
 		}
 
 		await db.recipe.delete({
 			where: { id, authorId: currentUser.user.id },
 		})
 
-		// Clean dangling references from all users' savedRecipes and favouriteRecipes
 		const affectedUsers = await db.user.findMany({
 			where: {
 				OR: [
@@ -415,12 +417,18 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 					},
 				}),
 			),
-		).catch(() => {})
+		).catch((error) =>
+			Sentry.captureException(error, {
+				level: 'warning',
+				tags: { action: 'deleteRecipe', step: 'dangling-refs' },
+			}),
+		)
 
 		revalidatePath('/recipes')
 
 		return { error: false }
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { action: 'deleteRecipe' } })
 		return { error: true }
 	}
 }
@@ -457,13 +465,17 @@ export const uploadRecipeImages = async (
 			files.map((file) => uploadRecipeImage(file, recipeId)),
 		)
 
-		// Re-check current image count to guard against concurrent uploads
 		const freshRecipe = await db.recipe.findFirst({
 			where: { id: recipeId, authorId: currentUser.user.id },
 			select: { images: true },
 		})
 		if (!freshRecipe || freshRecipe.images.length + fileKeys.length > 3) {
-			await deleteRecipeImages(fileKeys).catch(() => {})
+			await deleteRecipeImages(fileKeys).catch((error) =>
+				Sentry.captureException(error, {
+					level: 'warning',
+					tags: { action: 'uploadRecipeImages', step: 's3-rollback' },
+				}),
+			)
 			return { error: true }
 		}
 
@@ -474,8 +486,16 @@ export const uploadRecipeImages = async (
 				where: { id: recipeId, authorId: currentUser.user.id },
 				data: { images: updatedImages },
 			})
-		} catch {
-			await deleteRecipeImages(fileKeys).catch(() => {})
+		} catch (error) {
+			Sentry.captureException(error, {
+				tags: { action: 'uploadRecipeImages', step: 'db-persist' },
+			})
+			await deleteRecipeImages(fileKeys).catch((cleanupError) =>
+				Sentry.captureException(cleanupError, {
+					level: 'warning',
+					tags: { action: 'uploadRecipeImages', step: 's3-rollback' },
+				}),
+			)
 			return { error: true }
 		}
 
@@ -483,7 +503,8 @@ export const uploadRecipeImages = async (
 		revalidatePath('/recipes')
 
 		return { error: false, images: updatedImages }
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { action: 'uploadRecipeImages' } })
 		return { error: true }
 	}
 }
@@ -508,15 +529,18 @@ export const updateRecipeImages = async (
 		})
 		if (!recipe) return { error: true }
 
-		// Validate that every provided key actually belongs to this recipe
 		const invalidKeys = images.filter((key) => !recipe.images.includes(key))
 		if (invalidKeys.length > 0) return { error: true }
 
-		// Delete removed images from S3
 		const removedKeys = recipe.images.filter((key) => !images.includes(key))
 		if (removedKeys.length > 0) {
 			const { deleteRecipeImages } = await import('@/lib/s3')
-			await deleteRecipeImages(removedKeys).catch(() => {})
+			await deleteRecipeImages(removedKeys).catch((error) =>
+				Sentry.captureException(error, {
+					level: 'warning',
+					tags: { action: 'updateRecipeImages', step: 's3-cleanup' },
+				}),
+			)
 		}
 
 		await db.recipe.update({
@@ -528,7 +552,8 @@ export const updateRecipeImages = async (
 		revalidatePath('/recipes')
 
 		return { error: false }
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { action: 'updateRecipeImages' } })
 		return { error: true }
 	}
 }
