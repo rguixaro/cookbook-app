@@ -18,7 +18,7 @@ const nextConfig: NextConfig = {
 	],
 	experimental: {
 		optimizePackageImports: ['lucide-react'],
-		serverActions: { bodySizeLimit: '10mb' },
+		serverActions: { bodySizeLimit: '50mb' },
 	},
 	images: {
 		remotePatterns: [
