@@ -19,9 +19,6 @@ export async function uploadRecipeImage(
 	const MAX_SIZE = 10 * 1024 * 1024
 	if (file.size > MAX_SIZE) throw new Error('File too large (max 10 MB)')
 
-	const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-	if (!ALLOWED_TYPES.includes(file.type)) throw new Error('Unsupported image type')
-
 	const arrayBuffer = await file.arrayBuffer()
 	const buffer = new Uint8Array(arrayBuffer)
 

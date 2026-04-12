@@ -512,17 +512,47 @@ describe('uploadRecipeImages', () => {
 		expect(result).toEqual({ error: true })
 	})
 
-	it('returns error when total images exceed 3', async () => {
+	it('returns error when uploading more than 3 files at once', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.recipe.findFirst.mockResolvedValue({
-			images: ['existing1.jpg', 'existing2.jpg'],
+			images: [],
 		} as any)
 
 		const result = await uploadRecipeImages(
 			'recipe-1',
-			makeFormData(makeFile('a.jpg'), makeFile('b.jpg')),
+			makeFormData(
+				makeFile('a.jpg'),
+				makeFile('b.jpg'),
+				makeFile('c.jpg'),
+				makeFile('d.jpg'),
+			),
 		)
 		expect(result).toEqual({ error: true })
+	})
+
+	it('allows upload when replacing images (existing + new exceeds 3)', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: ['existing1.jpg', 'existing2.jpg', 'existing3.jpg'],
+		} as any)
+		mockDb.recipe.update.mockResolvedValue({} as any)
+
+		const { uploadRecipeImage } = await import('@/lib/s3')
+		vi.mocked(uploadRecipeImage as any).mockResolvedValue('new-key.jpg')
+
+		const result = await uploadRecipeImages(
+			'recipe-1',
+			makeFormData(makeFile('a.jpg')),
+		)
+		expect(result).toEqual({
+			error: false,
+			images: [
+				'existing1.jpg',
+				'existing2.jpg',
+				'existing3.jpg',
+				'new-key.jpg',
+			],
+		})
 	})
 
 	it('uploads images successfully', async () => {
@@ -554,6 +584,21 @@ describe('updateRecipeImages', () => {
 		mockDb.recipe.findFirst.mockResolvedValue(null)
 
 		const result = await updateRecipeImages('recipe-1', [])
+		expect(result).toEqual({ error: true })
+	})
+
+	it('returns error when images exceed max count', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: ['img1.jpg', 'img2.jpg', 'img3.jpg', 'img4.jpg'],
+		} as any)
+
+		const result = await updateRecipeImages('recipe-1', [
+			'img1.jpg',
+			'img2.jpg',
+			'img3.jpg',
+			'img4.jpg',
+		])
 		expect(result).toEqual({ error: true })
 	})
 

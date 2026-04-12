@@ -91,6 +91,10 @@ export function RecipeImageInput({
 			onChange(filtered.imgs)
 			onFilesChange(filtered.fls)
 		}
+		reader.onerror = () => {
+			e.target.value = ''
+			toast.error(t('error'))
+		}
 		reader.readAsDataURL(file)
 
 		e.target.value = ''

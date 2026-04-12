@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Clock, LoaderIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { type z } from 'zod'
+import * as Sentry from '@sentry/nextjs'
 
 import { Categories, CreateRecipeSchema } from '@/server/schemas'
 import {
@@ -106,7 +107,13 @@ export const EditRecipe = (props: EditRecipeProps) => {
 
 			const newFiles: { file: File; position: number }[] = []
 			orderedFiles.forEach((file, i) => {
-				if (file !== null) newFiles.push({ file, position: i })
+				if (file !== null) {
+					const freshFile = dataURItoFile(
+						orderedImages[i],
+						`image-${i}.jpg`,
+					)
+					newFiles.push({ file: freshFile, position: i })
+				}
 			})
 
 			let uploadedKeys: string[] = []
@@ -132,13 +139,18 @@ export const EditRecipe = (props: EditRecipeProps) => {
 				})
 				.filter(Boolean)
 
-			await updateRecipeImages(props.recipe.id, finalKeys)
+			const imgResult = await updateRecipeImages(props.recipe.id, finalKeys)
+			if (imgResult.error) {
+				toast.error(t_toasts('error'))
+				return
+			}
 
 			toast.success(t_toasts('recipe-updated'))
 			form.reset()
 			setIngredients([])
 			router.replace('/')
 		} catch (error) {
+			Sentry.captureException(error, { tags: { component: 'EditRecipe' } })
 			toast.error(t_toasts('error'))
 		} finally {
 			setLoading(false)
@@ -373,6 +385,21 @@ export const EditRecipe = (props: EditRecipeProps) => {
 			</div>
 		</div>
 	)
+}
+
+/**
+ * Convert a base64 data URI to a File object.
+ * Used to create fresh Files at submission time, avoiding stale blob
+ * references that mobile browsers can invalidate after clearing the
+ * file input.
+ */
+function dataURItoFile(dataURI: string, filename: string): File {
+	const [header, data] = dataURI.split(',')
+	const mime = header.match(/:(.*?);/)?.[1] || 'image/jpeg'
+	const binary = atob(data)
+	const bytes = new Uint8Array(binary.length)
+	for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+	return new File([bytes], filename, { type: mime })
 }
 
 /** Reorder array so the cover image is first */

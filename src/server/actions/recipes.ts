@@ -455,10 +455,21 @@ export const uploadRecipeImages = async (
 		if (!recipe) return { error: true }
 
 		const files = formData.getAll('images') as File[]
-		if (!files.length) return { error: true }
+		if (!files.length) {
+			Sentry.captureMessage('uploadRecipeImages: no files in FormData', {
+				level: 'warning',
+				tags: { action: 'uploadRecipeImages' },
+			})
+			return { error: true }
+		}
 
-		const totalImages = recipe.images.length + files.length
-		if (totalImages > 3) return { error: true }
+		if (files.length > 3) {
+			Sentry.captureMessage('uploadRecipeImages: too many files', {
+				level: 'warning',
+				tags: { action: 'uploadRecipeImages' },
+			})
+			return { error: true }
+		}
 
 		const { uploadRecipeImage, deleteRecipeImages } = await import('@/lib/s3')
 		const fileKeys = await Promise.all(
@@ -469,7 +480,14 @@ export const uploadRecipeImages = async (
 			where: { id: recipeId, authorId: currentUser.user.id },
 			select: { images: true },
 		})
-		if (!freshRecipe || freshRecipe.images.length + fileKeys.length > 3) {
+		if (!freshRecipe) {
+			Sentry.captureMessage(
+				'uploadRecipeImages: race condition — recipe not found on re-fetch',
+				{
+					level: 'warning',
+					tags: { action: 'uploadRecipeImages', step: 'race-check' },
+				},
+			)
 			await deleteRecipeImages(fileKeys).catch((error) =>
 				Sentry.captureException(error, {
 					level: 'warning',
@@ -529,8 +547,23 @@ export const updateRecipeImages = async (
 		})
 		if (!recipe) return { error: true }
 
+		if (images.length > 3) {
+			Sentry.captureMessage('updateRecipeImages: images exceed max count', {
+				level: 'warning',
+				tags: { action: 'updateRecipeImages' },
+			})
+			return { error: true }
+		}
+
 		const invalidKeys = images.filter((key) => !recipe.images.includes(key))
-		if (invalidKeys.length > 0) return { error: true }
+		if (invalidKeys.length > 0) {
+			Sentry.captureMessage('updateRecipeImages: invalid keys provided', {
+				level: 'warning',
+				tags: { action: 'updateRecipeImages' },
+				extra: { invalidKeys },
+			})
+			return { error: true }
+		}
 
 		const removedKeys = recipe.images.filter((key) => !images.includes(key))
 		if (removedKeys.length > 0) {
