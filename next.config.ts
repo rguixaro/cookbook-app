@@ -1,6 +1,7 @@
 import type { NextConfig } from 'next'
 import createNextIntlPlugin from 'next-intl/plugin'
 import { withSentryConfig } from '@sentry/nextjs'
+import packageJson from './package.json'
 
 const withNextIntl = createNextIntlPlugin()
 
@@ -8,6 +9,7 @@ const cloudfrontDomain = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN ?? ''
 const cloudfrontHostname = cloudfrontDomain ? new URL(cloudfrontDomain).hostname : ''
 
 const nextConfig: NextConfig = {
+	env: { NEXT_PUBLIC_APP_VERSION: packageJson.version },
 	poweredByHeader: false,
 	pageExtensions: ['ts', 'tsx'],
 	serverExternalPackages: [
@@ -22,10 +24,7 @@ const nextConfig: NextConfig = {
 	},
 	images: {
 		remotePatterns: [
-			{
-				protocol: 'https',
-				hostname: 'lh3.googleusercontent.com',
-			},
+			{ protocol: 'https', hostname: 'lh3.googleusercontent.com' },
 			...(cloudfrontHostname
 				? [{ protocol: 'https' as const, hostname: cloudfrontHostname }]
 				: []),
