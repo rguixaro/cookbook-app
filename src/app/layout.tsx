@@ -28,6 +28,7 @@ export default async function RootLayout({
 	return (
 		<html lang={locale} suppressHydrationWarning>
 			<head>
+				<meta name='version' content={process.env.NEXT_PUBLIC_APP_VERSION} />
 				<link rel='icon' type='image/svg+xml' href='/images/favicon.svg' />
 				<link rel='alternate icon' href='/images/favicon.png' />
 			</head>
