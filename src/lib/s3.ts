@@ -19,28 +19,23 @@ export async function uploadRecipeImage(
 	const MAX_SIZE = 10 * 1024 * 1024
 	if (file.size > MAX_SIZE) throw new Error('File too large (max 10 MB)')
 
-	// Allowlist raster image types only — SVG can contain embedded scripts
 	const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
 	if (!ALLOWED_TYPES.includes(file.type)) throw new Error('Unsupported image type')
 
 	const arrayBuffer = await file.arrayBuffer()
 	const buffer = new Uint8Array(arrayBuffer)
 
-	// Validate with sharp metadata — the real guard against spoofed MIME types.
-	// Rejects anything that isn't a decodable raster image.
 	const metadata = await sharp(buffer).metadata()
 	const ALLOWED_FORMATS = ['jpeg', 'png', 'webp', 'gif']
 	if (!metadata.format || !ALLOWED_FORMATS.includes(metadata.format)) {
 		throw new Error('File is not a valid image')
 	}
 
-	// Re-encode as JPEG
 	const compressedBuffer = await sharp(buffer)
 		.resize(2048, 2048, { fit: 'inside', withoutEnlargement: true })
 		.jpeg({ quality: 85 })
 		.toBuffer()
 
-	// fileKey stored in DB — relative to the CloudFront distribution path (cookbook/)
 	const fileKey = `images/recipe_${recipeId}/${crypto.randomUUID()}.jpg`
 
 	await s3.send(
@@ -64,9 +59,7 @@ export async function deleteRecipeImages(fileKeys: string[]): Promise<void> {
 	await s3.send(
 		new DeleteObjectsCommand({
 			Bucket: AMAZON_S3_BUCKET_NAME,
-			Delete: {
-				Objects: fileKeys.map((key) => ({ Key: `cookbook/${key}` })),
-			},
+			Delete: { Objects: fileKeys.map((key) => ({ Key: `cookbook/${key}` })) },
 		}),
 	)
 }

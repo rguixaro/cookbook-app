@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
 
@@ -22,7 +23,8 @@ export async function POST() {
 		await setCloudFrontCookies(response)
 
 		return response
-	} catch {
+	} catch (error) {
+		Sentry.captureException(error, { tags: { route: 'api/cookies/refresh' } })
 		return NextResponse.json(
 			{ success: false, error: 'Failed to refresh cookies' },
 			{ status: 500 },

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import * as Sentry from '@sentry/nextjs'
 
 const REFRESH_INTERVAL = 5 * 60 * 60 * 1000
 const RETRY_INTERVAL = 30 * 1000
@@ -47,9 +48,12 @@ export function useCookies(enabled: boolean = true) {
 						return
 					}
 
-					console.error('[Cookies] Refresh failed:', response.statusText)
+					Sentry.captureMessage(`CloudFront cookie refresh failed: ${response.status}`, {
+						level: 'warning',
+						tags: { hook: 'useCookies' },
+					})
 				} catch (e) {
-					console.error('[Cookies] Refresh error:', e)
+					Sentry.captureException(e, { tags: { hook: 'useCookies' } })
 				}
 
 				if (attempt < MAX_RETRIES - 1) {
