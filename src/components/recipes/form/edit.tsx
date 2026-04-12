@@ -151,7 +151,13 @@ export const EditRecipe = (props: EditRecipeProps) => {
 			router.replace('/')
 		} catch (error) {
 			Sentry.captureException(error, { tags: { component: 'EditRecipe' } })
-			toast.error(t_toasts('error'))
+
+			const message =
+				error instanceof Error &&
+				error.message.includes('unexpected response')
+					? 'error-file-too-large'
+					: 'error'
+			toast.error(t_toasts(message))
 		} finally {
 			setLoading(false)
 		}
