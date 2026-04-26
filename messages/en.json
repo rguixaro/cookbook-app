@@ -62,6 +62,7 @@
 		"time": "Cooking time",
 		"minutes": "minutes",
 		"create": "Create",
+		"saved": "Saved",
 		"creating": "Creating recipe...",
 		"update": "Update",
 		"cancel": "Cancel",
@@ -83,7 +84,9 @@
 		"source-links-placeholder": "https://example.com/recipe",
 		"source-links-remove": "Remove {url}",
 		"sources": "Sources",
-		"images-after-create": "You'll be able to add images after creating the recipe"
+		"images-after-create": "You'll be able to add images after creating the recipe",
+		"images-add-in-edit": "Edit this recipe to add images",
+		"images-empty": "This recipe does not have images yet"
 	},
 	"RecipeCategories": {
 		"starter": "Starter",

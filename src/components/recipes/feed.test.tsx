@@ -70,6 +70,24 @@ describe('RecipesFeed', () => {
 		})
 	})
 
+	it('passes saved filter through to fetchRecipes', async () => {
+		mockFetchRecipes.mockResolvedValue({
+			recipes: [],
+			nextCursor: null,
+		})
+
+		renderWithProviders(<RecipesFeed userId='user-2' savedParam />)
+
+		await waitFor(() => {
+			expect(mockFetchRecipes).toHaveBeenCalledWith(
+				expect.objectContaining({
+					userId: 'user-2',
+					saved: true,
+				}),
+			)
+		})
+	})
+
 	it('shows empty state when no recipes found', async () => {
 		mockFetchRecipes.mockResolvedValue({
 			recipes: [],

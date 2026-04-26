@@ -62,6 +62,7 @@
 		"time": "Temps de preparació",
 		"minutes": "minuts",
 		"create": "Crear",
+		"saved": "Desades",
 		"creating": "Creant recepta...",
 		"update": "Actualitzar",
 		"cancel": "Cancel·lar",
@@ -83,7 +84,9 @@
 		"source-links-placeholder": "https://exemple.com/recepta",
 		"source-links-remove": "Elimina {url}",
 		"sources": "Fonts",
-		"images-after-create": "Podràs afegir imatges després de crear la recepta"
+		"images-after-create": "Podràs afegir imatges després de crear la recepta",
+		"images-add-in-edit": "Edita aquesta recepta per afegir-hi imatges",
+		"images-empty": "Aquesta recepta encara no té imatges"
 	},
 	"RecipeCategories": {
 		"starter": "Entrant",

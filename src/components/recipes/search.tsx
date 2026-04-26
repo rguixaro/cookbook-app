@@ -12,13 +12,20 @@ import { useDebounce } from '@/hooks'
 import { UserButton, SocialButton } from '@/components/layout'
 import { Categories as CategoriesType } from '@/types'
 import { Button, SearchInput } from '@/ui'
-import { HeartIcon } from '@/components/icons'
+import { BookmarkIcon, HeartIcon } from '@/components/icons'
 import { cn } from '@/utils'
 import { Categories } from './categories'
 
 type SearchState = 'visible' | 'hidden' | 'outlined'
+type ListFilter = 'favourites' | 'saved'
 
-export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) => {
+export const SearchRecipes = ({
+	withAvatar = true,
+	listFilter = 'favourites',
+}: {
+	withAvatar?: boolean
+	listFilter?: ListFilter
+}) => {
 	const t = useTranslations('RecipesPage')
 	const t_categories = useTranslations('RecipeCategories')
 
@@ -39,8 +46,8 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 		searchParams.get('category')?.toString() || null,
 	)
 
-	const [isFavourites, setIsFavourites] = useState(
-		searchParams.get('favourites') === 'true',
+	const [isListFiltered, setIsListFiltered] = useState(
+		searchParams.get(listFilter) === 'true',
 	)
 
 	const tCategory = (category?: string) => {
@@ -82,12 +89,12 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 	/**
 	 * Handle toggling favourites filter
 	 */
-	const handleToggleFavourites = () => {
+	const handleToggleListFilter = () => {
 		const params = new URLSearchParams(searchParams)
-		const next = !isFavourites
-		if (next) params.set('favourites', 'true')
-		else params.delete('favourites')
-		setIsFavourites(next)
+		const next = !isListFiltered
+		if (next) params.set(listFilter, 'true')
+		else params.delete(listFilter)
+		setIsListFiltered(next)
 		router.replace(`${pathname}?${params.toString()}`)
 	}
 
@@ -230,10 +237,18 @@ export const SearchRecipes = ({ withAvatar = true }: { withAvatar?: boolean }) =
 					)}
 				</AnimatePresence>
 				<div className='grow' />
-				<Button size={'sm'} onClick={handleToggleFavourites}>
-					<HeartIcon filled={isFavourites} size={16} />
+				<Button size={'sm'} onClick={handleToggleListFilter}>
+					{listFilter === 'saved' ? (
+						<BookmarkIcon
+							filled={isListFiltered}
+							size={16}
+							color='#fefff2'
+						/>
+					) : (
+						<HeartIcon filled={isListFiltered} size={16} />
+					)}
 					<span className={cn('text-base font-bold text-forest-50')}>
-						{t('favourites')}
+						{t(listFilter)}
 					</span>
 				</Button>
 			</div>

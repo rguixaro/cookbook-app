@@ -36,12 +36,14 @@ export const RecipesFeed = ({
 	searchParam,
 	categoryParam,
 	favouritesParam,
+	savedParam,
 	userId,
 	referred = false,
 }: {
 	searchParam?: string
 	categoryParam?: string
 	favouritesParam?: boolean
+	savedParam?: boolean
 	userId?: string
 	referred?: boolean
 }) => {
@@ -63,6 +65,7 @@ export const RecipesFeed = ({
 				search: searchParam,
 				category: categoryParam,
 				favourites: favouritesParam,
+				saved: savedParam,
 				userId,
 			})
 
@@ -80,7 +83,7 @@ export const RecipesFeed = ({
 			setNextCursor(result.nextCursor)
 			setIsLoading(false)
 		},
-		[searchParam, categoryParam, favouritesParam, userId],
+		[searchParam, categoryParam, favouritesParam, savedParam, userId],
 	)
 
 	useEffect(() => {
