@@ -12,6 +12,7 @@ import * as Sentry from '@sentry/nextjs'
 
 import { Categories, CreateRecipeSchema } from '@/server/schemas'
 import {
+	deleteRecipe,
 	updateRecipe,
 	uploadRecipeImages,
 	updateRecipeImages,
@@ -25,6 +26,15 @@ import {
 import { RecipeImageInput } from '@/components/recipes/form/image-input'
 import {
 	Button,
+	buttonVariants,
+	Dialog,
+	DialogClose,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+	DialogTrigger,
 	Form,
 	FormControl,
 	FormField,
@@ -59,6 +69,9 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	const router = useRouter()
 
 	const [loading, setLoading] = useState<boolean>(false)
+	const [deleting, setDeleting] = useState<boolean>(false)
+	const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
+	const [deleteConfirmation, setDeleteConfirmation] = useState<string>('')
 
 	const form = useForm<z.infer<typeof CreateRecipeSchema>>({
 		resolver: zodResolver(CreateRecipeSchema),
@@ -85,6 +98,10 @@ export const EditRecipe = (props: EditRecipeProps) => {
 		existingUrls.map(() => null),
 	)
 	const [coverIndex, setCoverIndex] = useState(0)
+	const deleteConfirmationWord = t('delete-confirmation-word')
+	const deleteConfirmed =
+		deleteConfirmation.trim().toLowerCase() ===
+		deleteConfirmationWord.toLowerCase()
 
 	/**
 	 * onSubmit form handler
@@ -93,11 +110,14 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	const onSubmit = async (values: z.infer<typeof CreateRecipeSchema>) => {
 		try {
 			setLoading(true)
-			const { error, message } = await updateRecipe(props.recipe.id, {
-				...values,
-				sourceUrls: sourceUrls.filter((url) => url.trim() !== ''),
-			})
-			if (error) {
+			const { error, message, recipePath } = await updateRecipe(
+				props.recipe.id,
+				{
+					...values,
+					sourceUrls: sourceUrls.filter((url) => url.trim() !== ''),
+				},
+			)
+			if (error || !recipePath) {
 				toast.error(t_toasts(message || 'error'))
 				return
 			}
@@ -146,9 +166,8 @@ export const EditRecipe = (props: EditRecipeProps) => {
 			}
 
 			toast.success(t_toasts('recipe-updated'))
-			form.reset()
-			setIngredients([])
-			router.replace('/')
+			router.replace(recipePath)
+			router.refresh()
 		} catch (error) {
 			Sentry.captureException(error, { tags: { component: 'EditRecipe' } })
 
@@ -160,6 +179,30 @@ export const EditRecipe = (props: EditRecipeProps) => {
 			toast.error(t_toasts(message))
 		} finally {
 			setLoading(false)
+		}
+	}
+
+	const handleDeleteRecipe = async () => {
+		if (!deleteConfirmed) return
+
+		try {
+			setDeleting(true)
+			const { error } = await deleteRecipe(props.recipe.id)
+			if (error) {
+				toast.error(t_toasts('error'))
+				return
+			}
+
+			toast.success(t_toasts('recipe-deleted'))
+			router.replace('/')
+			router.refresh()
+		} catch (error) {
+			Sentry.captureException(error, {
+				tags: { component: 'EditRecipe', action: 'deleteRecipe' },
+			})
+			toast.error(t_toasts('error'))
+		} finally {
+			setDeleting(false)
 		}
 	}
 
@@ -205,10 +248,10 @@ export const EditRecipe = (props: EditRecipeProps) => {
 											autoComplete='off'
 											className='text-center bg-forest-50 text-forest-300 text-lg md:text-xl font-title font-black leading-4 placeholder:font-normal placeholder:font-sans placeholder:text-forest-200 placeholder:text-sm placeholder:leading-normal border-0 rounded-[20px] focus-visible:ring-0 shadow-none h-12.5 px-4'
 											placeholder={t('recipe-name')}
-											disabled={loading}
+											disabled={loading || deleting}
 										/>
 									</FormControl>
-									<FormMessage />
+									<FormMessage className='text-center' />
 								</FormItem>
 							)}
 						/>
@@ -221,7 +264,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 									onFilesChange={setImageFiles}
 									coverIndex={coverIndex}
 									onCoverChange={setCoverIndex}
-									disabled={loading}
+									disabled={loading || deleting}
 								/>
 							</div>
 							<div className='w-full flex justify-center my-3'>
@@ -242,6 +285,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 														value as Categories,
 													)
 												}
+												disabled={loading || deleting}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -301,7 +345,8 @@ export const EditRecipe = (props: EditRecipeProps) => {
 																				'minutes',
 																			)}
 																			disabled={
-																				loading
+																				loading ||
+																				deleting
 																			}
 																		/>
 																	</FormControl>
@@ -328,6 +373,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 										<IngredientSelector
 											values={ingredients}
 											setValues={setIngredients}
+											disabled={loading || deleting}
 										/>
 										<FormMessage />
 									</FormItem>
@@ -345,12 +391,13 @@ export const EditRecipe = (props: EditRecipeProps) => {
 										<FormControl className='my-2'>
 											<Textarea
 												{...field}
+												autoResize
 												onKeyDown={(e) =>
 													e.stopPropagation()
 												}
 												className='border-2 bg-forest-50 text-forest-200 placeholder:text-forest-200'
 												placeholder={t('instructions-add')}
-												disabled={loading}
+												disabled={loading || deleting}
 											/>
 										</FormControl>
 										<FormMessage />
@@ -365,12 +412,13 @@ export const EditRecipe = (props: EditRecipeProps) => {
 								<SourceLinksInput
 									values={sourceUrls}
 									setValues={setSourceUrls}
+									disabled={loading || deleting}
 								/>
 							</div>
 							<div className='w-full flex justify-center mt-5'>
 								<Button
 									type='submit'
-									disabled={loading}
+									disabled={loading || deleting}
 									className='w-full'>
 									<div className='flex items-center space-x-3'>
 										{loading && (
@@ -379,15 +427,99 @@ export const EditRecipe = (props: EditRecipeProps) => {
 												className='animate-spin'
 											/>
 										)}
-										<span className='text-base font-bold text-forest-50'>
-											{loading ? t('updating') : t('update')}
-										</span>
+										{!loading && (
+											<span className='text-base font-bold text-forest-50'>
+												{t('update')}
+											</span>
+										)}
 									</div>
 								</Button>
 							</div>
 						</div>
 					</form>
 				</Form>
+			</div>
+			<div className='-mt-2 mb-4 flex w-10/12 justify-center sm:w-2/4 lg:w-2/6'>
+				<Dialog
+					open={deleteDialogOpen}
+					onOpenChange={(open) => {
+						setDeleteDialogOpen(open)
+						if (!open) setDeleteConfirmation('')
+					}}>
+					<DialogTrigger
+						type='button'
+						disabled={loading || deleting}
+						className={cn(
+							buttonVariants({ variant: 'ghost' }),
+							'h-auto px-2 py-1 text-xs font-semibold text-forest-500 hover:bg-transparent hover:text-forest-600',
+						)}>
+						{t('delete-recipe')}
+					</DialogTrigger>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>{t('delete-recipe-title')}</DialogTitle>
+							<DialogDescription className='flex flex-col space-y-2'>
+								<span className='font-semibold text-forest-500'>
+									{t('delete-recipe-attention')}
+								</span>
+								<span>{t('delete-recipe-text')}</span>
+							</DialogDescription>
+						</DialogHeader>
+						<div className='flex flex-col space-y-3 text-forest-400'>
+							<p className='text-sm'>
+								{t('delete-recipe-prompt')}{' '}
+								<span className='font-semibold'>
+									{deleteConfirmationWord}
+								</span>
+							</p>
+							<Input
+								value={deleteConfirmation}
+								onChange={(event) =>
+									setDeleteConfirmation(event.target.value)
+								}
+								placeholder={deleteConfirmationWord}
+								disabled={deleting}
+								className='my-2 rounded-2xl border-2 bg-forest-50 py-5'
+							/>
+							<DialogFooter className='mt-3'>
+								<DialogClose
+									type='button'
+									disabled={deleting}
+									className={cn(
+										buttonVariants({ variant: 'ghost' }),
+										'font-bold text-forest-400',
+									)}>
+									{t('cancel')}
+								</DialogClose>
+								<Button
+									type='button'
+									variant='destructive'
+									disabled={deleting || !deleteConfirmed}
+									onClick={handleDeleteRecipe}
+									className='flex items-center justify-center gap-3 bg-forest-500 hover:bg-forest-600'>
+									<span className='flex items-center justify-center gap-3'>
+										{deleting && (
+											<>
+												<LoaderIcon
+													size={16}
+													className='animate-spin'
+												/>
+												<span className='font-bold text-forest-50'>
+													{t('deleting')}
+												</span>
+											</>
+										)}
+										{!deleting && (
+											<span className='font-bold text-forest-50'>
+												{t('delete')}
+											</span>
+										)}
+									</span>
+								</Button>
+							</DialogFooter>
+						</div>
+					</DialogContent>
+				</Dialog>
 			</div>
 		</div>
 	)

@@ -159,7 +159,7 @@ const FormMessage = React.forwardRef<
 		<p
 			ref={ref}
 			id={formMessageId}
-			className={cn('text-[0.8rem] font-medium text-red-500', className)}
+			className={cn('text-[0.8rem] font-bold text-forest-400', className)}
 			{...props}>
 			{/* @ts-expect-error: Unnecessary message type */}
 			{t(body)}

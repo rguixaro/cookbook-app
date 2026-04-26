@@ -36,6 +36,16 @@ export const ProfileSchema = z.object({
 	recipesCount: z.number(),
 })
 
+const IngredientSchema = z
+	.string()
+	.trim()
+	.min(2, { message: 'ingredient-invalid' })
+	.max(200)
+	.refine(
+		(value) => (value.match(/\p{Script=Latin}/gu)?.length ?? 0) >= 2,
+		{ message: 'ingredient-invalid' },
+	)
+
 export const CreateRecipeSchema = z.object({
 	name: z
 		.string()
@@ -49,7 +59,7 @@ export const CreateRecipeSchema = z.object({
 		.min(1, { message: 'time-invalid' })
 		.max(10080, { message: 'time-invalid' }),
 	ingredients: z
-		.array(z.string().min(1).max(200))
+		.array(IngredientSchema)
 		.nonempty({ message: 'ingredients-required' }),
 	instructions: z
 		.string()

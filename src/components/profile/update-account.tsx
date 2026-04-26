@@ -80,7 +80,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 					trigger={
 						<Button
 							size='sm'
-							className='mt-4 mb-4 w-fit self-center text-forest-50'>
+							className='w-fit self-center text-forest-50'>
 							<span className='font-bold'>{t('account-logout')}</span>
 						</Button>
 					}
@@ -89,7 +89,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			<Form {...hookForm}>
 				<form
 					onSubmit={hookForm.handleSubmit(onSubmit)}
-					className='space-y-5 mb-5 text-forest-400'>
+					className='space-y-5 text-forest-400'>
 					<FormField
 						control={hookForm.control}
 						name='isPrivate'
@@ -193,7 +193,9 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							)}
 						</Button>
 					</div>
-					<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
+					<div className='w-full justify-center flex my-8'>
+						<div className='h-2 w-3/4 rounded bg-forest-150' />
+					</div>
 					<DeleteAccount
 						email={props.email}
 						trigger={

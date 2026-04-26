@@ -1,59 +1,101 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
-import { Plus, X } from 'lucide-react'
+import { X } from 'lucide-react'
 
 import { cn } from '@/utils'
-import { FormControl, InputGlobalStyles } from '@/ui'
+import { Button, FormControl, InputGlobalStyles } from '@/ui'
 
 interface IngredientSelectorProps {
 	values: string[]
 	setValues: (value: string[]) => void
+	disabled?: boolean
 }
+
+const hasMeaningfulIngredientText = (value: string) =>
+	(value.match(/\p{Script=Latin}/gu)?.length ?? 0) >= 2
 
 export const IngredientSelector = ({
 	values,
 	setValues,
+	disabled = false,
 }: IngredientSelectorProps) => {
 	const t = useTranslations('RecipesPage')
 	const [currIngredient, setCurrIngredient] = useState<string>('')
 
-	useEffect(() => {
-		if (values.length > 0) setValues(values)
-	}, [values, setValues])
+	const pendingIngredients = useMemo(
+		() =>
+			currIngredient
+				.split(/[,\n]/)
+				.map((ingredient) => ingredient.trim())
+				.filter(hasMeaningfulIngredientText),
+		[currIngredient],
+	)
+	const showInvalidIngredient =
+		currIngredient.trim() !== '' && pendingIngredients.length === 0
+	const canAdd = !disabled && pendingIngredients.length > 0
 
-	function addIngredient(event?: React.KeyboardEvent<HTMLInputElement>) {
-		if (event && event.key !== 'Enter') return
-		const trimmed = currIngredient.trim()
-		if (!trimmed) return
-		setValues([...values, trimmed])
+	function addIngredients(ingredients: string[]) {
+		if (disabled) return
+		if (ingredients.length === 0) return
+		setValues([...values, ...ingredients])
 		setCurrIngredient('')
-		event?.preventDefault()
+	}
+
+	function addCurrentIngredient() {
+		addIngredients(pendingIngredients)
+	}
+
+	function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+		if (event.key !== 'Enter') return
+		event.preventDefault()
+		addCurrentIngredient()
+	}
+
+	function handlePaste(event: React.ClipboardEvent<HTMLInputElement>) {
+		const pasted = event.clipboardData.getData('text')
+		if (!/[,\n]/.test(pasted)) return
+
+		event.preventDefault()
+		addIngredients(
+			pasted
+				.split(/[,\n]/)
+				.map((ingredient) => ingredient.trim())
+				.filter(hasMeaningfulIngredientText),
+		)
 	}
 
 	return (
 		<>
 			<FormControl>
-				<div className='relative my-2'>
-					<button
-						type='button'
-						className='absolute left-2 top-1/2 transform -translate-y-1/2 focus-visible:outline-none focus-visible:ring-0'
-						onClick={() => addIngredient()}>
-						<Plus className='stroke-forest-200' size={24} />
-					</button>
+				<div className='my-2 flex items-center gap-2'>
 					<input
 						value={currIngredient}
 						className={cn(
 							InputGlobalStyles,
-							'rounded-2xl ps-10 py-5 bg-forest-50 border-2',
+							'rounded-2xl py-5 bg-forest-50 border-2 focus-visible:ring-0',
 						)}
-						placeholder={t('ingredients-add')}
+						placeholder={t('ingredients-placeholder')}
+						disabled={disabled}
 						onChange={(e) => setCurrIngredient(e.currentTarget.value)}
-						onKeyDown={addIngredient}
+						onKeyDown={handleKeyDown}
+						onPaste={handlePaste}
 					/>
+					<Button
+						type='button'
+						className='shrink-0'
+						disabled={!canAdd}
+						onClick={addCurrentIngredient}>
+						<b>{t('ingredients-add')}</b>
+					</Button>
 				</div>
 			</FormControl>
+			{showInvalidIngredient && (
+				<p className='mt-1 text-left text-[0.8rem] font-bold text-forest-400'>
+					{t('ingredients-invalid')}
+				</p>
+			)}
 			<div className='flex flex-wrap justify-center gap-1.5 mt-2'>
 				{values.map((ingredient, index) => (
 					<span
@@ -62,6 +104,10 @@ export const IngredientSelector = ({
 						<span>{ingredient}</span>
 						<button
 							type='button'
+							aria-label={t('ingredients-remove', {
+								ingredient,
+							})}
+							disabled={disabled}
 							className='hover:text-forest-400 transition-colors'
 							onClick={() =>
 								setValues(values.filter((_, i) => i !== index))

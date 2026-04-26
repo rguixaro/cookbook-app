@@ -56,13 +56,18 @@ export const LogoutAccount = (props: LogoutAccountProps) => {
 							{t('cancel')}
 						</Button>
 					</DialogClose>
-					<Button disabled={loading} onClick={handleLogoutAccount}>
+					<Button
+						disabled={loading}
+						onClick={handleLogoutAccount}
+						className='flex items-center justify-center gap-3'>
 						{loading && (
 							<LoaderIcon size={16} className='animate-spin' />
 						)}
-						<span className='font-bold text-forest-50'>
-							{t('account-logout')}
-						</span>
+						{!loading && (
+							<span className='font-bold text-forest-50'>
+								{t('account-logout')}
+							</span>
+						)}
 					</Button>
 				</DialogFooter>
 			</DialogContent>

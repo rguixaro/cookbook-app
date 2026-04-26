@@ -1,9 +1,9 @@
 'use client'
 
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
-import { BookTextIcon, Clock, NotebookIcon } from 'lucide-react'
+import { Clock, ImageIcon, LoaderIcon } from 'lucide-react'
 import { motion, Variants } from 'motion/react'
 
 import Image, { ImageLoader } from 'next/image'
@@ -38,6 +38,64 @@ function cleanIngredient(raw: string) {
 		.trim()
 	if (!cleaned) return raw.trim()
 	return cleaned.charAt(0).toUpperCase() + cleaned.slice(1)
+}
+
+function RecipeListImage({
+	src,
+	alt,
+	cookiesReady,
+}: {
+	src: string
+	alt: string
+	cookiesReady: boolean
+}) {
+	const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
+
+	useEffect(() => {
+		setStatus('loading')
+	}, [src])
+
+	useEffect(() => {
+		if (!cookiesReady) setStatus('loading')
+	}, [cookiesReady])
+
+	const showSpinner = !cookiesReady || status === 'loading'
+	const showFallback = cookiesReady && status === 'error'
+
+	return (
+		<div
+			className='w-28 shrink-0 relative border-l-8 border-transparent bg-forest-150'
+			data-testid='recipe-image-rail'>
+			{showSpinner && (
+				<div
+					role='status'
+					aria-label='Loading recipe image'
+					className='absolute inset-0 flex items-center justify-center'>
+					<LoaderIcon size={24} className='animate-spin text-forest-200' />
+				</div>
+			)}
+			{showFallback && (
+				<div
+					role='img'
+					aria-label='Recipe image failed to load'
+					className='absolute inset-0 flex items-center justify-center'>
+					<ImageIcon size={24} className='text-forest-200' />
+				</div>
+			)}
+			{cookiesReady && !showFallback && (
+				<Image
+					src={src}
+					alt={alt}
+					fill
+					sizes='96px'
+					loader={proxyLoader}
+					className='object-cover rounded-xl'
+					onLoad={() => setStatus('loaded')}
+					onError={() => setStatus('error')}
+				/>
+			)}
+		</div>
+	)
 }
 
 export function ItemRecipe({
@@ -168,17 +226,12 @@ export function ItemRecipe({
 							</div>
 						</div>
 					</div>
-					{cookiesReady && recipe.images?.[0] && (
-						<div className='w-28 shrink-0 relative border-l-8 border-transparent bg-forest-150'>
-							<Image
-								src={recipe.images[0]}
-								alt={recipe.name}
-								fill
-								sizes='96px'
-								loader={proxyLoader}
-								className='object-cover rounded-xl'
-							/>
-						</div>
+					{recipe.images?.[0] && (
+						<RecipeListImage
+							src={recipe.images[0]}
+							alt={recipe.name}
+							cookiesReady={cookiesReady}
+						/>
 					)}
 				</div>
 			</motion.div>

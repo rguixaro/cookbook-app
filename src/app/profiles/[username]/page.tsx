@@ -36,13 +36,13 @@ export default async function ProfilePage({
 	searchParams?: Promise<{
 		search?: string
 		category?: string
-		favourites?: string
+		saved?: string
 	}>
 }) {
 	const { username } = await params
 	const searchParam = (await searchParams)?.search
 	const categoryParam = (await searchParams)?.category
-	const favouritesParam = (await searchParams)?.favourites === 'true'
+	const savedParam = (await searchParams)?.saved === 'true'
 
 	const { profile } = await getProfileByUsername(username)
 	if (!profile) notFound()
@@ -95,14 +95,14 @@ export default async function ProfilePage({
 						</span>
 					</div>
 				</div>
-				<SearchRecipes withAvatar={false} />
+				<SearchRecipes withAvatar={false} listFilter='saved' />
 				<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
 					<RecipesFeed
 						referred
 						userId={profile.id}
 						searchParam={searchParam}
 						categoryParam={categoryParam}
-						favouritesParam={favouritesParam}
+						savedParam={savedParam}
 					/>
 				</div>
 			</div>
