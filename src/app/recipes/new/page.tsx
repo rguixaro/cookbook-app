@@ -58,19 +58,18 @@ export default function NewRecipePage() {
 	const onSubmit = async (values: z.infer<typeof CreateRecipeSchema>) => {
 		try {
 			setLoading(true)
-			const { error, message, recipeId } = await createRecipe({
+			const { error, message, recipeId, recipePath } = await createRecipe({
 				...values,
 				sourceUrls: sourceUrls.filter((url) => url.trim() !== ''),
 			})
-			if (error || !recipeId) {
+			if (error || !recipeId || !recipePath) {
 				toast.error(t_toasts(message || 'error'))
 				return
 			}
 
 			toast.success(t_toasts('recipe-created'))
-			form.reset()
-			setIngredients([])
-			router.replace('/')
+			router.replace(recipePath)
+			router.refresh()
 		} catch (error) {
 			toast.error(t_toasts('error'))
 		} finally {
@@ -117,7 +116,7 @@ export default function NewRecipePage() {
 											disabled={loading}
 										/>
 									</FormControl>
-									<FormMessage />
+									<FormMessage className='text-center' />
 								</FormItem>
 							)}
 						/>
@@ -232,6 +231,7 @@ export default function NewRecipePage() {
 										<IngredientSelector
 											values={ingredients}
 											setValues={setIngredients}
+											disabled={loading}
 										/>
 										<FormMessage />
 									</FormItem>
@@ -249,6 +249,7 @@ export default function NewRecipePage() {
 										<FormControl className='my-2'>
 											<Textarea
 												{...field}
+												autoResize
 												onKeyDown={(e) =>
 													e.stopPropagation()
 												}
@@ -269,6 +270,7 @@ export default function NewRecipePage() {
 								<SourceLinksInput
 									values={sourceUrls}
 									setValues={setSourceUrls}
+									disabled={loading}
 								/>
 							</div>
 							<div className='w-full flex justify-center mt-5'>
@@ -283,9 +285,11 @@ export default function NewRecipePage() {
 												className='animate-spin'
 											/>
 										)}
-										<span className='text-base font-bold text-forest-50'>
-											{loading ? t('creating') : t('create')}
-										</span>
+										{!loading && (
+											<span className='text-base font-bold text-forest-50'>
+												{t('create')}
+											</span>
+										)}
 									</div>
 								</Button>
 							</div>
