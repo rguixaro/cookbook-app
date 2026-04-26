@@ -38,8 +38,16 @@
 	"LoginPage": {
 		"login-to": "Accedeix al teu ",
 		"login-name": "Llibre de Receptes",
-		"login-text": "Desa i organitza totes les teves receptes favorites en un sol lloc",
-		"login-error": "S'ha produït un error en iniciar sessió.",
+		"login-text": "Desa i organitza totes les teves receptes preferides en un sol lloc",
+		"login-error": "S'ha produït un error en iniciar sessió",
+		"login-feature-save-title": "Desa receptes",
+		"login-feature-save-description": "Guarda els plats que vols tornar a cuinar",
+		"login-feature-organize-title": "Ordena la cuina",
+		"login-feature-organize-description": "Agrupa receptes per categoria, àpat i ingredients",
+		"login-feature-find-title": "Troba-les ràpid",
+		"login-feature-find-description": "Cerca al teu llibre quan sigui l'hora de cuinar",
+		"login-feature-share-title": "Comparteix receptes",
+		"login-feature-share-description": "Envia enllaços de les teves receptes quan vulguis",
 		"google-login": "Continuar amb Google"
 	},
 	"RecipesPage": {

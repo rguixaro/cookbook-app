@@ -39,7 +39,15 @@
 		"login-to": "Sign in to your ",
 		"login-name": "Cookbook",
 		"login-text": "Save and organize all your favourite recipes in one place",
-		"login-error": "An error occurred while signing in.",
+		"login-error": "An error occurred while signing in",
+		"login-feature-save-title": "Save recipes",
+		"login-feature-save-description": "Keep the dishes you want to make again",
+		"login-feature-organize-title": "Organize your kitchen",
+		"login-feature-organize-description": "Group recipes by category, meal, and ingredients",
+		"login-feature-find-title": "Find them quickly",
+		"login-feature-find-description": "Search your cookbook when it is time to cook",
+		"login-feature-share-title": "Share recipes",
+		"login-feature-share-description": "Send links of your recipes whenever you want",
 		"google-login": "Continue with Google"
 	},
 	"RecipesPage": {

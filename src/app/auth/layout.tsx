@@ -1,22 +1,18 @@
-import type { ReactNode } from 'react';
+import type { ReactNode } from 'react'
 
-import { cn } from '@/utils';
+import { cn } from '@/utils'
 
 interface AuthLayoutProps {
-	children: ReactNode;
+	children: ReactNode
 }
 
 export default function AuthLayout(props: AuthLayoutProps) {
 	return (
-		<>
-			<main
-				className={cn(
-					'mt-20 flex w-full flex-col items-center justify-center space-y-8'
-				)}>
-				<div className='flex flex-col items-center justify-center'>
-					{props.children}
-				</div>
-			</main>
-		</>
-	);
+		<main
+			className={cn(
+				'flex min-h-screen w-full flex-col items-center justify-center overflow-x-hidden px-4 py-8',
+			)}>
+			{props.children}
+		</main>
+	)
 }

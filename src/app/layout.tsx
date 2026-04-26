@@ -42,7 +42,7 @@ export default async function RootLayout({
 						<ProfileProvider initialName={userName || ''}>
 							<CookiesProvider>
 								<Header />
-								{children}
+								<div className='mt-4 h-full w-full'>{children}</div>
 								<ToasterProvider />
 							</CookiesProvider>
 						</ProfileProvider>

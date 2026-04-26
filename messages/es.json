@@ -39,7 +39,15 @@
 		"login-to": "Accede a tu ",
 		"login-name": "Libro de Recetas",
 		"login-text": "Guarda y organiza todas tus recetas favoritas en un solo lugar",
-		"login-error": "Se ha producido un error al iniciar sesión.",
+		"login-error": "Se ha producido un error al iniciar sesión",
+		"login-feature-save-title": "Guarda recetas",
+		"login-feature-save-description": "Conserva los platos que quieres volver a cocinar",
+		"login-feature-organize-title": "Ordena tu cocina",
+		"login-feature-organize-description": "Agrupa recetas por categoría, comida e ingredientes",
+		"login-feature-find-title": "Encuéntralas rápido",
+		"login-feature-find-description": "Busca en tu libro cuando sea hora de cocinar",
+		"login-feature-share-title": "Comparte recetas",
+		"login-feature-share-description": "Envía enlaces de tus recetas cuando quieras",
 		"google-login": "Continuar con Google"
 	},
 	"RecipesPage": {
