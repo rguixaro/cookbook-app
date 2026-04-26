@@ -30,6 +30,7 @@
 		"time-invalid": "Time must be a number.",
 		"instructions-too-short": "Recipe instructions are too short.",
 		"ingredients-required": "At least one ingredient is required.",
+		"ingredient-invalid": "Ingredients must include at least two letters",
 		"username-required": "Username is required.",
 		"username-too-long": "Username cannot be longer than 40 characters.",
 		"email-invalid": "Invalid email address."

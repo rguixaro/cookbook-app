@@ -12,6 +12,9 @@ import { toImageUrls } from '@/server/queries'
 
 const PAGE_SIZE = 10
 
+const getRecipePath = (username?: string | null, slug?: string | null) =>
+	username && slug ? `/recipes/${username}/${slug}` : null
+
 /**
  * Fetch paginated recipes with server-side filtering.
  * Auth required.
@@ -22,13 +25,22 @@ export async function fetchRecipes(params: {
 	search?: string
 	category?: string
 	favourites?: boolean
+	saved?: boolean
 	userId?: string
 }): Promise<{ recipes: RecipeSchema[]; nextCursor: string | null }> {
 	const empty = { recipes: [], nextCursor: null }
 	const currentUser = await auth()
 	if (!currentUser) return empty
 
-	const { cursor, take = PAGE_SIZE, search, category, favourites, userId } = params
+	const {
+		cursor,
+		take = PAGE_SIZE,
+		search,
+		category,
+		favourites,
+		saved,
+		userId,
+	} = params
 	const safeTake = Math.min(take, 50)
 	const currentUserId = currentUser.user.id
 
@@ -61,14 +73,26 @@ export async function fetchRecipes(params: {
 				: [{ authorId: currentUserId }]
 		}
 
-		let favouriteIds: string[] | undefined
-		if (favourites) {
+		let filteredRecipeIds: string[] | undefined
+		if (favourites || saved) {
 			const user = await db.user.findUnique({
 				where: { id: currentUserId },
-				select: { favouriteRecipes: true },
+				select: {
+					...(favourites && { favouriteRecipes: true }),
+					...(saved && { savedRecipes: true }),
+				},
 			})
-			favouriteIds = user?.favouriteRecipes ?? []
-			if (favouriteIds.length === 0) return empty
+
+			const listFilters = [
+				...(favourites ? [user?.favouriteRecipes ?? []] : []),
+				...(saved ? [user?.savedRecipes ?? []] : []),
+			]
+
+			filteredRecipeIds = listFilters.reduce<string[] | undefined>(
+				(acc, ids) => (acc ? acc.filter((id) => ids.includes(id)) : ids),
+				undefined,
+			)
+			if (!filteredRecipeIds?.length) return empty
 		}
 
 		const where: Prisma.RecipeWhereInput = {
@@ -86,7 +110,7 @@ export async function fetchRecipes(params: {
 				(Categories as readonly string[]).includes(category) && {
 					category: category as (typeof Categories)[number],
 				}),
-			...(favouriteIds && { id: { in: favouriteIds } }),
+			...(filteredRecipeIds && { id: { in: filteredRecipeIds } }),
 		}
 
 		const results = await db.recipe.findMany({
@@ -121,6 +145,7 @@ interface createRecipeResult {
 	error: boolean
 	message?: string
 	recipeId?: string
+	recipePath?: string
 }
 
 /**
@@ -156,12 +181,19 @@ export const createRecipe = async (values: unknown): Promise<createRecipeResult>
 				authorId: currentUser.user.id,
 				slug,
 			},
+			include: { author: { select: { username: true } } },
 		})
 
+		const recipePath = getRecipePath(recipe.author?.username, recipe.slug)
 		revalidatePath('/')
 		revalidatePath('/recipes')
+		if (recipePath) revalidatePath(recipePath)
 
-		return { error: false, recipeId: recipe.id }
+		return {
+			error: false,
+			recipeId: recipe.id,
+			...(recipePath && { recipePath }),
+		}
 	} catch (e) {
 		if (e instanceof Prisma.PrismaClientKnownRequestError) {
 			if (e.code === 'P2002') {
@@ -201,6 +233,7 @@ export const updateRecipe = async (
 	try {
 		const recipe = await db.recipe.findFirst({
 			where: { id, authorId: currentUser.user.id },
+			include: { author: { select: { username: true } } },
 		})
 
 		if (!recipe) return { error: true, message: 'error' }
@@ -217,6 +250,20 @@ export const updateRecipe = async (
 				slug,
 			},
 		})
+
+		const username = recipe.author?.username
+		const oldRecipePath = getRecipePath(username, recipe.slug)
+		const recipePath = getRecipePath(username, slug)
+		revalidatePath('/')
+		revalidatePath('/recipes')
+		if (oldRecipePath) revalidatePath(oldRecipePath)
+		if (recipePath) revalidatePath(recipePath)
+
+		return {
+			error: false,
+			recipeId: recipe.id,
+			...(recipePath && { recipePath }),
+		}
 	} catch (e) {
 		if (e instanceof Prisma.PrismaClientKnownRequestError) {
 			if (e.code === 'P2002') {
@@ -226,11 +273,6 @@ export const updateRecipe = async (
 		Sentry.captureException(e, { tags: { action: 'updateRecipe' } })
 		return { error: true, message: 'error' }
 	}
-
-	revalidatePath('/')
-	revalidatePath('/recipes')
-
-	return { error: false }
 }
 
 /**
@@ -375,9 +417,17 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 	try {
 		const recipe = await db.recipe.findFirst({
 			where: { id, authorId: currentUser.user.id },
-			select: { images: true },
+			select: {
+				images: true,
+				slug: true,
+				author: { select: { username: true } },
+			},
 		})
 		if (!recipe) return { error: true }
+
+		const username = recipe.author?.username
+		const recipePath = getRecipePath(username, recipe.slug)
+		const profilePath = username ? `/profiles/${username}` : null
 
 		if (recipe.images.length > 0) {
 			const { deleteRecipeImages } = await import('@/lib/s3')
@@ -424,7 +474,10 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 			}),
 		)
 
+		revalidatePath('/')
 		revalidatePath('/recipes')
+		if (recipePath) revalidatePath(recipePath)
+		if (profilePath) revalidatePath(profilePath)
 
 		return { error: false }
 	} catch (error) {
@@ -450,7 +503,11 @@ export const uploadRecipeImages = async (
 	try {
 		const recipe = await db.recipe.findFirst({
 			where: { id: recipeId, authorId: currentUser.user.id },
-			select: { images: true },
+			select: {
+				images: true,
+				slug: true,
+				author: { select: { username: true } },
+			},
 		})
 		if (!recipe) return { error: true }
 
@@ -478,7 +535,11 @@ export const uploadRecipeImages = async (
 
 		const freshRecipe = await db.recipe.findFirst({
 			where: { id: recipeId, authorId: currentUser.user.id },
-			select: { images: true },
+			select: {
+				images: true,
+				slug: true,
+				author: { select: { username: true } },
+			},
 		})
 		if (!freshRecipe) {
 			Sentry.captureMessage(
@@ -519,6 +580,11 @@ export const uploadRecipeImages = async (
 
 		revalidatePath('/')
 		revalidatePath('/recipes')
+		const recipePath = getRecipePath(
+			freshRecipe.author?.username,
+			freshRecipe.slug,
+		)
+		if (recipePath) revalidatePath(recipePath)
 
 		return { error: false, images: updatedImages }
 	} catch (error) {
@@ -543,7 +609,11 @@ export const updateRecipeImages = async (
 	try {
 		const recipe = await db.recipe.findFirst({
 			where: { id: recipeId, authorId: currentUser.user.id },
-			select: { images: true },
+			select: {
+				images: true,
+				slug: true,
+				author: { select: { username: true } },
+			},
 		})
 		if (!recipe) return { error: true }
 
@@ -583,6 +653,8 @@ export const updateRecipeImages = async (
 
 		revalidatePath('/')
 		revalidatePath('/recipes')
+		const recipePath = getRecipePath(recipe.author?.username, recipe.slug)
+		if (recipePath) revalidatePath(recipePath)
 
 		return { error: false }
 	} catch (error) {

@@ -30,6 +30,7 @@
 		"time-invalid": "El temps ha de ser un número.",
 		"instructions-too-short": "Les instruccions de la recepta són massa curtes.",
 		"ingredients-required": "Cal afegir almenys un ingredient.",
+		"ingredient-invalid": "Els ingredients han d'incloure almenys dues lletres",
 		"username-required": "El nom d'usuari és obligatori.",
 		"username-too-long": "El nom d'usuari no pot tenir més de 40 caràcters.",
 		"email-invalid": "L'adreça de correu electrònic no és vàlida."
