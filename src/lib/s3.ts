@@ -1,4 +1,9 @@
-import { DeleteObjectsCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
+import {
+	DeleteObjectsCommand,
+	GetObjectCommand,
+	PutObjectCommand,
+	S3Client,
+} from '@aws-sdk/client-s3'
 import sharp from 'sharp'
 
 import { env } from '@/env.mjs'
@@ -6,6 +11,8 @@ import { env } from '@/env.mjs'
 const { AMAZON_REGION, AMAZON_S3_BUCKET_NAME } = env
 
 const s3 = new S3Client({ region: AMAZON_REGION })
+
+const toCookbookS3Key = (fileKey: string) => `cookbook/${fileKey}`
 
 /**
  * Upload a recipe image to S3.
@@ -38,7 +45,7 @@ export async function uploadRecipeImage(
 	await s3.send(
 		new PutObjectCommand({
 			Bucket: AMAZON_S3_BUCKET_NAME,
-			Key: `cookbook/${fileKey}`,
+			Key: toCookbookS3Key(fileKey),
 			Body: compressedBuffer,
 			ContentType: 'image/jpeg',
 		}),
@@ -56,7 +63,21 @@ export async function deleteRecipeImages(fileKeys: string[]): Promise<void> {
 	await s3.send(
 		new DeleteObjectsCommand({
 			Bucket: AMAZON_S3_BUCKET_NAME,
-			Delete: { Objects: fileKeys.map((key) => ({ Key: `cookbook/${key}` })) },
+			Delete: {
+				Objects: fileKeys.map((key) => ({ Key: toCookbookS3Key(key) })),
+			},
+		}),
+	)
+}
+
+/**
+ * Read a recipe image from S3.
+ */
+export async function getRecipeImageFromS3(fileKey: string) {
+	return s3.send(
+		new GetObjectCommand({
+			Bucket: AMAZON_S3_BUCKET_NAME,
+			Key: toCookbookS3Key(fileKey),
 		}),
 	)
 }
