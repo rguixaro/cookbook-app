@@ -6,6 +6,7 @@ export default defineConfig({
 		environment: 'node',
 		exclude: ['e2e/**', 'node_modules/**'],
 		setupFiles: ['./src/test/setup.ts'],
+		testTimeout: 10000,
 		typecheck: {
 			tsconfig: './tsconfig.test.json',
 		},

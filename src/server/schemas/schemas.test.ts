@@ -72,6 +72,27 @@ describe('CreateRecipeSchema', () => {
 		expect(result.success).toBe(false)
 	})
 
+	it('rejects ingredients without at least two letters', () => {
+		const invalidIngredients = ['a', '1', ',.-º12?¿¿']
+
+		for (const ingredient of invalidIngredients) {
+			const result = CreateRecipeSchema.safeParse({
+				...validRecipe,
+				ingredients: [ingredient],
+			})
+			expect(result.success).toBe(false)
+		}
+	})
+
+	it('accepts ingredients with quantities and text', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			ingredients: ['2 eggs', '1 cullerada d’oli'],
+		})
+
+		expect(result.success).toBe(true)
+	})
+
 	it('rejects instructions shorter than 10 chars', () => {
 		const result = CreateRecipeSchema.safeParse({
 			...validRecipe,

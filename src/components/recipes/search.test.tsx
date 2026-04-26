@@ -73,4 +73,17 @@ describe('SearchRecipes', () => {
 			)
 		})
 	})
+
+	it('toggles saved filter when configured', async () => {
+		const user = userEvent.setup()
+		renderWithProviders(<SearchRecipes withAvatar={false} listFilter='saved' />)
+
+		await user.click(screen.getByText('Saved'))
+
+		await waitFor(() => {
+			expect(mockReplace).toHaveBeenCalledWith(
+				expect.stringContaining('saved=true'),
+			)
+		})
+	})
 })

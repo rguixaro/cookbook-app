@@ -49,7 +49,7 @@ manner.
     ```bash
     git clone https://github.com/rguixaro/cookbook-app.git
     cd cookbook-app
-    npm install
+    pnpm install
     ```
 
 2. Copy the environment template and fill in your values:
@@ -63,14 +63,14 @@ manner.
 3. Generate the Prisma client and sync the database schema:
 
     ```bash
-    npm run db:generate
-    npm run db:push
+    pnpm db:generate
+    pnpm db:push
     ```
 
 4. Start the development server:
 
     ```bash
-    npm run dev
+    pnpm dev
     ```
 
 </details>
@@ -81,11 +81,11 @@ Unit and component tests run automatically on every push and PR to `main`/`devel
 via [GitHub Actions](.github/workflows/test.yml).
 
 ```bash
-npm test              # unit & component tests (Vitest)
-npm run test:coverage # tests + coverage report (HTML in coverage/)
-npm run test:watch    # watch mode
-npm run test:e2e      # e2e tests (Playwright — auto-starts dev server)
-npm run test:e2e:ui   # e2e with interactive UI
+pnpm test              # unit & component tests (Vitest)
+pnpm test:coverage     # tests + coverage report (HTML in coverage/)
+pnpm test:watch        # watch mode
+pnpm test:e2e          # e2e tests (Playwright — auto-starts dev server)
+pnpm test:e2e:ui       # e2e with interactive UI
 ```
 
 ## License

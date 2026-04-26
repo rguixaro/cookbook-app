@@ -1,6 +1,6 @@
 {
 	"name": "cookbook-app",
-	"version": "1.4.1",
+	"version": "1.5.0",
 	"private": true,
 	"scripts": {
 		"dev": "next dev --turbopack",
@@ -13,11 +13,11 @@
 		"test": "vitest run",
 		"test:coverage": "vitest run --coverage",
 		"test:watch": "vitest",
-		"test:e2e": "npx playwright test",
-		"test:e2e:ui": "npx playwright test --ui",
-		"test:e2e:chrome": "npx playwright test --project=chromium",
-		"test:e2e:firefox": "npx playwright test --project=firefox",
-		"test:e2e:safari": "npx playwright test --project=webkit"
+		"test:e2e": "playwright test",
+		"test:e2e:ui": "playwright test --ui",
+		"test:e2e:chrome": "playwright test --project=chromium",
+		"test:e2e:firefox": "playwright test --project=firefox",
+		"test:e2e:safari": "playwright test --project=webkit"
 	},
 	"dependencies": {
 		"@auth/core": "0.41.1",
@@ -78,5 +78,21 @@
 		"typescript": "5.9.3",
 		"vitest": "^4.1.2"
 	},
-	"packageManager": "npm@10.5.2"
+	"packageManager": "pnpm@10.33.2+sha512.a90faf6feeab71ad6c6e57f94e0fe1a12f5dcc22cd754db40ae9593eb6a3e0b6b12e3540218bb37ae083404b1f2ce6db2a4121e979829b4aff94b99f49da1cf8",
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"@parcel/watcher",
+			"@prisma/client",
+			"@prisma/engines",
+			"@sentry/cli",
+			"@swc/core",
+			"prisma",
+			"sharp",
+			"unrs-resolver"
+		],
+		"overrides": {
+			"effect": "^3.20.0",
+			"fast-xml-parser": "^5.7.0"
+		}
+	}
 }

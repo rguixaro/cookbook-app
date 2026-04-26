@@ -140,11 +140,17 @@ export default async function RecipePage({
 					</div>
 				</div>
 				<div className='bg-forest-100 rounded-[20px]'>
-					{recipe.images?.length ? (
-						<RecipeGallery images={recipe.images} />
-					) : (
-						<RecipeGalleryPlaceholder />
-					)}
+						{recipe.images?.length ? (
+							<RecipeGallery images={recipe.images} />
+						) : (
+							<RecipeGalleryPlaceholder
+								text={
+									isOwner
+										? t('images-add-in-edit')
+										: t('images-empty')
+								}
+							/>
+						)}
 					<div
 						className={cn(
 							'w-full mb-2 p-5 flex flex-col items-center justify-center',

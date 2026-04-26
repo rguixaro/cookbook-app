@@ -99,7 +99,7 @@ describe('DeleteAccount', () => {
 		await waitFor(() => {
 			expect(mockDeleteProfile).toHaveBeenCalledOnce()
 		})
-		expect(toast.success).toHaveBeenCalledWith('Your account has been deleted.')
+		expect(toast.success).toHaveBeenCalledWith('Your account has been deleted')
 	})
 
 	it('shows error toast when deleteProfile fails', async () => {
@@ -118,7 +118,7 @@ describe('DeleteAccount', () => {
 
 		await waitFor(() => {
 			expect(toast.error).toHaveBeenCalledWith(
-				'An error occurred while deleting your account.',
+				'An error occurred while deleting your account',
 			)
 		})
 	})

@@ -13,16 +13,18 @@ jobs:
         steps:
             - uses: actions/checkout@v4
 
+            - uses: pnpm/action-setup@v4
+
             - uses: actions/setup-node@v4
               with:
                   node-version: 24
-                  cache: npm
+                  cache: pnpm
 
-            - run: npm ci
+            - run: pnpm install --frozen-lockfile
 
-            - run: npx prisma generate
+            - run: pnpm db:generate
 
-            - run: npm run test:coverage
+            - run: pnpm test:coverage
 
             - uses: actions/upload-artifact@v4
               if: always()

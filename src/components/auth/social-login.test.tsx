@@ -91,7 +91,7 @@ describe('SocialLogin', () => {
 
 		await waitFor(() => {
 			expect(toast.error).toHaveBeenCalledWith(
-				'An error occurred while signing in.',
+				'An error occurred while signing in',
 			)
 		})
 	})

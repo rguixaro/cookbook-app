@@ -9,6 +9,7 @@ import { toast } from 'sonner'
 
 import { DEFAULT_AUTH_REDIRECT_URL } from '@/routes'
 import { GoogleLogo } from '@/components/icons'
+import { Button } from '@/ui'
 
 const socialProviders = [
 	{
@@ -49,16 +50,17 @@ export const SocialLogin = () => {
 	}
 
 	return (
-		<div className='flex flex-col items-center justify-center space-y-10 text-forest-200'>
+		<div className='flex flex-col items-center justify-center space-y-10 text-forest-100 w-full'>
 			{socialProviders.map((sp) => (
-				<button
-					key={sp.provider}
-					className='flex p-4 items-center justify-center space-x-5 bg-forest-100 hover:bg-forest-150 rounded-3xl transition-colors duration-300'
-					disabled={loading}
-					onClick={() => handleSocialLogin(sp.provider)}>
-					{sp.icon}
-					<span className='font-semibold'>{t(sp.name)}</span>
-				</button>
+				<div key={sp.provider} className='w-full rounded-xl'>
+					<Button
+						className='h-auto w-full space-x-5 rounded-xl p-4 text-base text-forest-100 shadow-none!'
+						disabled={loading}
+						onClick={() => handleSocialLogin(sp.provider)}>
+						{sp.icon}
+						<span className='font-semibold'>{t(sp.name)}</span>
+					</Button>
+				</div>
 			))}
 			{provider && <Loader className='animate-spin mt-10' size={24} />}
 		</div>

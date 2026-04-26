@@ -22,7 +22,9 @@ export const ProfileCard = (props: ProfileCardProps) => {
 				</div>
 				<p className='text-sm'>{props.description}</p>
 			</div>
-			<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
+			<div className='w-full justify-center flex my-8'>
+				<div className='h-2 w-3/4 rounded bg-forest-150' />
+			</div>
 			{props.children}
 		</div>
 	)

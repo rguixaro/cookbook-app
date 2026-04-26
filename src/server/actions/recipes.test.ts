@@ -42,6 +42,7 @@ vi.mock('@/server/queries', () => ({
 
 import { auth } from '@/auth'
 import { db } from '@/server/db'
+import { revalidatePath } from 'next/cache'
 import {
 	fetchRecipes,
 	createRecipe,
@@ -55,6 +56,7 @@ import {
 
 const mockAuth = vi.mocked(auth)
 const mockDb = vi.mocked(db, true)
+const mockRevalidatePath = vi.mocked(revalidatePath)
 
 const mockSession = { user: { id: 'user-1' } }
 
@@ -172,6 +174,37 @@ describe('fetchRecipes', () => {
 		expect(result).toEqual({ recipes: [], nextCursor: null })
 	})
 
+	it('returns empty for saved filter with no saved IDs', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({
+			savedRecipes: [],
+		} as any)
+
+		const result = await fetchRecipes({ saved: true, userId: 'user-1' })
+		expect(result).toEqual({ recipes: [], nextCursor: null })
+	})
+
+	it('filters a public user profile by current user saved recipes', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique
+			.mockResolvedValueOnce({ isPrivate: false } as any)
+			.mockResolvedValueOnce({ savedRecipes: ['recipe-saved'] } as any)
+		mockDb.recipe.findMany.mockResolvedValue([
+			makeRecipe('recipe-saved', 'user-2'),
+		] as any)
+
+		await fetchRecipes({ saved: true, userId: 'user-2' })
+
+		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: expect.objectContaining({
+					authorId: 'user-2',
+					id: { in: ['recipe-saved'] },
+				}),
+			}),
+		)
+	})
+
 	it('filters by category', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
@@ -236,16 +269,25 @@ describe('createRecipe', () => {
 
 	it('creates recipe with valid input', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.create.mockResolvedValue({ id: 'recipe-1' } as any)
+		mockDb.recipe.create.mockResolvedValue({
+			id: 'recipe-1',
+			slug: 'paella-valenciana',
+			author: { username: 'testuser' },
+		} as any)
 
 		const result = await createRecipe(validRecipeInput)
-		expect(result).toEqual({ error: false, recipeId: 'recipe-1' })
+		expect(result).toEqual({
+			error: false,
+			recipeId: 'recipe-1',
+			recipePath: '/recipes/testuser/paella-valenciana',
+		})
 		expect(mockDb.recipe.create).toHaveBeenCalledWith({
 			data: expect.objectContaining({
 				name: 'Paella Valenciana',
 				slug: 'paella-valenciana',
 				authorId: 'user-1',
 			}),
+			include: { author: { select: { username: true } } },
 		})
 	})
 
@@ -300,11 +342,19 @@ describe('updateRecipe', () => {
 
 	it('updates recipe successfully', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findFirst.mockResolvedValue({ id: 'recipe-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			id: 'recipe-1',
+			slug: 'old-paella',
+			author: { username: 'testuser' },
+		} as any)
 		mockDb.recipe.update.mockResolvedValue({} as any)
 
 		const result = await updateRecipe('recipe-1', validRecipeInput)
-		expect(result).toEqual({ error: false })
+		expect(result).toEqual({
+			error: false,
+			recipeId: 'recipe-1',
+			recipePath: '/recipes/testuser/paella-valenciana',
+		})
 		expect(mockDb.recipe.update).toHaveBeenCalled()
 	})
 })
@@ -423,13 +473,23 @@ describe('deleteRecipe', () => {
 
 	it('deletes recipe with no images', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findFirst.mockResolvedValue({ images: [] } as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: [],
+			slug: 'paella-valenciana',
+			author: { username: 'testuser' },
+		} as any)
 		mockDb.recipe.delete.mockResolvedValue({} as any)
 		mockDb.user.findMany.mockResolvedValue([])
 
 		const result = await deleteRecipe('recipe-1')
 		expect(result).toEqual({ error: false })
 		expect(mockDb.recipe.delete).toHaveBeenCalled()
+		expect(mockRevalidatePath).toHaveBeenCalledWith('/')
+		expect(mockRevalidatePath).toHaveBeenCalledWith('/recipes')
+		expect(mockRevalidatePath).toHaveBeenCalledWith(
+			'/recipes/testuser/paella-valenciana',
+		)
+		expect(mockRevalidatePath).toHaveBeenCalledWith('/profiles/testuser')
 	})
 
 	it('deletes recipe and cleans up S3 images', async () => {
