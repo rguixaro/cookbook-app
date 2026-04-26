@@ -6,7 +6,7 @@ export const metadata: Metadata = {
 	title: 'My Profile — CookBook',
 }
 import { GoBack } from '@/components/layout'
-import { UpdateAccount } from '@/components/profile'
+import { ExportAccount, UpdateAccount } from '@/components/profile'
 import { db } from '@/server/db'
 
 export default async function ProfilePage() {
@@ -31,6 +31,7 @@ export default async function ProfilePage() {
 					email={session.user.email!}
 					isPrivate={session.user.isPrivate!}
 				/>
+				<ExportAccount />
 			</div>
 		</div>
 	)
