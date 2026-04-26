@@ -67,7 +67,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps & ButtonIconProps
 						<Icon size={18} />
 					</div>
 				)}
-				<Slottable>{props.children}</Slottable>
+				{asChild ? <Slottable>{props.children}</Slottable> : props.children}
 				{Icon && iconPlacement === 'right' && (
 					<div className='w-0 translate-x-full pl-0 opacity-0 transition-all duration-200 group-hover:w-4 group-hover:translate-x-0 group-hover:pl-1 group-hover:opacity-100'>
 						<Icon size={18} />

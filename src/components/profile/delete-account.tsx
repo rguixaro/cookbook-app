@@ -87,13 +87,16 @@ export const DeleteAccount = (props: DeleteAccountProps) => {
 							<Button
 								disabled={loading || confirmEmail !== props.email}
 								type='submit'
-								variant='destructive'>
+								variant='destructive'
+								className='flex items-center justify-center gap-3'>
 								{loading && (
 									<LoaderIcon size={16} className='animate-spin' />
 								)}
-								<span className='font-bold text-forest-50'>
-									{loading ? t('deleting') : t('delete')}
-								</span>
+								{!loading && (
+									<span className='font-bold text-forest-50'>
+										{t('delete')}
+									</span>
+								)}
 							</Button>
 						</DialogFooter>
 					</div>
