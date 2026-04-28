@@ -10,6 +10,7 @@ import {
 	AUTH_ROUTES,
 	PROTECTED_ROUTES,
 } from './routes'
+import { isCrawlerUserAgent } from './utils/crawlers'
 
 const { auth } = NextAuth(AuthConfig)
 
@@ -27,6 +28,8 @@ export default auth(async (req) => {
 	const isAuthRoute = AUTH_ROUTES.includes(NextURL.pathname)
 	const isRecipeRoute = NextURL.pathname.startsWith(RECIPES_ROUTE_PREFIX)
 	const isProfileRoute = NextURL.pathname.startsWith(PROFILES_ROUTE_PREFIX)
+	const isCrawler = isCrawlerUserAgent(req.headers.get('user-agent'))
+	const isRecipeCrawlerPreview = isCrawler && isRecipeRoute
 
 	/* Api Route */
 	if (isApiAuthRoute) return
@@ -39,7 +42,11 @@ export default auth(async (req) => {
 	}
 
 	/* Protected route */
-	if (!isLoggedIn && (isProtectedRoute || isRecipeRoute || isProfileRoute)) {
+	if (
+		!isLoggedIn &&
+		!isRecipeCrawlerPreview &&
+		(isProtectedRoute || isRecipeRoute || isProfileRoute)
+	) {
 		let callbackURL = NextURL.pathname
 		if (NextURL.search) callbackURL += NextURL.search
 		const encodedCallbackURL = encodeURIComponent(callbackURL)

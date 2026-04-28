@@ -31,6 +31,7 @@ import {
 	getFavouriteRecipeIds,
 	getRecipesByUserId,
 	getRecipeByAuthAndSlug,
+	getPublicRecipeByUsernameAndSlug,
 	getProfileByUsername,
 	getProfilesByName,
 } from './index'
@@ -141,7 +142,8 @@ describe('getRecipesByUserId', () => {
 		id,
 		name: `Recipe ${id}`,
 		slug: `recipe-${id}`,
-		category: 'Fish',
+		category: 'SecondCourse',
+		tags: ['Fish'],
 		time: 30,
 		ingredients: ['a'],
 		instructions: 'Cook it.',
@@ -215,7 +217,8 @@ describe('getRecipeByAuthAndSlug', () => {
 		id: 'r1',
 		name: 'Test',
 		slug: 'test',
-		category: 'Fish',
+		category: 'SecondCourse',
+		tags: ['Fish'],
 		time: 30,
 		ingredients: ['a'],
 		instructions: 'Cook it.',
@@ -272,6 +275,56 @@ describe('getRecipeByAuthAndSlug', () => {
 		mockDb.recipe.findFirst.mockResolvedValue(null)
 
 		const result = await getRecipeByAuthAndSlug('user-1', 'nonexistent')
+		expect(result).toBeNull()
+	})
+})
+
+describe('getPublicRecipeByUsernameAndSlug', () => {
+	const mockRecipe = {
+		id: 'r1',
+		name: 'Test',
+		slug: 'test',
+		category: 'SecondCourse',
+		tags: ['Fish'],
+		time: 30,
+		ingredients: ['a'],
+		instructions: 'Cook it.',
+		authorId: 'user-1',
+		images: [],
+		sourceUrls: [],
+		createdAt: new Date(),
+		author: { username: 'testuser' },
+	}
+
+	it('returns recipe for a public author without auth', async () => {
+		mockDb.user.findFirst.mockResolvedValue({ id: 'user-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue(mockRecipe as any)
+
+		const result = await getPublicRecipeByUsernameAndSlug('testuser', 'test')
+
+		expect(result).not.toBeNull()
+		expect(result!.slug).toBe('test')
+		expect(mockDb.user.findFirst).toHaveBeenCalledWith({
+			where: { username: 'testuser', isPrivate: false },
+			select: { id: true },
+		})
+	})
+
+	it('returns null when the author is not public', async () => {
+		mockDb.user.findFirst.mockResolvedValue(null)
+
+		const result = await getPublicRecipeByUsernameAndSlug('private', 'test')
+
+		expect(result).toBeNull()
+		expect(mockDb.recipe.findFirst).not.toHaveBeenCalled()
+	})
+
+	it('returns null when the recipe is not found', async () => {
+		mockDb.user.findFirst.mockResolvedValue({ id: 'user-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue(null)
+
+		const result = await getPublicRecipeByUsernameAndSlug('testuser', 'missing')
+
 		expect(result).toBeNull()
 	})
 })
