@@ -26,7 +26,9 @@
 	},
 	"errors": {
 		"recipe-name-too-short": "Recipe name is too short",
-		"category-required": "The category is required",
+		"category-required": "The course is required",
+		"tags-too-many": "Select up to 3 tags",
+		"tags-duplicate": "Tags cannot be duplicated",
 		"time-invalid": "Time must be a number",
 		"instructions-too-short": "Recipe instructions are too short",
 		"ingredients-required": "At least one ingredient is required",
@@ -65,8 +67,13 @@
 		"recipe-name": "Recipe name",
 		"favourites": "Favourites",
 		"saved": "Saved",
-		"categories": "Category",
-		"categories-select": "Select a category",
+		"categories": "Course",
+		"categories-select": "Select a course",
+		"filter": "Filter",
+		"filters": "Filters",
+		"filters-select": "Choose a course and up to 3 tags",
+		"tags": "Tags",
+		"tags-select": "Select up to 3 tags",
 		"time": "Cooking time",
 		"minutes": "minutes",
 		"create": "Create",
@@ -95,15 +102,27 @@
 		"images-add-in-edit": "Edit this recipe to add images",
 		"images-empty": "This recipe does not have images yet"
 	},
-	"RecipeCategories": {
+	"RecipeCourses": {
 		"starter": "Starter",
+		"firstcourse": "First course",
+		"secondcourse": "Second course",
+		"dessert": "Dessert"
+	},
+	"RecipeTags": {
 		"pasta": "Pasta",
 		"meat": "Meat",
 		"fish": "Fish",
 		"vegetable": "Vegetable",
 		"salad": "Salad",
 		"soup": "Soup",
-		"dessert": "Dessert"
+		"rice": "Rice",
+		"legume": "Legume",
+		"seafood": "Seafood",
+		"fruit": "Fruit",
+		"stew": "Stew",
+		"sauce": "Sauce",
+		"marinade": "Marinade",
+		"wok": "Wok"
 	},
 	"ProfilePage": {
 		"title": "Profile",

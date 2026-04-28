@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { headers } from 'next/headers'
 import { getTranslations } from 'next-intl/server'
 import { notFound, redirect } from 'next/navigation'
 import { Clock, ExternalLink } from 'lucide-react'
@@ -8,31 +9,12 @@ import Link from 'next/link'
 import { auth } from '@/auth'
 import {
 	getRecipeByAuthAndSlug,
+	getPublicRecipeByUsernameAndSlug,
 	getProfileByUsername,
 	getUserByUsername,
 	getSavedRecipeIds,
 	getFavouriteRecipeIds,
 } from '@/server/queries'
-
-export async function generateMetadata({
-	params,
-}: {
-	params: Promise<{ username: string; slug: string }>
-}): Promise<Metadata> {
-	const { username, slug } = await params
-	const user = await getUserByUsername(username)
-	const recipe = user ? await getRecipeByAuthAndSlug(user.id, slug) : null
-	if (!recipe) return { title: 'Recipe Not Found — CookBook' }
-	return {
-		title: `${recipe.name} — CookBook`,
-		description: `${recipe.name} by @${username}`,
-		openGraph: {
-			title: `${recipe.name} — CookBook`,
-			description: `${recipe.name} by @${username}`,
-			images: recipe.images?.[0] ? [recipe.images[0]] : [],
-		},
-	}
-}
 import { GoBack } from '@/components/layout'
 import { SyncProfileName } from '@/components/profile'
 import {
@@ -42,12 +24,74 @@ import {
 	SavedStatus,
 	FavouriteStatus,
 } from '@/components/recipes'
-import { IconProps, cn } from '@/utils'
+import { IconProps, SITE_URL, cn } from '@/utils'
+import { isCrawlerUserAgent } from '@/utils/crawlers'
 import { Icon } from '@/components/recipes/icon'
 import {
 	RecipeGallery,
 	RecipeGalleryPlaceholder,
 } from '@/components/recipes/gallery'
+
+const recipeOgImage = {
+	url: '/images/favicon.png',
+	width: 2731,
+	height: 2731,
+	alt: 'CookBook',
+}
+
+function getRecipeDescription(
+	recipe: {
+		name: string
+		time?: number | null
+		ingredients: string[]
+	},
+	username: string,
+) {
+	const details = [`by @${username}`]
+	if (recipe.time) details.push(`${recipe.time} min`)
+	if (recipe.ingredients.length) {
+		details.push(`ingredients: ${recipe.ingredients.slice(0, 5).join(', ')}`)
+	}
+
+	return `${recipe.name} ${details.join(' · ')}`
+}
+
+export async function generateMetadata({
+	params,
+}: {
+	params: Promise<{ username: string; slug: string }>
+}): Promise<Metadata> {
+	const { username, slug } = await params
+	const user = await getUserByUsername(username)
+	const recipe = user
+		? ((await getRecipeByAuthAndSlug(user.id, slug)) ??
+			(await getPublicRecipeByUsernameAndSlug(username, slug)))
+		: null
+	if (!recipe) return { title: 'Recipe Not Found — CookBook' }
+	const title = `${recipe.name} — CookBook`
+	const description = getRecipeDescription(recipe, username)
+	const url = new URL(`/recipes/${username}/${slug}`, SITE_URL).toString()
+
+	return {
+		title,
+		description,
+		alternates: { canonical: url },
+		openGraph: {
+			title,
+			description,
+			url,
+			siteName: 'CookBook',
+			type: 'article',
+			images: [recipeOgImage],
+		},
+		twitter: {
+			card: 'summary',
+			title,
+			description,
+			images: [recipeOgImage.url],
+		},
+	}
+}
 
 export default async function RecipePage({
 	params,
@@ -58,30 +102,68 @@ export default async function RecipePage({
 		referred?: boolean
 		query?: string
 		category?: string
+		tags?: string
 	}>
 }) {
 	const session = await auth()
-	if (!session) redirect('/auth')
+	const requestHeaders = await headers()
+	const isCrawler = isCrawlerUserAgent(requestHeaders.get('user-agent'))
+	if (!session && !isCrawler) redirect('/auth')
 
 	const { slug, username } = await params
-	const isReferred = (await searchParams)?.referred
-	const query = (await searchParams)?.query
-	const category = (await searchParams)?.category
+	const currentSearchParams = await searchParams
+	const isReferred = currentSearchParams?.referred
+	const query = currentSearchParams?.query
+	const category = currentSearchParams?.category
+	const tags = currentSearchParams?.tags
 
-	const paramQuery = query ? `?search=${encodeURIComponent(query)}` : ''
-	const paramCategory = category
-		? `${query ? '&' : '?'}category=${encodeURIComponent(category)}`
-		: ''
+	const backParams = new URLSearchParams()
+	if (query) backParams.set('search', query)
+	if (category) backParams.set('category', category)
+	if (tags) backParams.set('tags', tags)
+	const backQuery = backParams.toString() ? `?${backParams.toString()}` : ''
 
 	const user = await getUserByUsername(username)
-	const recipe = user ? await getRecipeByAuthAndSlug(user.id, slug) : null
+	const recipe = user
+		? session
+			? await getRecipeByAuthAndSlug(user.id, slug)
+			: await getPublicRecipeByUsernameAndSlug(username, slug)
+		: null
 	const t = await getTranslations('RecipesPage')
+	const t_tags = await getTranslations('RecipeTags')
 
 	const backTo = isReferred
-		? `/profiles/${username}${paramQuery}${paramCategory}`
-		: `/${paramQuery}${paramCategory}`
+		? `/profiles/${username}${backQuery}`
+		: `/${backQuery}`
 
 	if (!recipe) notFound()
+
+	if (!session) {
+		return (
+			<main className='mx-auto flex w-10/12 max-w-xl flex-col gap-4 py-10 text-left text-forest-300'>
+				<h1 className='font-title text-3xl font-black'>{recipe.name}</h1>
+				<p className='font-semibold'>{getRecipeDescription(recipe, username)}</p>
+				{recipe.ingredients.length > 0 && (
+					<section>
+						<h2 className='mb-2 font-title text-xl font-black'>
+							{t('ingredients')}
+						</h2>
+						<ul className='list-disc space-y-1 ps-5 font-medium'>
+							{recipe.ingredients.map((ingredient) => (
+								<li key={ingredient}>{ingredient}</li>
+							))}
+						</ul>
+					</section>
+				)}
+				<section>
+					<h2 className='mb-2 font-title text-xl font-black'>
+						{t('instructions')}
+					</h2>
+					<p className='whitespace-pre-line font-medium'>{recipe.instructions}</p>
+				</section>
+			</main>
+		)
+	}
 
 	const isOwner = session.user.id === recipe.authorId
 	const savedIds = await getSavedRecipeIds()
@@ -114,10 +196,7 @@ export default async function RecipePage({
 					<div className='flex space-x-3'>
 						<RecipeShare recipe={recipe} />
 						<RecipeDownload recipe={recipe} author={author} />
-						<FavouriteStatus
-							initial={isFavourited}
-							recipeId={recipe.id}
-						/>
+						<FavouriteStatus initial={isFavourited} recipeId={recipe.id} />
 						{!isOwner ? (
 							<SavedStatus initial={isSaved} recipeId={recipe.id} />
 						) : (
@@ -130,7 +209,8 @@ export default async function RecipePage({
 				className={cn(
 					'w-10/12 sm:w-2/4 lg:w-2/6 my-5 rounded-3xl border-8',
 					'flex flex-col items-center justify-center shadow-center-sm border-forest-150 bg-forest-150',
-				)}>
+				)}
+			>
 				<div className='w-full border-b-8 border-forest-150 bg-forest-150 rounded-t-[20px]'>
 					<div className='bg-forest-50 rounded-[20px] p-4 shadow-center-sm w-full min-h-12.5 flex items-center justify-center'>
 						<Icon name={recipe.category} />
@@ -140,29 +220,35 @@ export default async function RecipePage({
 					</div>
 				</div>
 				<div className='bg-forest-100 rounded-[20px]'>
-						{recipe.images?.length ? (
-							<RecipeGallery images={recipe.images} />
-						) : (
-							<RecipeGalleryPlaceholder
-								text={
-									isOwner
-										? t('images-add-in-edit')
-										: t('images-empty')
-								}
-							/>
-						)}
+					{recipe.images?.length ? (
+						<RecipeGallery images={recipe.images} />
+					) : (
+						<RecipeGalleryPlaceholder
+							text={isOwner ? t('images-add-in-edit') : t('images-empty')}
+						/>
+					)}
 					<div
 						className={cn(
 							'w-full mb-2 p-5 flex flex-col items-center justify-center',
-						)}>
+						)}
+					>
 						{recipe.time && (
 							<div className='flex mb-3 items-center bg-forest-200 text-forest-50 px-3 py-1 rounded-xl'>
 								<p className='font-extrabold text-sm'>{t('time')}</p>
-								<Clock
-									{...IconProps}
-									className='stroke-forest-50  ms-5 mr-1'
-								/>
+								<Clock {...IconProps} className='stroke-forest-50  ms-5 mr-1' />
 								<span className='text-xs md:text-sm font-bold'>{`${recipe.time}'`}</span>
+							</div>
+						)}
+						{recipe.tags.length > 0 && (
+							<div className='flex flex-wrap justify-center gap-1.5 mb-3'>
+								{recipe.tags.map((tag) => (
+									<span
+										key={tag}
+										className='inline-flex items-center text-xs font-semibold text-forest-50 bg-forest-200/75 px-2.5 py-1 rounded-lg'
+									>
+										{t_tags(tag.toLowerCase())}
+									</span>
+								))}
 							</div>
 						)}
 						<div>
@@ -173,7 +259,8 @@ export default async function RecipePage({
 								{recipe.ingredients.map((ingredient, index) => (
 									<span
 										key={index}
-										className='inline-flex items-center text-xs font-semibold text-forest-300 bg-forest-150 px-2.5 py-1 rounded-lg'>
+										className='inline-flex items-center text-xs font-semibold text-forest-300 bg-forest-150 px-2.5 py-1 rounded-lg'
+									>
 										{ingredient}
 									</span>
 								))}
@@ -202,16 +289,11 @@ export default async function RecipePage({
 												href={url}
 												target='_blank'
 												rel='noopener noreferrer'
-												className='flex items-center gap-1.5 text-forest-200 hover:text-forest-300 transition-colors'>
-												<ExternalLink
-													size={14}
-													className='shrink-0'
-												/>
+												className='flex items-center gap-1.5 text-forest-200 hover:text-forest-300 transition-colors'
+											>
+												<ExternalLink size={14} className='shrink-0' />
 												<span className='truncate text-sm'>
-													{new URL(url).hostname.replace(
-														'www.',
-														'',
-													)}
+													{new URL(url).hostname.replace('www.', '')}
 												</span>
 											</a>
 										))}
@@ -223,7 +305,8 @@ export default async function RecipePage({
 				</div>
 				<Link
 					href={`/profiles/${username}`}
-					className='w-full block border-t-8 border-forest-150 bg-forest-150 rounded-b-[20px]'>
+					className='w-full block border-t-8 border-forest-150 bg-forest-150 rounded-b-[20px]'
+				>
 					<div className='flex items-center justify-center gap-3 bg-forest-50 rounded-[20px] px-3 py-2.5 transition-colors duration-200 '>
 						<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-center-sm'>
 							<Image

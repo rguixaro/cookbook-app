@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
 import { db } from '@/server/db'
-import { RecipeSchema } from '../schemas'
+import { RecipeSchema, normalizeRecipeCourseAndTags } from '../schemas'
 
 const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN
 
@@ -11,6 +11,24 @@ const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN
 export function toImageUrls(keys: string[]): string[] {
 	if (!CLOUDFRONT_DOMAIN) return []
 	return keys.map((key) => `${CLOUDFRONT_DOMAIN}/${key}`)
+}
+
+/**
+ * Convert a recipe from the database to the RecipeSchema used in the app.
+ * @param recipe
+ * @returns RecipeSchema
+ */
+function toRecipeSchema(
+	recipe: Awaited<ReturnType<typeof db.recipe.findMany>>[number] & {
+		author?: { username: string | null } | null
+	},
+): RecipeSchema {
+	return {
+		...recipe,
+		...normalizeRecipeCourseAndTags(recipe.category, recipe.tags),
+		authorUsername: recipe.author?.username ?? '',
+		images: toImageUrls(recipe.images),
+	}
 }
 
 /**
@@ -67,7 +85,9 @@ export const getFavouriteRecipeIds = cache(async (): Promise<string[]> => {
 		})
 		return user?.favouriteRecipes ?? []
 	} catch (error) {
-		Sentry.captureException(error, { tags: { query: 'getFavouriteRecipeIds' } })
+		Sentry.captureException(error, {
+			tags: { query: 'getFavouriteRecipeIds' },
+		})
 		return []
 	}
 })
@@ -99,12 +119,7 @@ export const getRecipesByUserId = cache(async (userId?: string) => {
 			where: { authorId },
 			include: { author: { select: { username: true } } },
 		})
-		const recipes = rawRecipes.map((r) => ({
-			...r,
-			authorUsername: r.author?.username ?? '',
-			author: undefined,
-			images: toImageUrls(r.images),
-		}))
+		const recipes = rawRecipes.map(toRecipeSchema)
 
 		if (!userId) {
 			const savedIds = await getSavedRecipeIds()
@@ -113,12 +128,7 @@ export const getRecipesByUserId = cache(async (userId?: string) => {
 					where: { id: { in: savedIds } },
 					include: { author: { select: { username: true } } },
 				})
-				savedRecipes = rawSaved.map((r) => ({
-					...r,
-					authorUsername: r.author?.username ?? '',
-					author: undefined,
-					images: toImageUrls(r.images),
-				}))
+				savedRecipes = rawSaved.map(toRecipeSchema)
 			}
 		}
 
@@ -156,12 +166,32 @@ export const getRecipeByAuthAndSlug = cache(
 				include: { author: { select: { username: true } } },
 			})
 			if (!recipe) return null
-			return {
-				...recipe,
-				authorUsername: recipe.author?.username ?? '',
-				author: undefined,
-				images: toImageUrls(recipe.images),
-			}
+			return toRecipeSchema(recipe)
+		} catch (error) {
+			throw error
+		}
+	},
+)
+
+/**
+ * Get a recipe by public author username and slug.
+ * Auth not required; private authors are not exposed.
+ */
+export const getPublicRecipeByUsernameAndSlug = cache(
+	async (username: string, slug: string) => {
+		try {
+			const author = await db.user.findFirst({
+				where: { username, isPrivate: false },
+				select: { id: true },
+			})
+			if (!author) return null
+
+			const recipe = await db.recipe.findFirst({
+				where: { authorId: author.id, slug },
+				include: { author: { select: { username: true } } },
+			})
+			if (!recipe) return null
+			return toRecipeSchema(recipe)
 		} catch (error) {
 			throw error
 		}

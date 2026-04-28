@@ -26,7 +26,9 @@
 	},
 	"errors": {
 		"recipe-name-too-short": "El nombre de la receta es demasiado corto",
-		"category-required": "Es necesario seleccionar una categoría",
+		"category-required": "Es necesario seleccionar un plato",
+		"tags-too-many": "Selecciona hasta 3 etiquetas",
+		"tags-duplicate": "Las etiquetas no se pueden duplicar",
 		"time-invalid": "El tiempo debe ser un número",
 		"instructions-too-short": "Las instrucciones de la receta son demasiado cortas",
 		"ingredients-required": "Es necesario añadir al menos un ingrediente",
@@ -65,8 +67,13 @@
 		"recipe-name": "Nombre de la receta",
 		"favourites": "Favoritos",
 		"saved": "Guardadas",
-		"categories": "Categoría",
-		"categories-select": "Selecciona una categoría",
+		"categories": "Plato",
+		"categories-select": "Selecciona un plato",
+		"filter": "Filtrar",
+		"filters": "Filtros",
+		"filters-select": "Elige un plato y hasta 3 etiquetas",
+		"tags": "Etiquetas",
+		"tags-select": "Selecciona hasta 3 etiquetas",
 		"time": "Tiempo de preparación",
 		"minutes": "minutos",
 		"create": "Crear",
@@ -95,15 +102,27 @@
 		"images-add-in-edit": "Edita esta receta para añadir imágenes",
 		"images-empty": "Esta receta todavía no tiene imágenes"
 	},
-	"RecipeCategories": {
+	"RecipeCourses": {
 		"starter": "Entrante",
+		"firstcourse": "Primero",
+		"secondcourse": "Segundo",
+		"dessert": "Postre"
+	},
+	"RecipeTags": {
 		"pasta": "Pasta",
 		"meat": "Carne",
 		"fish": "Pescado",
 		"vegetable": "Verdura",
 		"salad": "Ensalada",
 		"soup": "Sopa",
-		"dessert": "Postre"
+		"rice": "Arroz",
+		"legume": "Legumbre",
+		"seafood": "Marisco",
+		"fruit": "Fruta",
+		"stew": "Estofado",
+		"sauce": "Salsa",
+		"marinade": "Adobo",
+		"wok": "Wok"
 	},
 	"ProfilePage": {
 		"title": "Perfil",

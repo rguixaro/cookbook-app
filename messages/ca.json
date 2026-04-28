@@ -26,7 +26,9 @@
 	},
 	"errors": {
 		"recipe-name-too-short": "El nom de la recepta és massa curt",
-		"category-required": "Cal seleccionar una categoria",
+		"category-required": "Cal seleccionar un plat",
+		"tags-too-many": "Selecciona fins a 3 etiquetes",
+		"tags-duplicate": "Les etiquetes no es poden duplicar",
 		"time-invalid": "El temps ha de ser un número",
 		"instructions-too-short": "Les instruccions de la recepta són massa curtes",
 		"ingredients-required": "Cal afegir almenys un ingredient",
@@ -65,8 +67,13 @@
 		"recipe-name": "Nom de la recepta",
 		"favourites": "Preferits",
 		"saved": "Desades",
-		"categories": "Categoria",
-		"categories-select": "Selecciona una categoria",
+		"categories": "Plat",
+		"categories-select": "Selecciona un plat",
+		"filter": "Filtrar",
+		"filters": "Filtres",
+		"filters-select": "Tria un plat i fins a 3 etiquetes",
+		"tags": "Etiquetes",
+		"tags-select": "Selecciona fins a 3 etiquetes",
 		"time": "Temps de preparació",
 		"minutes": "minuts",
 		"create": "Crear",
@@ -95,15 +102,27 @@
 		"images-add-in-edit": "Edita aquesta recepta per afegir-hi imatges",
 		"images-empty": "Aquesta recepta encara no té imatges"
 	},
-	"RecipeCategories": {
+	"RecipeCourses": {
 		"starter": "Entrant",
+		"firstcourse": "Primer",
+		"secondcourse": "Segon",
+		"dessert": "Postres"
+	},
+	"RecipeTags": {
 		"pasta": "Pasta",
 		"meat": "Carn",
 		"fish": "Peix",
 		"vegetable": "Verdura",
 		"salad": "Amanida",
 		"soup": "Sopa",
-		"dessert": "Postres"
+		"rice": "Arròs",
+		"legume": "Llegum",
+		"seafood": "Marisc",
+		"fruit": "Fruita",
+		"stew": "Estofat",
+		"sauce": "Salsa",
+		"marinade": "Adob",
+		"wok": "Wok"
 	},
 	"ProfilePage": {
 		"title": "Perfil",
