@@ -52,7 +52,7 @@
 	"devDependencies": {
 		"@eslint/eslintrc": "3.3.5",
 		"@playwright/test": "1.58.2",
-		"@tailwindcss/postcss": "4.1.16",
+		"@tailwindcss/postcss": "4.2.4",
 		"@tailwindcss/typography": "0.5.19",
 		"@testing-library/jest-dom": "^6.9.1",
 		"@testing-library/react": "^16.3.2",
@@ -68,13 +68,13 @@
 		"eslint": "9.39.4",
 		"eslint-config-next": "^16.2.1",
 		"jsdom": "^29.0.2",
-		"postcss": "8.5.8",
+		"postcss": "8.5.12",
 		"prettier": "3.8.1",
 		"prettier-plugin-tailwindcss": "0.7.2",
 		"prisma": "6.19.2",
 		"tailwind-merge": "3.5.0",
 		"tailwind-scrollbar": "4.0.2",
-		"tailwindcss": "4.2.2",
+		"tailwindcss": "4.2.4",
 		"typescript": "5.9.3",
 		"vitest": "^4.1.2"
 	},
@@ -92,7 +92,8 @@
 		],
 		"overrides": {
 			"effect": "^3.20.0",
-			"fast-xml-parser": "^5.7.0"
+			"fast-xml-parser": "^5.7.0",
+			"postcss": "8.5.12"
 		}
 	}
 }
