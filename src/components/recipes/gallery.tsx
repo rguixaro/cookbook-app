@@ -80,7 +80,7 @@ export function RecipeGallery({ images }: { images: string[] }) {
 	if (count === 1) {
 		return (
 			<>
-				<div className='w-full p-3'>
+				<div className='w-full p-4'>
 					{renderImage(
 						images[0],
 						0,
@@ -97,8 +97,8 @@ export function RecipeGallery({ images }: { images: string[] }) {
 	if (count === 2) {
 		return (
 			<>
-				<div className='w-full px-4 pt-3'>
-					<div className='grid grid-cols-2 gap-2'>
+				<div className='w-full p-4'>
+					<div className='grid grid-cols-2 gap-4'>
 						{images
 							.slice(0, 2)
 							.map((src, i) =>
@@ -119,8 +119,8 @@ export function RecipeGallery({ images }: { images: string[] }) {
 
 	return (
 		<>
-			<div className='w-full px-4 pt-3'>
-				<div className='flex flex-col gap-2'>
+			<div className='w-full p-4'>
+				<div className='flex flex-col gap-4'>
 					{renderImage(
 						images[0],
 						0,
@@ -128,7 +128,7 @@ export function RecipeGallery({ images }: { images: string[] }) {
 						'(max-width: 640px) 92vw, (max-width: 1024px) 50vw, 33vw',
 						'aspect-4/3 w-full',
 					)}
-					<div className='grid grid-cols-2 gap-2'>
+					<div className='grid grid-cols-2 gap-4'>
 						{images
 							.slice(1, 3)
 							.map((src, i) =>
@@ -177,7 +177,7 @@ function GalleryImage({
 	return (
 		<div
 			className={cn(
-				'group relative cursor-pointer overflow-hidden rounded-xl bg-forest-150',
+				'group relative cursor-pointer overflow-hidden rounded-xl bg-forest-150 shadow-center-sm',
 				!cookiesReady && 'cursor-wait',
 				className,
 			)}
@@ -202,7 +202,7 @@ function GalleryImage({
 				<>
 					<div
 						className={cn(
-							'pointer-events-none absolute inset-0 rounded-xl bg-forest-400 opacity-0 transition-opacity duration-300 group-hover:opacity-20',
+							'pointer-events-none absolute inset-0 rounded-xl bg-forest-700/60 opacity-0 transition-opacity duration-300 group-hover:opacity-20',
 							isTapped && 'opacity-20',
 						)}
 					/>
@@ -214,7 +214,7 @@ function GalleryImage({
 						<button
 							type='button'
 							aria-label={`Fullscreen ${alt.toLowerCase()}`}
-							className='cursor-pointer rounded-lg bg-forest-50 p-2 text-forest-400 shadow-center-sm transition-all duration-200'
+							className='cursor-pointer rounded-lg bg-forest-50 p-2 text-forest-300 shadow-center-sm transition-all duration-200'
 							onClick={(event) => {
 								event.stopPropagation()
 								onFullscreen()
@@ -280,7 +280,7 @@ function RecipeImageFullscreen({
 				<button
 					type='button'
 					aria-label='Minimize recipe photo'
-					className='cursor-pointer rounded-lg bg-forest-50 p-2 text-forest-400 shadow-center-sm transition-all duration-200'
+					className='cursor-pointer rounded-lg bg-forest-50 p-2 text-forest-300 shadow-center-sm transition-all duration-200'
 					onClick={onClose}>
 					<Minimize size={24} />
 				</button>

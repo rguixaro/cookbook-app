@@ -33,7 +33,7 @@ export const FavouriteStatus = ({
 	return (
 		<button
 			onClick={() => onFavouriteRecipe()}
-			className='hover:bg-forest-100 p-1 rounded-xl transition-colors duration-300'>
+			className='hover:bg-forest-150 p-1 rounded-xl transition-colors duration-300'>
 			<HeartIcon filled={isFavourited} color='#789b84' />
 		</button>
 	)
