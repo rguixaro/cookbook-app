@@ -68,7 +68,7 @@
 		"recipe-name": "Recipe name",
 		"favourites": "Favourites",
 		"saved": "Saved",
-		"categories": "Course",
+		"categories": "Categories",
 		"categories-select": "Select a course",
 		"filter": "Filter",
 		"filters": "Filters",
@@ -101,7 +101,15 @@
 		"sources": "Sources",
 		"images-after-create": "You'll be able to add images after creating the recipe",
 		"images-add-in-edit": "Edit this recipe to add images",
-		"images-empty": "This recipe does not have images yet"
+		"images-empty": "This recipe does not have images yet",
+		"course": "Course",
+		"sort-by": "Sort By",
+		"sort-newest": "Newest",
+		"sort-oldest": "Oldest",
+		"sort-quickest": "Quickest",
+		"sort-longest": "Longest",
+		"reset": "Reset",
+		"filters-close": "Close filters"
 	},
 	"RecipeCourses": {
 		"starter": "Starter",

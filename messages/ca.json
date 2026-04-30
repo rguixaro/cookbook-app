@@ -68,7 +68,7 @@
 		"recipe-name": "Nom de la recepta",
 		"favourites": "Preferits",
 		"saved": "Desades",
-		"categories": "Plat",
+		"categories": "Categories",
 		"categories-select": "Selecciona un plat",
 		"filter": "Filtrar",
 		"filters": "Filtres",
@@ -101,7 +101,15 @@
 		"sources": "Fonts",
 		"images-after-create": "Podràs afegir imatges després de crear la recepta",
 		"images-add-in-edit": "Edita aquesta recepta per afegir-hi imatges",
-		"images-empty": "Aquesta recepta encara no té imatges"
+		"images-empty": "Aquesta recepta encara no té imatges",
+		"course": "Plat",
+		"sort-by": "Ordena per",
+		"sort-newest": "Més recents",
+		"sort-oldest": "Més antigues",
+		"sort-quickest": "Més ràpides",
+		"sort-longest": "Més llargues",
+		"reset": "Restableix",
+		"filters-close": "Tanca els filtres"
 	},
 	"RecipeCourses": {
 		"starter": "Entrant",
