@@ -26,15 +26,16 @@
 	},
 	"errors": {
 		"recipe-name-too-short": "El nom de la recepta és massa curt",
-		"category-required": "Cal seleccionar un plat",
-		"tags-too-many": "Selecciona fins a 3 etiquetes",
-		"tags-duplicate": "Les etiquetes no es poden duplicar",
 		"time-invalid": "El temps ha de ser un número",
 		"instructions-too-short": "Les instruccions de la recepta són massa curtes",
 		"ingredients-required": "Cal afegir almenys un ingredient",
 		"ingredient-invalid": "Els ingredients han d'incloure almenys dues lletres",
 		"username-required": "El nom d'usuari és obligatori",
-		"username-too-long": "El nom d'usuari no pot tenir més de 40 caràcters"
+		"username-too-long": "El nom d'usuari no pot tenir més de 40 caràcters",
+		"course-required": "Cal seleccionar un plat",
+		"categories-required": "Selecciona almenys una categoria",
+		"categories-too-many": "Selecciona fins a 3 categories",
+		"categories-duplicate": "Les categories no es poden duplicar"
 	},
 	"LoginPage": {
 		"login-to": "Accedeix al teu ",
@@ -108,22 +109,6 @@
 		"secondcourse": "Segon",
 		"dessert": "Postres"
 	},
-	"RecipeTags": {
-		"pasta": "Pasta",
-		"meat": "Carn",
-		"fish": "Peix",
-		"vegetable": "Verdura",
-		"salad": "Amanida",
-		"soup": "Sopa",
-		"rice": "Arròs",
-		"legume": "Llegum",
-		"seafood": "Marisc",
-		"fruit": "Fruita",
-		"stew": "Estofat",
-		"sauce": "Salsa",
-		"marinade": "Adob",
-		"wok": "Wok"
-	},
 	"ProfilePage": {
 		"title": "Perfil",
 		"description": "Aquí pots veure i modificar la teva informació personal",
@@ -171,5 +156,21 @@
 		"title": "Alguna cosa ha anat malament",
 		"description": "Si us plau, torna-ho a provar",
 		"retry": "Tornar-ho a provar"
+	},
+	"RecipeCategories": {
+		"pasta": "Pasta",
+		"meat": "Carn",
+		"fish": "Peix",
+		"vegetable": "Verdura",
+		"salad": "Amanida",
+		"soup": "Sopa",
+		"rice": "Arròs",
+		"legume": "Llegum",
+		"seafood": "Marisc",
+		"fruit": "Fruita",
+		"stew": "Estofat",
+		"sauce": "Salsa",
+		"marinade": "Adob",
+		"wok": "Wok"
 	}
 }

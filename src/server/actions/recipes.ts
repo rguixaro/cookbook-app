@@ -6,7 +6,14 @@ import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
 import { db } from '@/server/db'
-import { Categories, CreateRecipeSchema, type RecipeSchema } from '@/server/schemas'
+import {
+	CreateRecipeSchema,
+	isRecipeCourse,
+	isRecipeCategory,
+	normalizeRecipeSort,
+	normalizeRecipeCourseAndCategories,
+	type RecipeSchema,
+} from '@/server/schemas'
 import { formatLongSentence, slugify } from '@/server/utils'
 import { toImageUrls } from '@/server/queries'
 
@@ -14,6 +21,45 @@ const PAGE_SIZE = 10
 
 const getRecipePath = (username?: string | null, slug?: string | null) =>
 	username && slug ? `/recipes/${username}/${slug}` : null
+
+type RecipeWithAuthor = Prisma.RecipeGetPayload<{
+	include: { author: { select: { username: true } } }
+}>
+
+const mapRecipe = (recipe: RecipeWithAuthor): RecipeSchema => {
+	const { author, ...data } = recipe
+
+	return {
+		...data,
+		...normalizeRecipeCourseAndCategories(recipe.course, recipe.categories),
+		authorUsername: author?.username ?? '',
+		images: toImageUrls(recipe.images),
+	}
+}
+
+function sortRecipesByTime(
+	recipes: RecipeWithAuthor[],
+	direction: 'asc' | 'desc',
+): RecipeWithAuthor[] {
+	return [...recipes].sort((a, b) => {
+		const aTime = a.time
+		const bTime = b.time
+		const aHasTime = typeof aTime === 'number'
+		const bHasTime = typeof bTime === 'number'
+
+		if (aHasTime && !bHasTime) return -1
+		if (!aHasTime && bHasTime) return 1
+
+		if (aHasTime && bHasTime && aTime !== bTime) {
+			return direction === 'asc' ? aTime - bTime : bTime - aTime
+		}
+
+		const createdDiff = b.createdAt.getTime() - a.createdAt.getTime()
+		if (createdDiff !== 0) return createdDiff
+
+		return b.id.localeCompare(a.id)
+	})
+}
 
 /**
  * Fetch paginated recipes with server-side filtering.
@@ -23,10 +69,12 @@ export async function fetchRecipes(params: {
 	cursor?: string
 	take?: number
 	search?: string
-	category?: string
+	course?: string
+	categories?: string
 	favourites?: boolean
 	saved?: boolean
 	userId?: string
+	sort?: string
 }): Promise<{ recipes: RecipeSchema[]; nextCursor: string | null }> {
 	const empty = { recipes: [], nextCursor: null }
 	const currentUser = await auth()
@@ -36,13 +84,16 @@ export async function fetchRecipes(params: {
 		cursor,
 		take = PAGE_SIZE,
 		search,
-		category,
+		course,
+		categories,
 		favourites,
 		saved,
 		userId,
+		sort,
 	} = params
 	const safeTake = Math.min(take, 50)
 	const currentUserId = currentUser.user.id
+	const recipeSort = normalizeRecipeSort(sort)
 
 	if (userId && userId !== currentUserId) {
 		const targetUser = await db.user.findUnique({
@@ -95,28 +146,58 @@ export async function fetchRecipes(params: {
 			if (!filteredRecipeIds?.length) return empty
 		}
 
+		const categoryFilters = (categories ?? '')
+			.split(',')
+			.map((category) => category.trim())
+			.filter(isRecipeCategory)
+		const courseFilter = course && isRecipeCourse(course) ? course : undefined
+
 		const where: Prisma.RecipeWhereInput = {
 			...(authorFilter && { authorId: authorFilter.authorId }),
 			...(ownFeedOr && { OR: ownFeedOr }),
 			...(search && {
 				name: {
-					contains: search
-						.slice(0, 50)
-						.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+					contains: search.slice(0, 50).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
 					mode: 'insensitive' as const,
 				},
 			}),
-			...(category &&
-				(Categories as readonly string[]).includes(category) && {
-					category: category as (typeof Categories)[number],
-				}),
+			...(courseFilter && { course: courseFilter }),
+			...(categoryFilters.length && {
+				categories: { hasSome: categoryFilters },
+			}),
 			...(filteredRecipeIds && { id: { in: filteredRecipeIds } }),
+		}
+
+		if (recipeSort === 'timeAsc' || recipeSort === 'timeDesc') {
+			const candidates = await db.recipe.findMany({
+				where,
+				include: { author: { select: { username: true } } },
+				orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+			})
+			const sorted = sortRecipesByTime(
+				candidates,
+				recipeSort === 'timeAsc' ? 'asc' : 'desc',
+			)
+			const startIndex = cursor
+				? Math.max(sorted.findIndex((recipe) => recipe.id === cursor) + 1, 0)
+				: 0
+			const results = sorted.slice(startIndex, startIndex + safeTake + 1)
+			const hasMore = results.length > safeTake
+			if (hasMore) results.pop()
+
+			return {
+				recipes: results.map(mapRecipe),
+				nextCursor: hasMore ? (results[results.length - 1]?.id ?? null) : null,
+			}
 		}
 
 		const results = await db.recipe.findMany({
 			where,
 			include: { author: { select: { username: true } } },
-			orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+			orderBy:
+				recipeSort === 'createdAtAsc'
+					? [{ createdAt: 'asc' }, { id: 'asc' }]
+					: [{ createdAt: 'desc' }, { id: 'desc' }],
 			take: safeTake + 1,
 			...(cursor && { cursor: { id: cursor }, skip: 1 }),
 		})
@@ -124,15 +205,8 @@ export async function fetchRecipes(params: {
 		const hasMore = results.length > safeTake
 		if (hasMore) results.pop()
 
-		const recipes: RecipeSchema[] = results.map((r) => ({
-			...r,
-			authorUsername: r.author?.username ?? '',
-			author: undefined,
-			images: toImageUrls(r.images),
-		}))
-
 		return {
-			recipes,
+			recipes: results.map(mapRecipe),
 			nextCursor: hasMore ? (results[results.length - 1]?.id ?? null) : null,
 		}
 	} catch (error) {
@@ -154,7 +228,9 @@ interface createRecipeResult {
  * @param values {z.infer<typeof CreateRecipeSchema>}
  * @returns Promise<createRecipeResult>
  */
-export const createRecipe = async (values: unknown): Promise<createRecipeResult> => {
+export const createRecipe = async (
+	values: unknown,
+): Promise<createRecipeResult> => {
 	const currentUser = await auth()
 
 	/** Not authenticated */
@@ -163,8 +239,15 @@ export const createRecipe = async (values: unknown): Promise<createRecipeResult>
 	const parsed = CreateRecipeSchema.safeParse(values)
 	if (!parsed.success) return { error: true, message: 'error' }
 
-	const { name, category, time, ingredients, instructions, sourceUrls } =
-		parsed.data
+	const {
+		name,
+		course,
+		categories,
+		time,
+		ingredients,
+		instructions,
+		sourceUrls,
+	} = parsed.data
 
 	const slug = slugify(name)
 	if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
@@ -173,7 +256,8 @@ export const createRecipe = async (values: unknown): Promise<createRecipeResult>
 		const recipe = await db.recipe.create({
 			data: {
 				name,
-				category,
+				course,
+				categories,
 				time,
 				ingredients,
 				instructions: formatLongSentence(instructions),
@@ -224,8 +308,15 @@ export const updateRecipe = async (
 	const parsed = CreateRecipeSchema.safeParse(values)
 	if (!parsed.success) return { error: true, message: 'error' }
 
-	const { name, category, time, ingredients, instructions, sourceUrls } =
-		parsed.data
+	const {
+		name,
+		course,
+		categories,
+		time,
+		ingredients,
+		instructions,
+		sourceUrls,
+	} = parsed.data
 
 	const slug = slugify(name)
 	if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
@@ -242,7 +333,8 @@ export const updateRecipe = async (
 			where: { id, authorId: currentUser.user.id },
 			data: {
 				name,
-				category,
+				course,
+				categories,
 				time,
 				ingredients,
 				instructions: formatLongSentence(instructions),
@@ -445,10 +537,7 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 
 		const affectedUsers = await db.user.findMany({
 			where: {
-				OR: [
-					{ savedRecipes: { has: id } },
-					{ favouriteRecipes: { has: id } },
-				],
+				OR: [{ savedRecipes: { has: id } }, { favouriteRecipes: { has: id } }],
 			},
 			select: { id: true, savedRecipes: true, favouriteRecipes: true },
 		})

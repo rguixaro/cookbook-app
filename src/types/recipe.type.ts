@@ -7,7 +7,7 @@ export const RecipeCourses = [
 
 export type RecipeCourse = (typeof RecipeCourses)[number]
 
-export const RecipeTags = [
+export const RecipeCategories = [
 	'Pasta',
 	'Meat',
 	'Fish',
@@ -24,10 +24,16 @@ export const RecipeTags = [
 	'Wok',
 ] as const
 
-export type RecipeTag = (typeof RecipeTags)[number]
+export type RecipeCategory = (typeof RecipeCategories)[number]
 
-export const Categories = RecipeCourses
-export type Categories = RecipeCourse
+export const RecipeSorts = [
+	'createdAtDesc',
+	'createdAtAsc',
+	'timeAsc',
+	'timeDesc',
+] as const
+
+export type RecipeSort = (typeof RecipeSorts)[number]
 
 export interface Recipe {
 	id: string
@@ -38,8 +44,8 @@ export interface Recipe {
 	ingredients: string[]
 	createdAt: Date
 	updatedAt: Date
-	category: RecipeCourse
-	tags: RecipeTag[]
+	course: RecipeCourse
+	categories: RecipeCategory[]
 	authorId: string
 	authorUsername: string
 	images?: string[]

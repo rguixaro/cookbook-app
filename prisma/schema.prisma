@@ -7,21 +7,14 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Category {
+enum Course {
   Starter
   FirstCourse
   SecondCourse
   Dessert
-
-  Pasta
-  Meat
-  Fish
-  Vegetable
-  Salad
-  Soup
 }
 
-enum Tag {
+enum Category {
   Pasta
   Meat
   Fish
@@ -39,7 +32,7 @@ enum Tag {
 }
 
 model Recipe {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
   slug         String
   name         String
   time         Int?
@@ -47,12 +40,12 @@ model Recipe {
   ingredients  String[]
   images       String[]
   sourceUrls   String[]
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  category     Category
-  tags         Tag[]    @default([])
-  author       User?    @relation(references: [id], fields: [authorId], onDelete: Cascade)
-  authorId     String   @db.ObjectId
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  course       Course
+  categories   Category[] @default([])
+  author       User?      @relation(references: [id], fields: [authorId], onDelete: Cascade)
+  authorId     String     @db.ObjectId
 
   @@unique([slug, authorId])
   @@index([authorId])

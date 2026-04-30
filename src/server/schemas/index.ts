@@ -9,18 +9,7 @@ export const RecipeCourses = [
 
 export type RecipeCourse = (typeof RecipeCourses)[number]
 
-export const LegacyRecipeCategories = [
-	'Pasta',
-	'Meat',
-	'Fish',
-	'Vegetable',
-	'Salad',
-	'Soup',
-] as const
-
-export type LegacyRecipeCategory = (typeof LegacyRecipeCategories)[number]
-
-export const RecipeTags = [
+export const RecipeCategories = [
 	'Pasta',
 	'Meat',
 	'Fish',
@@ -37,58 +26,54 @@ export const RecipeTags = [
 	'Wok',
 ] as const
 
-export type RecipeTag = (typeof RecipeTags)[number]
+export type RecipeCategory = (typeof RecipeCategories)[number]
 
-export const Categories = RecipeCourses
-export type Categories = RecipeCourse
+export const RecipeSorts = [
+	'createdAtDesc',
+	'createdAtAsc',
+	'timeAsc',
+	'timeDesc',
+] as const
+
+export type RecipeSort = (typeof RecipeSorts)[number]
 
 const RecipeCourseSchema = z.enum(RecipeCourses)
-const RecipeTagSchema = z.enum(RecipeTags)
+const RecipeCategorySchema = z.enum(RecipeCategories)
 
 export const isRecipeCourse = (value: string): value is RecipeCourse =>
 	(RecipeCourses as readonly string[]).includes(value)
 
-export const isRecipeTag = (value: string): value is RecipeTag =>
-	(RecipeTags as readonly string[]).includes(value)
+export const isRecipeCategory = (value: string): value is RecipeCategory =>
+	(RecipeCategories as readonly string[]).includes(value)
 
-const legacyCategoryDefaults: Record<
-	LegacyRecipeCategory,
-	{ category: RecipeCourse; tags: RecipeTag[] }
-> = {
-	Pasta: { category: 'FirstCourse', tags: ['Pasta'] },
-	Meat: { category: 'SecondCourse', tags: ['Meat'] },
-	Fish: { category: 'SecondCourse', tags: ['Fish'] },
-	Vegetable: { category: 'FirstCourse', tags: ['Vegetable'] },
-	Salad: { category: 'FirstCourse', tags: ['Salad'] },
-	Soup: { category: 'FirstCourse', tags: ['Soup'] },
+export const isRecipeSort = (value: string): value is RecipeSort =>
+	(RecipeSorts as readonly string[]).includes(value)
+
+export const normalizeRecipeSort = (value?: string | null): RecipeSort => {
+	if (value === 'createdAtAsc') return 'createdAtAsc'
+	if (value === 'timeAsc') return 'timeAsc'
+	if (value === 'timeDesc') return 'timeDesc'
+	return 'createdAtDesc'
 }
 
-const isLegacyRecipeCategory = (value: string): value is LegacyRecipeCategory =>
-	(LegacyRecipeCategories as readonly string[]).includes(value)
+export function normalizeRecipeCourseAndCategories(
+	course: string,
+	categories?: string[] | null,
+): { course: RecipeCourse; categories: RecipeCategory[] } {
+	const validCategories = (categories ?? []).filter(isRecipeCategory)
 
-export function normalizeRecipeCourseAndTags(
-	category: string,
-	tags?: string[] | null,
-): { category: RecipeCourse; tags: RecipeTag[] } {
-	const validTags = (tags ?? []).filter(isRecipeTag)
-	if (isRecipeCourse(category)) return { category, tags: validTags }
-
-	if (isLegacyRecipeCategory(category)) {
-		const fallback = legacyCategoryDefaults[category]
-		return {
-			category: fallback.category,
-			tags: validTags.length ? validTags : fallback.tags,
-		}
+	return {
+		course: isRecipeCourse(course) ? course : 'FirstCourse',
+		categories: validCategories,
 	}
-
-	return { category: 'FirstCourse', tags: validTags }
 }
 
-const RecipeTagsInputSchema = z
-	.array(RecipeTagSchema)
-	.max(3, { message: 'tags-too-many' })
-	.refine((tags) => new Set(tags).size === tags.length, {
-		message: 'tags-duplicate',
+const RecipeCategoriesInputSchema = z
+	.array(RecipeCategorySchema, { error: 'categories-required' })
+	.min(1, { message: 'categories-required' })
+	.max(3, { message: 'categories-too-many' })
+	.refine((categories) => new Set(categories).size === categories.length, {
+		message: 'categories-duplicate',
 	})
 
 export const RecipeSchema = z.object({
@@ -98,8 +83,8 @@ export const RecipeSchema = z.object({
 	time: z.number().nullable(),
 	instructions: z.string(),
 	ingredients: z.array(z.string()),
-	category: RecipeCourseSchema,
-	tags: z.array(RecipeTagSchema),
+	course: RecipeCourseSchema,
+	categories: z.array(RecipeCategorySchema),
 	authorId: z.string(),
 	authorUsername: z.string(),
 	createdAt: z.date(),
@@ -130,10 +115,10 @@ export const CreateRecipeSchema = z.object({
 		.string()
 		.min(3, { message: 'recipe-name-too-short' })
 		.max(100, { message: 'recipe-name-too-long' }),
-	category: z.enum(RecipeCourses, {
-		error: 'category-required',
+	course: z.enum(RecipeCourses, {
+		error: 'course-required',
 	}),
-	tags: RecipeTagsInputSchema.optional(),
+	categories: RecipeCategoriesInputSchema,
 	time: z
 		.number({ error: 'time-invalid' })
 		.min(1, { message: 'time-invalid' })

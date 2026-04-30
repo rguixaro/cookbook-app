@@ -26,15 +26,16 @@
 	},
 	"errors": {
 		"recipe-name-too-short": "El nombre de la receta es demasiado corto",
-		"category-required": "Es necesario seleccionar un plato",
-		"tags-too-many": "Selecciona hasta 3 etiquetas",
-		"tags-duplicate": "Las etiquetas no se pueden duplicar",
 		"time-invalid": "El tiempo debe ser un número",
 		"instructions-too-short": "Las instrucciones de la receta son demasiado cortas",
 		"ingredients-required": "Es necesario añadir al menos un ingrediente",
 		"ingredient-invalid": "Los ingredientes deben incluir al menos dos letras",
 		"username-required": "El nombre de usuario es obligatorio",
-		"username-too-long": "El nombre de usuario no puede tener más de 40 caracteres"
+		"username-too-long": "El nombre de usuario no puede tener más de 40 caracteres",
+		"course-required": "Es necesario seleccionar un plato",
+		"categories-required": "Selecciona al menos una categoría",
+		"categories-too-many": "Selecciona hasta 3 categorías",
+		"categories-duplicate": "Las categorías no se pueden duplicar"
 	},
 	"LoginPage": {
 		"login-to": "Accede a tu ",
@@ -108,22 +109,6 @@
 		"secondcourse": "Segundo",
 		"dessert": "Postre"
 	},
-	"RecipeTags": {
-		"pasta": "Pasta",
-		"meat": "Carne",
-		"fish": "Pescado",
-		"vegetable": "Verdura",
-		"salad": "Ensalada",
-		"soup": "Sopa",
-		"rice": "Arroz",
-		"legume": "Legumbre",
-		"seafood": "Marisco",
-		"fruit": "Fruta",
-		"stew": "Estofado",
-		"sauce": "Salsa",
-		"marinade": "Adobo",
-		"wok": "Wok"
-	},
 	"ProfilePage": {
 		"title": "Perfil",
 		"description": "Aquí puedes ver y modificar tu información personal",
@@ -171,5 +156,21 @@
 		"title": "Algo salió mal",
 		"description": "Por favor, inténtalo de nuevo.",
 		"retry": "Reintentar"
+	},
+	"RecipeCategories": {
+		"pasta": "Pasta",
+		"meat": "Carne",
+		"fish": "Pescado",
+		"vegetable": "Verdura",
+		"salad": "Ensalada",
+		"soup": "Sopa",
+		"rice": "Arroz",
+		"legume": "Legumbre",
+		"seafood": "Marisco",
+		"fruit": "Fruta",
+		"stew": "Estofado",
+		"sauce": "Salsa",
+		"marinade": "Adobo",
+		"wok": "Wok"
 	}
 }
