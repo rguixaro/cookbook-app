@@ -1,10 +1,10 @@
 import { icons } from 'lucide-react'
 
-import type { RecipeCourse, RecipeTag } from '@/types'
+import type { RecipeCourse, RecipeCategory } from '@/types'
 
 type IconProps = {
-	name: RecipeCourse | RecipeTag | string
-	color?: string
+	name: RecipeCourse | RecipeCategory | string
+	className?: string
 	size?: number
 }
 
@@ -29,11 +29,15 @@ const IconsByName = {
 	wok: 'Soup',
 }
 
-export const Icon = ({ name, color = '#789b84', size = 18 }: IconProps) => {
+export const Icon = ({
+	name,
+	className = 'stroke-forest-200',
+	size = 18,
+}: IconProps) => {
 	const iconName =
 		IconsByName[name.toLocaleLowerCase() as keyof typeof IconsByName] ??
 		'UtensilsCrossed'
 	const LucideIcon = icons[iconName as keyof typeof icons] ?? icons.Utensils
 
-	return <LucideIcon color={color} size={size} className='shrink-0' />
+	return <LucideIcon size={size} className={className} />
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Clock, ImageIcon, LoaderIcon } from 'lucide-react'
@@ -26,6 +26,8 @@ const motions: Variants = {
 	},
 }
 
+const MAX_RECIPE_ITEM_CHIPS = 5
+
 /** Strip quantities, numbers, parentheses — keep just the ingredient name */
 function cleanIngredient(raw: string) {
 	const cleaned = raw
@@ -49,7 +51,9 @@ function RecipeListImage({
 	alt: string
 	cookiesReady: boolean
 }) {
-	const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
+	const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>(
+		'loading',
+	)
 
 	useEffect(() => {
 		setStatus('loading')
@@ -64,13 +68,15 @@ function RecipeListImage({
 
 	return (
 		<div
-			className='w-28 shrink-0 relative border-l-8 border-transparent bg-forest-150'
-			data-testid='recipe-image-rail'>
+			className='w-36 shrink-0 relative border-l-8 border-transparent bg-forest-150'
+			data-testid='recipe-image-rail'
+		>
 			{showSpinner && (
 				<div
 					role='status'
 					aria-label='Loading recipe image'
-					className='absolute inset-0 flex items-center justify-center'>
+					className='absolute inset-0 flex items-center justify-center'
+				>
 					<LoaderIcon size={24} className='animate-spin text-forest-200' />
 				</div>
 			)}
@@ -78,7 +84,8 @@ function RecipeListImage({
 				<div
 					role='img'
 					aria-label='Recipe image failed to load'
-					className='absolute inset-0 flex items-center justify-center'>
+					className='absolute inset-0 flex items-center justify-center'
+				>
 					<ImageIcon size={24} className='text-forest-200' />
 				</div>
 			)}
@@ -102,100 +109,68 @@ export function ItemRecipe({
 	recipe,
 	referred = false,
 	query,
-	category,
+	course,
+	categories,
+	sort,
 }: {
 	recipe: RecipeSchema
 	referred?: boolean
 	query?: string
-	category?: string
+	course?: string
+	categories?: string
+	sort?: string
 }) {
-	const t = useTranslations('RecipesPage')
+	const t_courses = useTranslations('RecipeCourses')
+	const t_categories = useTranslations('RecipeCategories')
 	const cookiesReady = useCookiesReady()
-	const chipsRef = useRef<HTMLDivElement>(null)
-	const [visibleCount, setVisibleCount] = useState<number | null>(null)
-	const ceilingRef = useRef<number>(Infinity)
 
-	const allChips = recipe.ingredients.map(cleanIngredient).filter(Boolean)
-	const chipsToRender =
-		visibleCount !== null ? allChips.slice(0, visibleCount) : allChips
+	const allChips = useMemo(
+		() => recipe.ingredients.map(cleanIngredient).filter(Boolean),
+		[recipe.ingredients],
+	)
+	const fixedChipCount = (recipe.time ? 1 : 0) + 1 + recipe.categories.length
+	const visibleIngredientCount = Math.max(
+		0,
+		MAX_RECIPE_ITEM_CHIPS - fixedChipCount,
+	)
+	const chipsToRender = allChips.slice(0, visibleIngredientCount)
 	const hiddenCount = allChips.length - chipsToRender.length
 
-	useLayoutEffect(() => {
-		const container = chipsRef.current
-		if (!container) return
-		const children = Array.from(container.children) as HTMLElement[]
-		if (children.length === 0) return
-
-		const tops = children.map((c) => Math.round(c.getBoundingClientRect().top))
-
-		const ROW_THRESHOLD = 6
-		const uniqueTops: number[] = []
-		for (const t of tops) {
-			if (!uniqueTops.some((u) => Math.abs(u - t) <= ROW_THRESHOLD)) {
-				uniqueTops.push(t)
-			}
-		}
-		uniqueTops.sort((a, b) => a - b)
-
-		const timeSlots = recipe.time ? 1 : 0
-
-		if (uniqueTops.length > 2) {
-			const badgePresent =
-				visibleCount !== null && visibleCount < allChips.length
-			const ingredientCount =
-				children.length - timeSlots - (badgePresent ? 1 : 0)
-			ceilingRef.current = Math.min(ceilingRef.current, ingredientCount)
-
-			const row3Top = uniqueTops[2]
-			const thirdRowStart = tops.findIndex(
-				(t) => Math.abs(t - row3Top) <= ROW_THRESHOLD,
-			)
-			const newVisible = Math.max(0, thirdRowStart - timeSlots - 1)
-			if (newVisible !== visibleCount) setVisibleCount(newVisible)
-		} else if (
-			visibleCount !== null &&
-			visibleCount < allChips.length &&
-			visibleCount + 1 < ceilingRef.current
-		) {
-			setVisibleCount(visibleCount + 1)
-		}
-	}, [visibleCount, allChips.length, recipe.time])
-
-	const queryParams = referred
-		? `?referred=true${query ? `&query=${encodeURIComponent(query.trim())}` : ''}${category ? `&category=${encodeURIComponent(category)}` : ''}`
-		: query
-			? `?query=${encodeURIComponent(query)}${category ? `&category=${encodeURIComponent(category)}` : ''}`
-			: category
-				? `?category=${encodeURIComponent(category)}`
-				: ''
+	const params = new URLSearchParams()
+	if (referred) params.set('referred', 'true')
+	if (query) params.set('query', query.trim())
+	if (course) params.set('course', course)
+	if (categories) params.set('categories', categories)
+	if (sort) params.set('sort', sort)
+	const queryParams = params.toString() ? `?${params.toString()}` : ''
 
 	return (
 		<Link
 			href={`/recipes/${recipe.authorUsername}/${recipe.slug}${queryParams}`}
-			className='w-full'>
+			className='w-full'
+		>
 			<motion.div
 				initial='offscreen'
 				whileInView='onscreen'
 				variants={motions}
-				viewport={{ once: true, amount: 0.01 }}>
+				viewport={{ once: true, amount: 0.01 }}
+			>
 				<div
 					className={cn(
 						'w-full my-2 flex shadow-center-sm overflow-hidden',
 						'bg-forest-100 border-8 border-forest-150 rounded-2xl',
-					)}>
+					)}
+				>
 					<div className='flex flex-col flex-1 min-w-0 bg-forest-150'>
 						<div className='bg-forest-150 rounded-xl rounded-b-none border-b-8 border-forest-150'>
-							<div className='flex items-center w-full bg-forest-50 px-4 py-2 rounded-xl'>
-								<Icon name={recipe.category} />
-								<span className='ms-2 font-title text-base md:text-lg text-forest-200 font-extrabold leading-5 line-clamp-2'>
+							<div className='w-full bg-forest-50 px-4 py-2 rounded-xl'>
+								<span className='font-title text-base md:text-lg text-forest-200 font-extrabold leading-5 line-clamp-2'>
 									{recipe.name}
 								</span>
 							</div>
 						</div>
 						<div className='bg-forest-100 rounded-xl px-3 py-2 space-y-2'>
-							<div
-								ref={chipsRef}
-								className='flex flex-wrap items-center gap-1.5'>
+							<div className='flex flex-wrap items-center gap-1.5'>
 								{recipe.time && (
 									<span className='shrink-0 inline-flex items-center bg-forest-200 px-3 py-0.5 rounded-lg'>
 										<Clock
@@ -206,11 +181,28 @@ export function ItemRecipe({
 										<span className='text-xs font-bold text-forest-50 ms-1'>{`${recipe.time}'`}</span>
 									</span>
 								)}
+								<span className='inline-flex items-center gap-1.5 rounded-lg bg-forest-200/75 px-2.5 py-0.5 text-xs font-bold text-forest-50'>
+									<Icon
+										name={recipe.course}
+										size={14}
+										className='stroke-forest-50'
+									/>
+									{t_courses(recipe.course.toLowerCase())}
+								</span>
+								{recipe.categories.map((category) => (
+									<span
+										key={category}
+										className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2 py-0.5 rounded-lg'
+									>
+										{t_categories(category.toLowerCase())}
+									</span>
+								))}
 								{chipsToRender.map((name, i) => (
 									<span
 										key={i}
-										className='inline-flex items-center text-xs font-semibold text-forest-300 bg-forest-150 px-2 py-0.5 rounded-lg'>
-										<span className='truncate'>{name}</span>
+										className='inline-flex max-w-[9rem] min-w-0 items-center rounded-lg bg-forest-150 px-2 py-0.5 text-xs font-semibold text-forest-300'
+									>
+										<span className='min-w-0 truncate'>{name}</span>
 									</span>
 								))}
 								{hiddenCount > 0 && (
