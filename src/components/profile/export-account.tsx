@@ -72,9 +72,8 @@ export function ExportAccount() {
 	return (
 		<ProfileCard
 			title={t('exports-title')}
-			description={t('exports-description')}
-			action={<DownloadIcon size={20} className='text-forest-300' />}>
-			<div className='grid gap-3 text-forest-400'>
+			description={t('exports-description')}>
+			<div className='grid gap-3 text-forest-300'>
 				<Button
 					type='button'
 					variant='default'

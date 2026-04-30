@@ -11,6 +11,7 @@ vi.mock('@/ui', async () => {
 	return {
 		...actual,
 		FormControl: ({ children }: { children: ReactNode }) => <>{children}</>,
+		FormMessage: () => null,
 	}
 })
 
@@ -21,7 +22,7 @@ function TestSourceLinksInput({ initial = [] }: { initial?: string[] }) {
 }
 
 describe('SourceLinksInput', () => {
-	it('adds a valid HTTP URL from the button', async () => {
+	it('adds a valid HTTPS URL from the button', async () => {
 		const user = userEvent.setup()
 		renderWithProviders(<TestSourceLinksInput />)
 
@@ -32,9 +33,9 @@ describe('SourceLinksInput', () => {
 		await user.click(screen.getByRole('button', { name: 'Add' }))
 
 		expect(screen.getByText('https://example.com/recipe')).toBeInTheDocument()
-		expect(screen.getByPlaceholderText('https://example.com/recipe')).toHaveValue(
-			'',
-		)
+		expect(
+			screen.getByPlaceholderText('https://example.com/recipe'),
+		).toHaveValue('')
 	})
 
 	it('prevents invalid URLs and shows an invalid link message', async () => {
@@ -46,9 +47,40 @@ describe('SourceLinksInput', () => {
 
 		expect(input).toHaveAttribute('aria-invalid', 'true')
 		expect(
-			screen.getByText('Enter a valid link starting with http:// or https://'),
+			screen.getByText('The link must start with https://'),
 		).toBeInTheDocument()
 		expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled()
+	})
+
+	it('rejects HTTP URLs', async () => {
+		const user = userEvent.setup()
+		renderWithProviders(<TestSourceLinksInput />)
+
+		const input = screen.getByPlaceholderText('https://example.com/recipe')
+		await user.type(input, 'http://example.com/recipe')
+
+		expect(input).toHaveAttribute('aria-invalid', 'true')
+		expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled()
+	})
+
+	it('can report invalid URLs to the parent field message', async () => {
+		const user = userEvent.setup()
+		const onInputErrorChange = vi.fn()
+		renderWithProviders(
+			<SourceLinksInput
+				values={[]}
+				setValues={vi.fn()}
+				onInputErrorChange={onInputErrorChange}
+			/>,
+		)
+
+		const input = screen.getByPlaceholderText('https://example.com/recipe')
+		await user.type(input, 'example.com/recipe')
+
+		expect(onInputErrorChange).toHaveBeenLastCalledWith('source-url-invalid')
+		expect(
+			screen.queryByText('The link must start with https://'),
+		).not.toBeInTheDocument()
 	})
 
 	it('adds valid URLs from newline paste', () => {
@@ -56,7 +88,8 @@ describe('SourceLinksInput', () => {
 
 		fireEvent.paste(screen.getByPlaceholderText('https://example.com/recipe'), {
 			clipboardData: {
-				getData: () => 'https://example.com/a\nnot-a-url\nhttps://example.com/b',
+				getData: () =>
+					'https://example.com/a\nnot-a-url\nhttps://example.com/b',
 			},
 		})
 
@@ -81,6 +114,8 @@ describe('SourceLinksInput', () => {
 			screen.getByRole('button', { name: 'Remove https://example.com/a' }),
 		)
 
-		expect(screen.getByPlaceholderText('https://example.com/recipe')).toBeEnabled()
+		expect(
+			screen.getByPlaceholderText('https://example.com/recipe'),
+		).toBeEnabled()
 	})
 })

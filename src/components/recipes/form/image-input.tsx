@@ -203,8 +203,7 @@ export function RecipeImageInput({
 				className='hidden'
 				onChange={handleFileSelect}
 			/>
-			<div className='flex flex-col gap-2'>
-				{/* Slot 0 — hero image */}
+			<div className='flex flex-col gap-4'>
 				{filled(0) ? (
 					<FilledSlot
 						src={images[0]}
@@ -221,9 +220,7 @@ export function RecipeImageInput({
 						disabled={disabled}
 					/>
 				)}
-
-				{/* Slots 1 & 2 — bottom row */}
-				<div className='grid grid-cols-2 gap-2'>
+				<div className='grid grid-cols-2 gap-4'>
 					{[1, 2].map((slot) =>
 						filled(slot) ? (
 							<FilledSlot

@@ -80,34 +80,36 @@ const FormItem = React.forwardRef<
 
 	return (
 		<FormItemContext.Provider value={{ id }}>
-			<div ref={ref} className={cn('space-y-2', className)} {...props} />
+			<div ref={ref} className={className} {...props} />
 		</FormItemContext.Provider>
 	)
 })
 FormItem.displayName = 'FormItem'
 
 const FormLabel = React.forwardRef<
-	React.ElementRef<typeof LabelPrimitive.Root>,
+	React.ComponentRef<typeof LabelPrimitive.Root>,
 	React.ComponentPropsWithoutRef<typeof LabelPrimitive.Root>
 >(({ className, ...props }, ref) => {
 	const { formItemId } = useFormField()
 
 	return (
-		<Label
-			ref={ref}
-			className={cn(
-				'text-base md:text-lg font-extrabold text-forest-300',
-				className,
-			)}
-			htmlFor={formItemId}
-			{...props}
-		/>
+		<div>
+			<Label
+				ref={ref}
+				className={cn(
+					'text-base md:text-lg font-extrabold text-forest-200',
+					className,
+				)}
+				htmlFor={formItemId}
+				{...props}
+			/>
+		</div>
 	)
 })
 FormLabel.displayName = 'FormLabel'
 
 const FormControl = React.forwardRef<
-	React.ElementRef<typeof Slot>,
+	React.ComponentRef<typeof Slot>,
 	React.ComponentPropsWithoutRef<typeof Slot>
 >(({ ...props }, ref) => {
 	const { error, formItemId, formDescriptionId, formMessageId } = useFormField()
@@ -138,7 +140,7 @@ const FormDescription = React.forwardRef<
 		<p
 			ref={ref}
 			id={formDescriptionId}
-			className={cn('text-[0.8rem] text-forest-400', className)}
+			className={cn('text-[0.8rem] text-forest-300', className)}
 			{...props}
 		/>
 	)
@@ -147,24 +149,32 @@ FormDescription.displayName = 'FormDescription'
 
 const FormMessage = React.forwardRef<
 	HTMLParagraphElement,
-	React.HTMLAttributes<HTMLParagraphElement>
->(({ className, children, ...props }, ref) => {
+	React.HTMLAttributes<HTMLParagraphElement> & { parentClassName?: string }
+>(({ className, parentClassName, children, ...props }, ref) => {
 	const t = useTranslations('errors')
 	const { error, formMessageId } = useFormField()
 	const body = error ? String(error?.message) : children
 
 	if (!body) return null
 
-	return (
+	const message = (
 		<p
 			ref={ref}
 			id={formMessageId}
-			className={cn('text-[0.8rem] font-bold text-forest-400', className)}
+			className={cn(
+				'text-xs font-semibold text-forest-200/75 bg-forest-150 mx-5 px-2 py-1 my-1 rounded-lg',
+				className,
+			)}
 			{...props}>
-			{/* @ts-expect-error: Unnecessary message type */}
-			{t(body)}
+			{t(body as string)}
 		</p>
 	)
+
+	if (parentClassName) {
+		return <div className={parentClassName}>{message}</div>
+	}
+
+	return message
 })
 FormMessage.displayName = 'FormMessage'
 

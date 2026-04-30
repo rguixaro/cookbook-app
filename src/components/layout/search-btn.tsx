@@ -18,7 +18,7 @@ export function SearchButton({
 		<button
 			onClick={onClick}
 			className={cn(
-				'w-8 h-8 rounded-xl flex items-center justify-center z-40 hover:bg-forest-100 transition-all duration-300',
+				'w-8 h-8 rounded-xl flex items-center justify-center z-40 hover:bg-forest-150 transition-all duration-300',
 				className,
 			)}>
 			<Search
