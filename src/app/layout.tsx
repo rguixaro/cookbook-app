@@ -9,9 +9,31 @@ import { Header } from '@/components/layout/header'
 import '@/styles/globals.css'
 import { cn } from '@/utils'
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
+
 export const metadata: Metadata = {
+	metadataBase: new URL(siteUrl),
 	title: 'CookBook',
 	description: 'CookBook App',
+	openGraph: {
+		title: 'CookBook',
+		description: 'CookBook App',
+		siteName: 'CookBook',
+		images: [
+			{
+				url: '/images/favicon.png',
+				width: 2731,
+				height: 2731,
+				alt: 'CookBook',
+			},
+		],
+	},
+	twitter: {
+		card: 'summary',
+		title: 'CookBook',
+		description: 'CookBook App',
+		images: ['/images/favicon.png'],
+	},
 }
 
 export default async function RootLayout({

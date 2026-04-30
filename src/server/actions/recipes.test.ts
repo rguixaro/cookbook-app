@@ -62,7 +62,8 @@ const mockSession = { user: { id: 'user-1' } }
 
 const validRecipeInput = {
 	name: 'Paella Valenciana',
-	category: 'Fish' as const,
+	course: 'SecondCourse' as const,
+	categories: ['Fish', 'Rice'] as const,
 	time: 60,
 	ingredients: ['rice', 'shrimp', 'saffron'],
 	instructions: 'Cook the rice with the shrimp and saffron in a large pan.',
@@ -78,7 +79,8 @@ describe('fetchRecipes', () => {
 		id,
 		name: `Recipe ${id}`,
 		slug: `recipe-${id}`,
-		category: 'Fish',
+		course: 'SecondCourse',
+		categories: ['Fish'],
 		time: 30,
 		ingredients: ['a'],
 		instructions: 'Do the thing.',
@@ -127,7 +129,9 @@ describe('fetchRecipes', () => {
 	it('returns recipes for public user', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.user.findUnique.mockResolvedValue({ isPrivate: false } as any)
-		mockDb.recipe.findMany.mockResolvedValue([makeRecipe('r1', 'user-2')] as any)
+		mockDb.recipe.findMany.mockResolvedValue([
+			makeRecipe('r1', 'user-2'),
+		] as any)
 
 		const result = await fetchRecipes({ userId: 'user-2' })
 		expect(result.recipes).toHaveLength(1)
@@ -210,10 +214,25 @@ describe('fetchRecipes', () => {
 		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
 		mockDb.recipe.findMany.mockResolvedValue([makeRecipe('r1')] as any)
 
-		await fetchRecipes({ category: 'Fish' })
+		await fetchRecipes({ course: 'SecondCourse' })
 		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
 			expect.objectContaining({
-				where: expect.objectContaining({ category: 'Fish' }),
+				where: expect.objectContaining({ course: 'SecondCourse' }),
+			}),
+		)
+	})
+
+	it('filters by categories using match-any semantics', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
+		mockDb.recipe.findMany.mockResolvedValue([makeRecipe('r1')] as any)
+
+		await fetchRecipes({ categories: 'Fish,Wok,InvalidCategory' })
+		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
+			expect.objectContaining({
+				where: expect.objectContaining({
+					categories: { hasSome: ['Fish', 'Wok'] },
+				}),
 			}),
 		)
 	})
@@ -223,9 +242,10 @@ describe('fetchRecipes', () => {
 		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
 		mockDb.recipe.findMany.mockResolvedValue([] as any)
 
-		await fetchRecipes({ category: 'InvalidCategory' })
+		await fetchRecipes({ course: 'InvalidCourse' })
 		const call = mockDb.recipe.findMany.mock.calls[0][0] as any
-		expect(call.where.category).toBeUndefined()
+		expect(call.where.course).toBeUndefined()
+		expect(JSON.stringify(call.where)).not.toContain('InvalidCourse')
 	})
 
 	it('passes cursor for pagination', async () => {
@@ -240,6 +260,101 @@ describe('fetchRecipes', () => {
 				skip: 1,
 			}),
 		)
+	})
+
+	it('sorts by creation date ascending', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
+		mockDb.recipe.findMany.mockResolvedValue([] as any)
+
+		await fetchRecipes({ sort: 'createdAtAsc' })
+
+		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
+			expect.objectContaining({
+				orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+			}),
+		)
+	})
+
+	it('sorts by cooking time ascending with missing times last', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
+		mockDb.recipe.findMany.mockResolvedValue([
+			{
+				...makeRecipe('slow'),
+				time: 90,
+				createdAt: new Date('2025-02-01'),
+			},
+			{
+				...makeRecipe('no-time'),
+				time: null,
+				createdAt: new Date('2025-01-01'),
+			},
+			{
+				...makeRecipe('quick'),
+				time: 15,
+				createdAt: new Date('2025-03-01'),
+			},
+		] as any)
+
+		const result = await fetchRecipes({ sort: 'timeAsc' })
+
+		expect(result.recipes.map((recipe) => recipe.id)).toEqual([
+			'quick',
+			'slow',
+			'no-time',
+		])
+		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
+			expect.not.objectContaining({
+				take: expect.any(Number),
+			}),
+		)
+	})
+
+	it('sorts by cooking time descending with missing times last', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
+		mockDb.recipe.findMany.mockResolvedValue([
+			{
+				...makeRecipe('quick'),
+				time: 15,
+				createdAt: new Date('2025-02-01'),
+			},
+			{
+				...makeRecipe('no-time'),
+				time: null,
+				createdAt: new Date('2025-01-01'),
+			},
+			{
+				...makeRecipe('slow'),
+				time: 90,
+				createdAt: new Date('2025-03-01'),
+			},
+		] as any)
+
+		const result = await fetchRecipes({ sort: 'timeDesc' })
+
+		expect(result.recipes.map((recipe) => recipe.id)).toEqual([
+			'slow',
+			'quick',
+			'no-time',
+		])
+	})
+
+	it('normalizes unknown sort URLs to the default date order', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
+		mockDb.recipe.findMany.mockResolvedValue([] as any)
+
+		await fetchRecipes({ sort: 'unsupportedSort' })
+
+		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
+			expect.objectContaining({
+				orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+				take: 11,
+			}),
+		)
+		expect(mockDb.user.findMany).not.toHaveBeenCalled()
 	})
 
 	it('returns empty on database error', async () => {
@@ -284,6 +399,8 @@ describe('createRecipe', () => {
 		expect(mockDb.recipe.create).toHaveBeenCalledWith({
 			data: expect.objectContaining({
 				name: 'Paella Valenciana',
+				course: 'SecondCourse',
+				categories: ['Fish', 'Rice'],
 				slug: 'paella-valenciana',
 				authorId: 'user-1',
 			}),
@@ -313,7 +430,10 @@ describe('createRecipe', () => {
 			...validRecipeInput,
 			name: '!!!',
 		})
-		expect(result).toEqual({ error: true, message: 'error-recipe-name-invalid' })
+		expect(result).toEqual({
+			error: true,
+			message: 'error-recipe-name-invalid',
+		})
 	})
 })
 
@@ -627,7 +747,10 @@ describe('uploadRecipeImages', () => {
 			'recipe-1',
 			makeFormData(makeFile('a.jpg')),
 		)
-		expect(result).toEqual({ error: false, images: ['old.jpg', 'new-key.jpg'] })
+		expect(result).toEqual({
+			error: false,
+			images: ['old.jpg', 'new-key.jpg'],
+		})
 	})
 })
 
@@ -679,7 +802,10 @@ describe('updateRecipeImages', () => {
 		} as any)
 		mockDb.recipe.update.mockResolvedValue({} as any)
 
-		const result = await updateRecipeImages('recipe-1', ['img2.jpg', 'img1.jpg'])
+		const result = await updateRecipeImages('recipe-1', [
+			'img2.jpg',
+			'img1.jpg',
+		])
 		expect(result).toEqual({ error: false })
 		expect(mockDb.recipe.update).toHaveBeenCalledWith({
 			where: { id: 'recipe-1', authorId: 'user-1' },

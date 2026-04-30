@@ -57,12 +57,17 @@ export const SocialLogin = () => {
 						className='h-auto w-full space-x-5 rounded-xl p-4 text-base text-forest-100 shadow-none!'
 						disabled={loading}
 						onClick={() => handleSocialLogin(sp.provider)}>
-						{sp.icon}
-						<span className='font-semibold'>{t(sp.name)}</span>
+						{provider ? (
+							<Loader className='animate-spin' size={24} />
+						) : (
+							<>
+								{sp.icon}
+								<span className='font-semibold'>{t(sp.name)}</span>
+							</>
+						)}
 					</Button>
 				</div>
 			))}
-			{provider && <Loader className='animate-spin mt-10' size={24} />}
 		</div>
 	)
 }

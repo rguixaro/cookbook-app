@@ -1,28 +1,43 @@
 import { icons } from 'lucide-react'
 
-import { Categories } from '@/types'
+import type { RecipeCourse, RecipeCategory } from '@/types'
 
 type IconProps = {
-	name: Categories
-	color?: string
+	name: RecipeCourse | RecipeCategory | string
+	className?: string
 	size?: number
 }
 
-const IconsByCategory = {
+const IconsByName = {
 	starter: 'Dessert',
-	pasta: 'UtensilsCrossed',
+	firstcourse: 'Utensils',
+	secondcourse: 'UtensilsCrossed',
+	dessert: 'CakeSlice',
+	pasta: 'Wheat',
 	meat: 'Beef',
-	fish: 'FishSymbol',
+	fish: 'Fish',
 	vegetable: 'Carrot',
 	salad: 'Salad',
 	soup: 'Soup',
-	dessert: 'CakeSlice',
+	rice: 'Wheat',
+	legume: 'Bean',
+	seafood: 'Shrimp',
+	fruit: 'Apple',
+	stew: 'CookingPot',
+	sauce: 'Flame',
+	marinade: 'LeafyGreen',
+	wok: 'Soup',
 }
 
-export const Icon = ({ name, color = '#789b84', size = 18 }: IconProps) => {
+export const Icon = ({
+	name,
+	className = 'stroke-forest-200',
+	size = 18,
+}: IconProps) => {
 	const iconName =
-		IconsByCategory[name.toLocaleLowerCase() as keyof typeof IconsByCategory]
-	const LucideIcon = icons[iconName as keyof typeof icons]
+		IconsByName[name.toLocaleLowerCase() as keyof typeof IconsByName] ??
+		'UtensilsCrossed'
+	const LucideIcon = icons[iconName as keyof typeof icons] ?? icons.Utensils
 
-	return <LucideIcon color={color} size={size} className='shrink-0' />
+	return <LucideIcon size={size} className={className} />
 }

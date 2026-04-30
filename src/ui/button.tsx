@@ -18,7 +18,7 @@ interface IconRefProps {
 export type ButtonIconProps = IconProps | IconRefProps
 
 const buttonVariants = cva(
-	'inline-flex items-center space-x-3 justify-center whitespace-nowrap rounded-xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-forest-150',
+	'inline-flex items-center space-x-3 justify-center whitespace-nowrap rounded-2xl text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-forest-150',
 	{
 		variants: {
 			variant: {
@@ -32,7 +32,7 @@ const buttonVariants = cva(
 			},
 			size: {
 				default: 'h-9 px-4 py-2',
-				sm: 'h-8 px-3 text-xs',
+				sm: 'h-8 px-3 text-xs rounded-xl',
 				lg: 'h-12 px-5',
 				icon: 'h-9 w-9',
 			},

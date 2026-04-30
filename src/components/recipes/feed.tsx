@@ -34,16 +34,20 @@ function RecipeSkeleton() {
 
 export const RecipesFeed = ({
 	searchParam,
-	categoryParam,
+	courseParam,
+	categoriesParam,
 	favouritesParam,
 	savedParam,
+	sortParam,
 	userId,
 	referred = false,
 }: {
 	searchParam?: string
-	categoryParam?: string
+	courseParam?: string
+	categoriesParam?: string
 	favouritesParam?: boolean
 	savedParam?: boolean
+	sortParam?: string
 	userId?: string
 	referred?: boolean
 }) => {
@@ -63,18 +67,18 @@ export const RecipesFeed = ({
 			const result = await fetchRecipes({
 				cursor: cursor ?? undefined,
 				search: searchParam,
-				category: categoryParam,
+				course: courseParam,
+				categories: categoriesParam,
 				favourites: favouritesParam,
 				saved: savedParam,
+				sort: sortParam,
 				userId,
 			})
 
 			if (fetchIdRef.current !== id) return
 
 			setRecipes((prev) => {
-				const combined = cursor
-					? [...prev, ...result.recipes]
-					: result.recipes
+				const combined = cursor ? [...prev, ...result.recipes] : result.recipes
 				const seen = new Set<string>()
 				return combined.filter((r) =>
 					seen.has(r.id) ? false : seen.add(r.id) && true,
@@ -83,7 +87,15 @@ export const RecipesFeed = ({
 			setNextCursor(result.nextCursor)
 			setIsLoading(false)
 		},
-		[searchParam, categoryParam, favouritesParam, savedParam, userId],
+		[
+			searchParam,
+			courseParam,
+			categoriesParam,
+			favouritesParam,
+			savedParam,
+			sortParam,
+			userId,
+		],
 	)
 
 	useEffect(() => {
@@ -109,7 +121,9 @@ export const RecipesFeed = ({
 					recipe={recipe}
 					referred={referred}
 					query={searchParam}
-					category={categoryParam}
+					course={courseParam}
+					categories={categoriesParam}
+					sort={sortParam}
 				/>
 			))}
 
@@ -140,9 +154,7 @@ export const RecipesFeed = ({
 				isEmpty && (
 					<div className='mt-10 h-32 flex flex-col items-center justify-center text-forest-200 text-center'>
 						<Utensils size={48} />
-						<TypographyH4 className='mt-2 mb-5'>
-							{t('no-recipes')}
-						</TypographyH4>
+						<TypographyH4 className='mt-2 mb-5'>{t('no-recipes')}</TypographyH4>
 					</div>
 				)
 			) : (

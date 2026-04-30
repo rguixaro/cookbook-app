@@ -39,7 +39,8 @@ const makeRecipe = (overrides: Record<string, unknown>) => ({
 	sourceUrls: ['https://example.com/owned'],
 	createdAt: date('2024-01-01T00:00:00.000Z'),
 	updatedAt: date('2024-01-02T00:00:00.000Z'),
-	category: 'Pasta',
+	course: 'FirstCourse',
+	categories: ['Pasta'],
 	authorId: 'user-real',
 	author: {
 		id: 'user-real',
@@ -197,9 +198,7 @@ describe('collectProfileJsonExport', () => {
 		const payload = result.payload as any
 		const serialized = JSON.stringify(payload)
 
-		expect(result.filename).toMatch(
-			/^owner-cookbook-export-\d{8}-\d{6}\.json$/,
-		)
+		expect(result.filename).toMatch(/^owner-cookbook-export-\d{8}-\d{6}\.json$/)
 		expect(payload.recipes).toHaveLength(3)
 		expect(payload.lists.authored).toHaveLength(1)
 		expect(payload.lists.saved).toHaveLength(2)
@@ -254,6 +253,6 @@ describe('collectProfileImagesExport', () => {
 		)
 
 		expect(text).toContain('manifest.json')
-		expect(text).toContain('"schemaVersion": 1')
+		expect(text).toContain('"schemaVersion": 4')
 	})
 })

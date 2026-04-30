@@ -38,11 +38,11 @@ vi.mock('use-debounce', () => ({
 beforeEach(() => vi.clearAllMocks())
 
 describe('SearchRecipes', () => {
-	it('renders the search input and category/favourites buttons', () => {
+	it('renders the search input and filters/favourites buttons', () => {
 		renderWithProviders(<SearchRecipes withAvatar={false} />)
 
 		expect(screen.getByPlaceholderText('Search')).toBeInTheDocument()
-		expect(screen.getByText('Category')).toBeInTheDocument()
+		expect(screen.getByText('Filters')).toBeInTheDocument()
 		expect(screen.getByText('Favourites')).toBeInTheDocument()
 	})
 
@@ -72,6 +72,54 @@ describe('SearchRecipes', () => {
 				expect.stringContaining('favourites=true'),
 			)
 		})
+	})
+
+	it('updates URL from the combined filters modal', async () => {
+		const user = userEvent.setup()
+		renderWithProviders(<SearchRecipes withAvatar={false} />)
+
+		await user.click(screen.getByText('Filters'))
+		const dialog = await screen.findByRole('dialog')
+		expect(dialog).toHaveClass('bottom-0')
+		expect(dialog).toHaveClass('max-h-[75dvh]')
+		expect(screen.getByText('Sort By')).toBeInTheDocument()
+		expect(screen.getByText('Newest')).toBeInTheDocument()
+		expect(screen.getByText('Quickest')).toBeInTheDocument()
+		expect(
+			screen.getByTestId('filters-sort-direction-desc'),
+		).toBeInTheDocument()
+		expect(screen.getByTestId('filters-sheet-handle')).toBeInTheDocument()
+		expect(screen.getByTestId('filters-sheet-content')).toHaveClass(
+			'overflow-y-auto',
+		)
+
+		await user.click(screen.getByText('Newest'))
+		expect(screen.getByText('Oldest')).toBeInTheDocument()
+		expect(screen.getByText('Quickest')).toBeInTheDocument()
+		expect(screen.getByTestId('filters-sort-direction-asc')).toBeInTheDocument()
+		await user.click(screen.getByText('Quickest'))
+		expect(screen.getByTestId('filters-sort-direction-asc')).toBeInTheDocument()
+		await user.click(await screen.findByText('First course'))
+		await user.click(screen.getByText('Pasta'))
+
+		expect(mockReplace).not.toHaveBeenCalled()
+		await user.click(screen.getByRole('button', { name: 'Filter' }))
+
+		await waitFor(() => {
+			expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+		})
+		expect(mockReplace).toHaveBeenCalledWith(
+			expect.stringContaining('course=FirstCourse'),
+		)
+		expect(mockReplace).toHaveBeenCalledWith(
+			expect.stringContaining('categories=Pasta'),
+		)
+		expect(mockReplace).toHaveBeenCalledWith(
+			expect.stringContaining('sort=timeAsc'),
+		)
+		expect(screen.getByText('Quickest')).toBeInTheDocument()
+		expect(screen.getByText('First course')).toBeInTheDocument()
+		expect(screen.getByText('Pasta')).toBeInTheDocument()
 	})
 
 	it('toggles saved filter when configured', async () => {

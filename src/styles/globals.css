@@ -90,6 +90,64 @@
 	}
 }
 
+@keyframes filters-sheet-in {
+	from {
+		opacity: 0;
+		transform: translate3d(0, 100%, 0);
+	}
+	to {
+		opacity: 1;
+		transform: translate3d(0, var(--filters-sheet-drag, 0px), 0);
+	}
+}
+
+@keyframes filters-sheet-out {
+	from {
+		opacity: 1;
+		transform: translate3d(0, var(--filters-sheet-drag, 0px), 0);
+	}
+	to {
+		opacity: 0;
+		transform: translate3d(0, 100%, 0);
+	}
+}
+
+@keyframes filters-dialog-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes filters-dialog-out {
+	from {
+		opacity: 1;
+	}
+	to {
+		opacity: 0;
+	}
+}
+
+.filters-sheet[data-state='open'] {
+	animation: filters-sheet-in 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.filters-sheet[data-state='closed'] {
+	animation: filters-sheet-out 190ms ease-in;
+}
+
+@media (min-width: 640px) {
+	.filters-sheet[data-state='open'] {
+		animation: filters-dialog-in 220ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.filters-sheet[data-state='closed'] {
+		animation: filters-dialog-out 160ms ease-in;
+	}
+}
+
 /* Custom utility layer */
 @layer utilities {
 	/* Hide scrollbar for Chrome, Safari and Opera */

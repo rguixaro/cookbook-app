@@ -1,88 +1,101 @@
 generator client {
-    provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider    = "mongodb"
-    url         = env("DATABASE_URL")
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Course {
+  Starter
+  FirstCourse
+  SecondCourse
+  Dessert
 }
 
 enum Category {
-    Starter
-    Pasta
-    Meat
-    Fish
-    Vegetable
-    Salad
-    Soup
-    Dessert
+  Pasta
+  Meat
+  Fish
+  Vegetable
+  Salad
+  Soup
+  Rice
+  Legume
+  Seafood
+  Fruit
+  Stew
+  Sauce
+  Marinade
+  Wok
 }
 
 model Recipe {
-    id                  String     @id @default(auto()) @map("_id") @db.ObjectId
-    slug                String
-    name                String
-    time                Int?
-    instructions        String
-    ingredients         String[]
-    images              String[]
-    sourceUrls          String[]
-    createdAt           DateTime   @default(now())
-    updatedAt           DateTime   @updatedAt
-    category            Category
-    author              User?      @relation(references: [id], fields: [authorId], onDelete: Cascade)
-    authorId            String     @db.ObjectId
+  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  slug         String
+  name         String
+  time         Int?
+  instructions String
+  ingredients  String[]
+  images       String[]
+  sourceUrls   String[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  course       Course
+  categories   Category[] @default([])
+  author       User?      @relation(references: [id], fields: [authorId], onDelete: Cascade)
+  authorId     String     @db.ObjectId
 
-    @@unique([slug, authorId])
-    @@index([authorId])
+  @@unique([slug, authorId])
+  @@index([authorId])
 }
 
 model Account {
-    id                  String      @id @default(auto()) @map("_id") @db.ObjectId
-    userId              String      @db.ObjectId
-    type                String
-    provider            String
-    providerAccountId   String
-    refresh_token       String?
-    access_token        String?
-    expires_at          Int?
-    token_type          String?
-    scope               String?
-    id_token            String?
-    session_state       String?
+  id                String  @id @default(auto()) @map("_id") @db.ObjectId
+  userId            String  @db.ObjectId
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
 
-    user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@unique([provider, providerAccountId])
-    @@index([userId])
+  @@unique([provider, providerAccountId])
+  @@index([userId])
 }
 
 model Session {
-    id                  String      @id @default(auto()) @map("_id") @db.ObjectId
-    sessionToken        String      @unique
-    expires             DateTime
-    user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-    userId              String      @db.ObjectId
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  sessionToken String   @unique
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId       String   @db.ObjectId
 
-    @@index([userId])
+  @@index([userId])
 }
 
 model User {
-    id                  String      @id @default(auto()) @map("_id") @db.ObjectId
-    createdAt           DateTime    @default(now())
-    updatedAt           DateTime    @updatedAt
-    image               String?
-    name                String?
-    username            String      @unique
-    email               String      @unique
-    emailVerified       DateTime?
-    isPrivate           Boolean     @default(true)
-    savedRecipes        String[]
-    favouriteRecipes    String[]
-    accounts            Account[]
-    sessions            Session[]
-    recipes             Recipe[]
+  id               String    @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  image            String?
+  name             String?
+  username         String    @unique
+  email            String    @unique
+  emailVerified    DateTime?
+  isPrivate        Boolean   @default(true)
+  savedRecipes     String[]
+  favouriteRecipes String[]
+  accounts         Account[]
+  sessions         Session[]
+  recipes          Recipe[]
 
-    @@index([isPrivate])
+  @@index([isPrivate])
 }
-

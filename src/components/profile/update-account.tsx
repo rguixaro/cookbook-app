@@ -89,7 +89,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 			<Form {...hookForm}>
 				<form
 					onSubmit={hookForm.handleSubmit(onSubmit)}
-					className='space-y-5 text-forest-400'>
+					className='space-y-5 text-forest-300'>
 					<FormField
 						control={hookForm.control}
 						name='isPrivate'
@@ -166,7 +166,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 					/>
 					<FormItem>
 						<FormLabel className='font-bold'>{t('email')}</FormLabel>
-						<FormDescription className='flex items-center space-x-2 my-2 text-forest-400'>
+						<FormDescription className='flex items-center space-x-2 my-2 text-forest-300'>
 							<AlertTriangleIcon size={18} />
 							<span>{t('email-hint')}</span>
 						</FormDescription>
@@ -180,7 +180,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 					<div className='flex items-center'>
 						<Button
 							type='submit'
-							className='w-full'
+							className='w-full rounded-xl'
 							disabled={
 								loading ||
 								(watchedName === props.name &&
@@ -193,14 +193,11 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							)}
 						</Button>
 					</div>
-					<div className='w-full justify-center flex my-8'>
-						<div className='h-2 w-3/4 rounded bg-forest-150' />
-					</div>
 					<DeleteAccount
 						email={props.email}
 						trigger={
 							<Button variant='ghost' size='sm' className='w-fit'>
-								<span className='font-bold underline'>
+								<span className='font-bold'>
 									{t('account-delete')}
 								</span>
 							</Button>

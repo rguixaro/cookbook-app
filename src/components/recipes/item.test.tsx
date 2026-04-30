@@ -46,7 +46,8 @@ function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
 		id: 'recipe-1',
 		name: 'Pasta Carbonara',
 		slug: 'pasta-carbonara',
-		category: 'Pasta',
+		course: 'FirstCourse',
+		categories: ['Pasta'],
 		time: 30,
 		ingredients: ['pasta', 'egg', 'bacon'],
 		instructions: 'Cook the pasta with eggs and bacon.',
@@ -55,6 +56,7 @@ function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
 		authorId: 'user-1',
 		authorUsername: 'chef',
 		createdAt: new Date('2025-01-01'),
+		updatedAt: new Date('2025-01-01'),
 		...overrides,
 	}
 }
@@ -108,5 +110,46 @@ describe('ItemRecipe image loading', () => {
 			screen.getByRole('img', { name: 'Recipe image failed to load' }),
 		).toBeInTheDocument()
 		expect(screen.queryByTestId('recipe-image')).not.toBeInTheDocument()
+	})
+
+	it('caps the number of ingredient chips shown on the card', () => {
+		renderWithProviders(
+			<ItemRecipe
+				recipe={makeRecipe({
+					categories: ['Pasta'],
+					ingredients: [
+						'apple',
+						'banana',
+						'carrot',
+						'dates',
+						'eggplant',
+						'fig',
+						'grape',
+						'honey',
+					],
+				})}
+			/>,
+		)
+
+		expect(screen.getByText('Apple')).toBeInTheDocument()
+		expect(screen.getByText('Banana')).toBeInTheDocument()
+		expect(screen.queryByText('Carrot')).not.toBeInTheDocument()
+		expect(screen.getByText('+6')).toBeInTheDocument()
+	})
+
+	it('constrains ingredient chip width so long names truncate visually', () => {
+		renderWithProviders(
+			<ItemRecipe
+				recipe={makeRecipe({
+					ingredients: ['very long preserved lemon ingredient name'],
+				})}
+			/>,
+		)
+
+		const chipText = screen.getByText(
+			'Very long preserved lemon ingredient name',
+		)
+		expect(chipText).toHaveClass('truncate')
+		expect(chipText.parentElement).toHaveClass('max-w-[9rem]', 'min-w-0')
 	})
 })
