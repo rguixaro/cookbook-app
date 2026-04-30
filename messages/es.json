@@ -68,7 +68,7 @@
 		"recipe-name": "Nombre de la receta",
 		"favourites": "Favoritos",
 		"saved": "Guardadas",
-		"categories": "Plato",
+		"categories": "Categorías",
 		"categories-select": "Selecciona un plato",
 		"filter": "Filtrar",
 		"filters": "Filtros",
@@ -101,7 +101,15 @@
 		"sources": "Fuentes",
 		"images-after-create": "Podrás añadir imágenes después de crear la receta",
 		"images-add-in-edit": "Edita esta receta para añadir imágenes",
-		"images-empty": "Esta receta todavía no tiene imágenes"
+		"images-empty": "Esta receta todavía no tiene imágenes",
+		"course": "Plato",
+		"sort-by": "Ordenar por",
+		"sort-newest": "Más recientes",
+		"sort-oldest": "Más antiguas",
+		"sort-quickest": "Más rápidas",
+		"sort-longest": "Más largas",
+		"reset": "Restablecer",
+		"filters-close": "Cerrar filtros"
 	},
 	"RecipeCourses": {
 		"starter": "Entrante",
