@@ -105,7 +105,7 @@ const IngredientSchema = z
 	.string()
 	.trim()
 	.min(2, { message: 'ingredient-invalid' })
-	.max(200)
+	.max(30, { message: 'ingredient-too-long' })
 	.refine((value) => (value.match(/\p{Script=Latin}/gu)?.length ?? 0) >= 2, {
 		message: 'ingredient-invalid',
 	})
@@ -136,7 +136,7 @@ export const CreateRecipeSchema = z.object({
 				.string()
 				.max(2048)
 				.url({ message: 'source-url-invalid' })
-				.refine((url) => /^https?:\/\//i.test(url), {
+				.refine((url) => /^https:\/\//i.test(url), {
 					message: 'source-url-invalid',
 				}),
 		)

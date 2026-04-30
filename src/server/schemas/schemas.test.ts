@@ -1,9 +1,15 @@
 import { describe, it, expect } from 'vitest'
-import { CreateRecipeSchema, UpdateProfileSchema } from './index'
+import {
+	CreateRecipeSchema,
+	RecipeCategories,
+	UpdateProfileSchema,
+	normalizeRecipeCourseAndCategories,
+} from './index'
 
 const validRecipe = {
 	name: 'Paella Valenciana',
-	category: 'Fish' as const,
+	course: 'SecondCourse' as const,
+	categories: ['Fish'] as const,
 	time: 60,
 	ingredients: ['rice', 'shrimp', 'saffron'],
 	instructions: 'Cook the rice with the shrimp and saffron in a large pan.',
@@ -29,29 +35,91 @@ describe('CreateRecipeSchema', () => {
 		expect(result.success).toBe(false)
 	})
 
-	it('rejects invalid category', () => {
+	it('rejects invalid course', () => {
 		const result = CreateRecipeSchema.safeParse({
 			...validRecipe,
-			category: 'Pizza',
+			course: 'Pizza',
 		})
 		expect(result.success).toBe(false)
 	})
 
-	it('accepts all valid categories', () => {
-		const categories = [
-			'Starter',
-			'Pasta',
-			'Meat',
-			'Fish',
-			'Vegetable',
-			'Salad',
-			'Soup',
-			'Dessert',
-		]
-		for (const category of categories) {
-			const result = CreateRecipeSchema.safeParse({ ...validRecipe, category })
+	it('accepts all valid courses', () => {
+		const courses = ['Starter', 'FirstCourse', 'SecondCourse', 'Dessert']
+		for (const course of courses) {
+			const result = CreateRecipeSchema.safeParse({ ...validRecipe, course })
 			expect(result.success).toBe(true)
 		}
+	})
+
+	it('accepts all valid categories', () => {
+		for (const category of RecipeCategories) {
+			const result = CreateRecipeSchema.safeParse({
+				...validRecipe,
+				categories: [category],
+			})
+			expect(result.success).toBe(true)
+		}
+	})
+
+	it('rejects invalid categories', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			categories: ['Pizza'],
+		})
+		expect(result.success).toBe(false)
+	})
+
+	it('rejects empty categories array', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			categories: [],
+		})
+
+		expect(result.success).toBe(false)
+		if (!result.success) {
+			expect(result.error.issues[0]?.message).toBe('categories-required')
+		}
+	})
+
+	it('rejects missing categories', () => {
+		const { categories: _categories, ...recipeWithoutCategories } = validRecipe
+		const result = CreateRecipeSchema.safeParse(recipeWithoutCategories)
+
+		expect(result.success).toBe(false)
+		if (!result.success) {
+			expect(result.error.issues[0]?.message).toBe('categories-required')
+		}
+	})
+
+	it('rejects duplicate categories', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			categories: ['Fish', 'Fish'],
+		})
+		expect(result.success).toBe(false)
+	})
+
+	it('rejects more than 3 categories', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			categories: ['Fish', 'Seafood', 'Rice', 'Wok'],
+		})
+		expect(result.success).toBe(false)
+	})
+
+	it('normalizes recipe course and filters categories during reads', () => {
+		expect(
+			normalizeRecipeCourseAndCategories('FirstCourse', ['Pasta']),
+		).toEqual({
+			course: 'FirstCourse',
+			categories: ['Pasta'],
+		})
+		expect(
+			normalizeRecipeCourseAndCategories('Pizza', ['Fish', 'Pizza']),
+		).toEqual({
+			course: 'FirstCourse',
+			categories: ['Fish'],
+		})
 	})
 
 	it('rejects time less than 1', () => {
@@ -60,7 +128,10 @@ describe('CreateRecipeSchema', () => {
 	})
 
 	it('rejects time greater than 10080', () => {
-		const result = CreateRecipeSchema.safeParse({ ...validRecipe, time: 10081 })
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			time: 10081,
+		})
 		expect(result.success).toBe(false)
 	})
 
@@ -82,6 +153,15 @@ describe('CreateRecipeSchema', () => {
 			})
 			expect(result.success).toBe(false)
 		}
+	})
+
+	it('rejects ingredients longer than 30 characters', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			ingredients: ['1234567890123456789012345678901'],
+		})
+
+		expect(result.success).toBe(false)
 	})
 
 	it('accepts ingredients with quantities and text', () => {
@@ -125,14 +205,18 @@ describe('CreateRecipeSchema', () => {
 		expect(result.success).toBe(true)
 	})
 
+	it('rejects HTTP source URLs', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			sourceUrls: ['http://example.com/recipe'],
+		})
+		expect(result.success).toBe(false)
+	})
+
 	it('rejects more than 2 source URLs', () => {
 		const result = CreateRecipeSchema.safeParse({
 			...validRecipe,
-			sourceUrls: [
-				'https://a.com',
-				'https://b.com',
-				'https://c.com',
-			],
+			sourceUrls: ['https://a.com', 'https://b.com', 'https://c.com'],
 		})
 		expect(result.success).toBe(false)
 	})

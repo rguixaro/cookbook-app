@@ -25,17 +25,19 @@
 		"error-file-too-large": "File is too large. Maximum size is 50 MB"
 	},
 	"errors": {
-		"recipe-name-too-short": "Recipe name is too short",
+		"recipe-name-too-short": "Name is too short",
 		"time-invalid": "Time must be a number",
-		"instructions-too-short": "Recipe instructions are too short",
+		"instructions-too-short": "Instructions are too short",
 		"ingredients-required": "At least one ingredient is required",
-		"ingredient-invalid": "Ingredients must include at least two letters",
+		"ingredient-invalid": "Enter at least two letters",
 		"username-required": "Username is required",
 		"username-too-long": "Username cannot be longer than 40 characters",
 		"course-required": "The course is required",
 		"categories-required": "Select at least one category",
 		"categories-too-many": "Select up to 3 categories",
-		"categories-duplicate": "Categories cannot be duplicated"
+		"categories-duplicate": "Categories cannot be duplicated",
+		"ingredient-too-long": "Use 30 characters or fewer",
+		"source-url-invalid": "The link must start with https://"
 	},
 	"LoginPage": {
 		"login-to": "Sign in to your ",
@@ -61,10 +63,10 @@
 		"ingredients": "Ingredients",
 		"ingredients-add": "Add",
 		"ingredients-invalid": "Enter at least two letters",
-		"ingredients-placeholder": "e.g. 2 eggs",
+		"ingredients-placeholder": "500g beef mince",
 		"ingredients-remove": "Remove {ingredient}",
 		"instructions": "Instructions",
-		"instructions-add": "Add the recipe instructions",
+		"instructions-add": "Brown the beef mince.\nAdd tomato and simmer.",
 		"recipe-name": "Recipe name",
 		"favourites": "Favourites",
 		"saved": "Saved",
@@ -95,7 +97,7 @@
 		"recipe-count": "{count, plural, one {# recipe} other {# recipes}}",
 		"source-links": "Recipe links",
 		"source-links-add": "Add",
-		"source-links-invalid": "Enter a valid link starting with http:// or https://",
+		"source-links-invalid": "The link must start with https://",
 		"source-links-placeholder": "https://example.com/recipe",
 		"source-links-remove": "Remove {url}",
 		"sources": "Sources",
@@ -109,7 +111,9 @@
 		"sort-quickest": "Quickest",
 		"sort-longest": "Longest",
 		"reset": "Reset",
-		"filters-close": "Close filters"
+		"filters-close": "Close filters",
+		"ingredient-too-long": "Use 30 characters or fewer",
+		"recipe-name-placeholder": "Bolognese sauce"
 	},
 	"RecipeCourses": {
 		"starter": "Starter",

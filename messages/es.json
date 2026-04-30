@@ -25,17 +25,19 @@
 		"error-file-too-large": "El archivo es demasiado grande. El tamaño máximo es 50 MB"
 	},
 	"errors": {
-		"recipe-name-too-short": "El nombre de la receta es demasiado corto",
+		"recipe-name-too-short": "El nombre es demasiado corto",
 		"time-invalid": "El tiempo debe ser un número",
-		"instructions-too-short": "Las instrucciones de la receta son demasiado cortas",
+		"instructions-too-short": "Las instrucciones son demasiado cortas",
 		"ingredients-required": "Es necesario añadir al menos un ingrediente",
-		"ingredient-invalid": "Los ingredientes deben incluir al menos dos letras",
+		"ingredient-invalid": "Introduce al menos dos letras",
 		"username-required": "El nombre de usuario es obligatorio",
 		"username-too-long": "El nombre de usuario no puede tener más de 40 caracteres",
 		"course-required": "Es necesario seleccionar un plato",
 		"categories-required": "Selecciona al menos una categoría",
 		"categories-too-many": "Selecciona hasta 3 categorías",
-		"categories-duplicate": "Las categorías no se pueden duplicar"
+		"categories-duplicate": "Las categorías no se pueden duplicar",
+		"ingredient-too-long": "Usa 30 caracteres o menos",
+		"source-url-invalid": "El enlace debe empezar por https://"
 	},
 	"LoginPage": {
 		"login-to": "Accede a tu ",
@@ -61,10 +63,10 @@
 		"ingredients": "Ingredientes",
 		"ingredients-add": "Añadir",
 		"ingredients-invalid": "Introduce al menos dos letras",
-		"ingredients-placeholder": "p. ej. 2 huevos",
+		"ingredients-placeholder": "Carne picada 500g",
 		"ingredients-remove": "Eliminar {ingredient}",
 		"instructions": "Instrucciones",
-		"instructions-add": "Añadir las instrucciones de la receta",
+		"instructions-add": "Dora la carne picada.\nAñade tomate y deja cocer.",
 		"recipe-name": "Nombre de la receta",
 		"favourites": "Favoritos",
 		"saved": "Guardadas",
@@ -95,7 +97,7 @@
 		"recipe-count": "{count, plural, one {# receta} other {# recetas}}",
 		"source-links": "Enlaces de la receta",
 		"source-links-add": "Añadir",
-		"source-links-invalid": "Introduce un enlace válido que empiece por http:// o https://",
+		"source-links-invalid": "El enlace debe empezar por https://",
 		"source-links-placeholder": "https://ejemplo.com/receta",
 		"source-links-remove": "Eliminar {url}",
 		"sources": "Fuentes",
@@ -109,7 +111,9 @@
 		"sort-quickest": "Más rápidas",
 		"sort-longest": "Más largas",
 		"reset": "Restablecer",
-		"filters-close": "Cerrar filtros"
+		"filters-close": "Cerrar filtros",
+		"ingredient-too-long": "Usa 30 caracteres o menos",
+		"recipe-name-placeholder": "Salsa boloñesa"
 	},
 	"RecipeCourses": {
 		"starter": "Entrante",
