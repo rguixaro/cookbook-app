@@ -79,13 +79,20 @@ describe('SearchRecipes', () => {
 		renderWithProviders(<SearchRecipes withAvatar={false} />)
 
 		await user.click(screen.getByText('Filters'))
-		await screen.findByRole('dialog')
+		const dialog = await screen.findByRole('dialog')
+		expect(dialog).toHaveClass('bottom-0')
+		expect(dialog).toHaveClass('max-h-[75dvh]')
 		expect(screen.getByText('Sort By')).toBeInTheDocument()
 		expect(screen.getByText('Newest')).toBeInTheDocument()
 		expect(screen.getByText('Quickest')).toBeInTheDocument()
 		expect(
 			screen.getByTestId('filters-sort-direction-desc'),
 		).toBeInTheDocument()
+		expect(screen.getByTestId('filters-sheet-handle')).toBeInTheDocument()
+		expect(screen.getByTestId('filters-sheet-content')).toHaveClass(
+			'overflow-y-auto',
+		)
+
 		await user.click(screen.getByText('Newest'))
 		expect(screen.getByText('Oldest')).toBeInTheDocument()
 		expect(screen.getByText('Quickest')).toBeInTheDocument()
