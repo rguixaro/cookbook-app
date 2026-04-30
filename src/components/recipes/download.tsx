@@ -3,19 +3,22 @@
 import { useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
-import { ArrowDownToLine, Clock, ExternalLink } from 'lucide-react'
+import { ArrowDownToLine, ExternalLink } from 'lucide-react'
 import * as Sentry from '@sentry/nextjs'
 import { toPng } from 'html-to-image'
 import { toast } from 'sonner'
 
 import { Icon } from '@/components/recipes/icon'
+import { RecipeGalleryPlaceholder } from '@/components/recipes/gallery'
 
-import { cn, IconProps, SITE_URL } from '@/utils'
+import { Input } from '@/ui'
+import { cn, SITE_URL } from '@/utils'
 
 type DownloadableRecipe = {
 	slug: string
 	name: string
-	category: string
+	course: string
+	categories: string[]
 	time: number | null
 	ingredients: string[]
 	instructions: string
@@ -34,6 +37,8 @@ export const RecipeDownload = ({
 	}
 }) => {
 	const t = useTranslations('RecipesPage')
+	const t_courses = useTranslations('RecipeCourses')
+	const t_categories = useTranslations('RecipeCategories')
 	const t_toasts = useTranslations('toasts')
 	const ref = useRef<HTMLDivElement>(null)
 
@@ -92,7 +97,7 @@ export const RecipeDownload = ({
 	return (
 		<button
 			onClick={onButtonClick}
-			className='relative hover:bg-forest-100 p-1 rounded-xl transition-colors duration-300'>
+			className='relative hover:bg-forest-150 p-1 rounded-xl transition-colors duration-300'>
 			<ArrowDownToLine size={24} className='text-forest-200' />
 			<div className='fixed -left-2499.75 top-0 opacity-0 pointer-events-none w-96'>
 				<div
@@ -100,159 +105,205 @@ export const RecipeDownload = ({
 					className='w-full flex flex-col items-center justify-center overflow-hidden p-5'>
 					<div
 						className={cn(
-							'w-full my-3 flex flex-col items-center justify-center bg-forest-150 border-8 border-forest-150 rounded-3xl shadow-center-sm',
+							'w-full mt-3 rounded-3xl border-8 border-b-16',
+							'flex flex-col items-center justify-center shadow-center-sm border-forest-150 bg-forest-150',
 						)}>
-						<div className='w-full border-b-8 border-forest-150 bg-forest-150 rounded-t-[20px]'>
-							<div className='bg-forest-50 rounded-[20px] p-4 shadow-center-sm w-full min-h-12.5 flex items-center justify-center'>
-								<Icon name={recipe.category} />
-								<span className='ms-2 text-lg md:text-xl text-forest-300 font-black leading-4 font-title'>
-									{recipe.name}
-								</span>
-							</div>
-						</div>
-						<div className='bg-forest-100 rounded-[20px]'>
-							{recipe.images && recipe.images.length > 0 && (
-								<div className='w-full px-4 pt-4'>
-									{recipe.images.length === 1 ? (
-										<img
-											src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
-											alt='Recipe photo'
-											className='w-full aspect-4/3 object-cover rounded-xl'
-										/>
-									) : recipe.images.length === 2 ? (
-										<div className='grid grid-cols-2 gap-2'>
-											{recipe.images
-												.slice(0, 2)
-												.map((img, i) => (
-													<img
-														key={i}
-														src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
-														alt={`Recipe photo ${i + 1}`}
-														className='w-full aspect-square object-cover rounded-xl'
-													/>
-												))}
-										</div>
-									) : (
-										<div className='flex flex-col gap-2'>
-											<img
-												src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
-												alt='Recipe photo 1'
-												className='w-full aspect-4/3 object-cover rounded-xl'
-											/>
-											<div className='grid grid-cols-2 gap-2'>
-												{recipe.images
-													.slice(1, 3)
-													.map((img, i) => (
-														<img
-															key={i}
-															src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
-															alt={`Recipe photo ${i + 2}`}
-															className='w-full aspect-square object-cover rounded-xl'
-														/>
-													))}
-											</div>
-										</div>
-									)}
-								</div>
-							)}
-							<div
-								className={cn(
-									'w-full mb-2 p-5 flex flex-col items-center justify-center',
-								)}>
-								{recipe.time && (
-									<div className='flex mb-3 items-center bg-forest-200 text-forest-50 px-3 py-1 rounded-xl'>
-										<p className='font-extrabold text-sm'>
-											{t('time')}
-										</p>
-										<Clock
-											{...IconProps}
-											className='stroke-forest-50 ms-5 mr-1'
-										/>
-										<span className='text-xs font-bold'>{`${recipe.time}'`}</span>
-									</div>
-								)}
-								<div>
-									<p className='font-extrabold text-forest-300 text-sm mb-2'>
-										{t('ingredients')}
-									</p>
-									<div className='flex flex-wrap justify-center gap-1.5'>
-										{recipe.ingredients.map(
-											(ingredient, index) => (
-												<span
-													key={index}
-													className='inline-flex items-center text-xs font-semibold text-forest-300 bg-forest-150 px-2.5 py-1 rounded-lg'>
-													{ingredient}
-												</span>
-											),
-										)}
-									</div>
-								</div>
-								<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
-								<div className='text-sm'>
-									<p className='font-extrabold text-forest-300'>
-										{t('instructions')}
-									</p>
-									<span className='font-normal text-justify text-forest-400'>
-										{recipe.instructions}
+						<div className='w-full px-2'>
+							<div className='text-left border-y-8 border-forest-150 bg-forest-150 rounded-t-[20px]'>
+								<div className='flex h-12.5 w-full items-center justify-center rounded-[20px] bg-forest-50 px-4 shadow-center-sm'>
+									<span className='text-center text-lg md:text-xl text-forest-200 font-black leading-4 font-title'>
+										{recipe.name}
 									</span>
 								</div>
+							</div>
+							<div className='flex flex-wrap justify-center gap-1.5 px-4 my-2'>
+								<span className='inline-flex items-center gap-1.5 rounded-lg bg-forest-200/75 px-2.5 py-1 text-xs font-bold text-forest-50'>
+									<Icon
+										name={recipe.course}
+										size={14}
+										className='stroke-forest-50'
+									/>
+									{t_courses(recipe.course.toLowerCase())}
+								</span>
+								{recipe.categories.map((category) => (
+									<span
+										key={category}
+										className='inline-flex items-center rounded-lg bg-forest-100 px-2.5 py-1 text-xs font-semibold text-forest-200'>
+										{t_categories(category.toLowerCase())}
+									</span>
+								))}
+							</div>
+							<div className='border-y-8 border-forest-150 py-0 bg-forest-150 rounded-[20px]'>
+								<div className='bg-forest-100 mb-2 rounded-[20px] shadow-center-sm'>
+									{recipe.images && recipe.images.length > 0 ? (
+										recipe.images.length === 1 ? (
+											<div className='w-full p-3'>
+												<img
+													src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
+													alt='Recipe photo'
+													className='w-full aspect-4/3 object-cover rounded-xl'
+												/>
+											</div>
+										) : recipe.images.length === 2 ? (
+											<div className='w-full px-4 pt-3'>
+												<div className='grid grid-cols-2 gap-2'>
+													{recipe.images
+														.slice(0, 2)
+														.map((img, i) => (
+															<img
+																key={i}
+																src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
+																alt={`Recipe photo ${i + 1}`}
+																className='w-full aspect-square object-cover rounded-xl'
+															/>
+														))}
+												</div>
+											</div>
+										) : (
+											<div className='w-full px-4 pt-3'>
+												<div className='flex flex-col gap-2'>
+													<img
+														src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
+														alt='Recipe photo 1'
+														className='w-full aspect-4/3 object-cover rounded-xl'
+													/>
+													<div className='grid grid-cols-2 gap-2'>
+														{recipe.images
+															.slice(1, 3)
+															.map((img, i) => (
+																<img
+																	key={i}
+																	src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
+																	alt={`Recipe photo ${i + 2}`}
+																	className='w-full aspect-square object-cover rounded-xl'
+																/>
+															))}
+													</div>
+												</div>
+											</div>
+										)
+									) : (
+										<RecipeGalleryPlaceholder
+											text={t('images-empty')}
+										/>
+									)}
+								</div>
+								{recipe.time && (
+									<section className='bg-forest-150 border-y-8 border-forest-150'>
+										<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-4 pb-4'>
+											<div className='flex items-center justify-between gap-3 space-y-0 px-4'>
+												<div>
+													<span className='text-base md:text-lg font-extrabold text-forest-200 leading-none'>
+														{t('time')}
+													</span>
+												</div>
+												<div className='py-2' />
+												<div className='inline-flex w-fit max-w-2/3 bg-forest-50 border-2 border-forest-150 rounded-2xl overflow-hidden shadow-center-sm'>
+													<div className='flex px-3 py-1 items-center gap-2 text-center'>
+														<Input
+															value={recipe.time}
+															readOnly
+															tabIndex={-1}
+															aria-label={t('time')}
+															className='text-lg rounded border-none px-0 shadow-none! focus-visible:ring-0 text-right placeholder:text-forest-200/75'
+														/>
+														<span className='shrink-0 whitespace-nowrap text-sm font-bold text-forest-200'>
+															{t('minutes')}
+														</span>
+													</div>
+												</div>
+											</div>
+										</div>
+									</section>
+								)}
+								<section className='bg-forest-150 border-y-8 border-forest-150'>
+									<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-3 pb-4'>
+										<p className='text-base md:text-lg font-extrabold text-forest-200'>
+											{t('ingredients')}
+										</p>
+										<div className='flex flex-wrap justify-center gap-1.5 px-4 pt-3'>
+											{recipe.ingredients.map(
+												(ingredient, index) => (
+													<span
+														key={index}
+														className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2.5 py-1 rounded-lg'>
+														{ingredient}
+													</span>
+												),
+											)}
+										</div>
+									</div>
+								</section>
+								<section className='bg-forest-150 border-y-8 border-forest-150'>
+									<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-3 pb-4'>
+										<div className='px-4'>
+											<p className='text-base md:text-lg font-extrabold text-forest-200'>
+												{t('instructions')}
+											</p>
+											<p className='shadow-center-sm mt-3 whitespace-pre-line rounded-2xl border-2 border-forest-150 bg-forest-50 px-4 py-3 text-left text-sm md:text-base font-medium text-forest-200'>
+												{recipe.instructions}
+											</p>
+										</div>
+									</div>
+								</section>
 								{recipe.sourceUrls &&
 									recipe.sourceUrls.length > 0 && (
-										<>
-											<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
-											<div className='text-sm'>
-												<p className='font-extrabold text-forest-300'>
+										<section className='bg-forest-150 border-t-8 border-forest-150'>
+											<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-3 pb-4'>
+												<p className='text-base md:text-lg font-extrabold text-forest-200'>
 													{t('sources')}
 												</p>
-												<div className='flex flex-col gap-1 mt-1'>
+												<div className='mx-4 mt-3 flex flex-col gap-1.5'>
 													{recipe.sourceUrls.map(
 														(url, index) => (
 															<div
 																key={index}
-																className='flex items-center gap-1.5 text-forest-200'>
-																<ExternalLink
-																	size={14}
-																	className='shrink-0'
-																/>
-																<span className='truncate text-sm'>
-																	{new URL(
-																		url,
-																	).hostname.replace(
-																		'www.',
-																		'',
-																	)}
+																className='flex items-center justify-between rounded-lg bg-forest-150 px-3 py-1 text-forest-200'>
+																<span className='flex min-w-0 items-center gap-2'>
+																	<ExternalLink
+																		size={14}
+																		className='shrink-0'
+																	/>
+																	<span className='truncate py-1 text-xs font-semibold'>
+																		{new URL(
+																			url,
+																		).hostname.replace(
+																			'www.',
+																			'',
+																		)}
+																	</span>
 																</span>
 															</div>
 														),
 													)}
 												</div>
 											</div>
-										</>
+										</section>
 									)}
 							</div>
-						</div>
-						<div className='w-full block border-t-8 border-forest-150 bg-forest-150 rounded-b-[20px]'>
-							<div className='w-full flex items-center justify-center gap-3 bg-forest-50 rounded-[20px] px-3 py-2.5'>
-								<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-center-sm'>
-									<Image
-										src={author.image}
-										referrerPolicy='no-referrer'
-										alt='Profile image'
-										width={32}
-										height={32}
-									/>
+							<div className='w-full block bg-forest-150 rounded-b-[20px]'>
+								<div className='w-full flex items-center justify-center gap-3 bg-forest-50 rounded-[20px] px-3 py-2.5'>
+									<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-center-sm'>
+										<Image
+											src={author.image}
+											referrerPolicy='no-referrer'
+											alt='Profile image'
+											width={32}
+											height={32}
+										/>
+									</div>
+									<span className='font-extrabold font-title text-forest-300 leading-4 text-sm truncate'>
+										{`@${author.name}`}
+									</span>
 								</div>
-								<span className='font-extrabold font-title text-forest-300 leading-4 text-sm truncate'>
-									{`@${author.name}`}
-								</span>
 							</div>
 						</div>
-						<div className='my-3 text-center'>
-							<p className='text-sm text-forest-300'>{t('more-on')}</p>
-							<p className='text-forest-300 font-extrabold font-title'>
-								{new URL(SITE_URL).host}
-							</p>
-						</div>
+					</div>
+					<div className='my-3 text-center'>
+						<p className='text-sm text-forest-300'>{t('more-on')}</p>
+						<p className='text-forest-300 font-extrabold font-title'>
+							{new URL(SITE_URL).host}
+						</p>
 					</div>
 				</div>
 			</div>

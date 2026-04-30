@@ -35,7 +35,8 @@ function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
 		id: '1',
 		name: 'Pasta Carbonara',
 		slug: 'pasta-carbonara',
-		category: 'Pasta',
+		course: 'FirstCourse',
+		categories: ['Pasta'],
 		time: 30,
 		ingredients: ['pasta', 'egg', 'bacon'],
 		instructions: 'Cook the pasta...',
@@ -44,6 +45,7 @@ function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
 		authorId: 'user-1',
 		authorUsername: 'chef',
 		createdAt: new Date('2025-01-01'),
+		updatedAt: new Date('2025-01-01'),
 		...overrides,
 	}
 }

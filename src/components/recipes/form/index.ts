@@ -1,4 +1,5 @@
-export * from './category-selector'
+export * from './course-selector'
 export * from './ingredient-selector'
 export * from './source-links-input'
+export * from './category-selector'
 export * from './edit'

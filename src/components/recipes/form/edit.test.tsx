@@ -43,7 +43,8 @@ const recipe: Recipe = {
 	ingredients: ['rice', 'stock'],
 	createdAt: new Date('2026-01-01T00:00:00.000Z'),
 	updatedAt: new Date('2026-01-01T00:00:00.000Z'),
-	category: 'Fish',
+	course: 'SecondCourse',
+	categories: ['Fish'],
 	authorId: 'user-1',
 	authorUsername: 'testuser',
 	images: [],
@@ -69,6 +70,29 @@ describe('EditRecipe delete flow', () => {
 
 		expect(deleteTrigger).toBeInTheDocument()
 		expect(deleteTrigger.closest('form')).toBeNull()
+	})
+
+	it('keeps the cooking time input digit-only', async () => {
+		const user = userEvent.setup()
+		renderEditRecipe()
+
+		const timeInput = await screen.findByDisplayValue('45')
+		await user.clear(timeInput)
+		await user.type(timeInput, '1e2-3.4abc')
+
+		expect(timeInput).toHaveValue('1234')
+	})
+
+	it('renders the ingredient input error through the outer field message', async () => {
+		const user = userEvent.setup()
+		renderEditRecipe()
+
+		await user.type(screen.getByRole('textbox', { name: 'Ingredients' }), '1')
+
+		const message = screen.getByText('Enter at least two letters')
+		expect(message).toBeInTheDocument()
+		expect(message).toHaveClass('bg-forest-150')
+		expect(screen.getAllByText('Enter at least two letters')).toHaveLength(1)
 	})
 
 	it('opens confirmation dialog and requires the confirmation word', async () => {

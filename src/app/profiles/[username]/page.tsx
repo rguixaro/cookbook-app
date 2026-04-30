@@ -35,14 +35,18 @@ export default async function ProfilePage({
 	params: Promise<{ username: string }>
 	searchParams?: Promise<{
 		search?: string
-		category?: string
+		course?: string
+		categories?: string
 		saved?: string
+		sort?: string
 	}>
 }) {
 	const { username } = await params
 	const searchParam = (await searchParams)?.search
-	const categoryParam = (await searchParams)?.category
+	const courseParam = (await searchParams)?.course
+	const categoriesParam = (await searchParams)?.categories
 	const savedParam = (await searchParams)?.saved === 'true'
+	const sortParam = (await searchParams)?.sort
 
 	const { profile } = await getProfileByUsername(username)
 	if (!profile) notFound()
@@ -87,10 +91,10 @@ export default async function ProfilePage({
 						<div className='bg-forest-200/40 h-0.5 w-1 rounded-2xl' />
 						<span>
 							{t('member-since', {
-								date: profile.createdAt.toLocaleDateString(
-									undefined,
-									{ month: 'short', year: 'numeric' },
-								),
+								date: profile.createdAt.toLocaleDateString(undefined, {
+									month: 'short',
+									year: 'numeric',
+								}),
 							})}
 						</span>
 					</div>
@@ -101,8 +105,10 @@ export default async function ProfilePage({
 						referred
 						userId={profile.id}
 						searchParam={searchParam}
-						categoryParam={categoryParam}
+						courseParam={courseParam}
+						categoriesParam={categoriesParam}
 						savedParam={savedParam}
+						sortParam={sortParam}
 					/>
 				</div>
 			</div>

@@ -26,15 +26,16 @@
 	},
 	"errors": {
 		"recipe-name-too-short": "Recipe name is too short",
-		"category-required": "The course is required",
-		"tags-too-many": "Select up to 3 tags",
-		"tags-duplicate": "Tags cannot be duplicated",
 		"time-invalid": "Time must be a number",
 		"instructions-too-short": "Recipe instructions are too short",
 		"ingredients-required": "At least one ingredient is required",
 		"ingredient-invalid": "Ingredients must include at least two letters",
 		"username-required": "Username is required",
-		"username-too-long": "Username cannot be longer than 40 characters"
+		"username-too-long": "Username cannot be longer than 40 characters",
+		"course-required": "The course is required",
+		"categories-required": "Select at least one category",
+		"categories-too-many": "Select up to 3 categories",
+		"categories-duplicate": "Categories cannot be duplicated"
 	},
 	"LoginPage": {
 		"login-to": "Sign in to your ",
@@ -108,22 +109,6 @@
 		"secondcourse": "Second course",
 		"dessert": "Dessert"
 	},
-	"RecipeTags": {
-		"pasta": "Pasta",
-		"meat": "Meat",
-		"fish": "Fish",
-		"vegetable": "Vegetable",
-		"salad": "Salad",
-		"soup": "Soup",
-		"rice": "Rice",
-		"legume": "Legume",
-		"seafood": "Seafood",
-		"fruit": "Fruit",
-		"stew": "Stew",
-		"sauce": "Sauce",
-		"marinade": "Marinade",
-		"wok": "Wok"
-	},
 	"ProfilePage": {
 		"title": "Profile",
 		"description": "Here you can view and modify your personal information",
@@ -171,5 +156,21 @@
 		"title": "Something went wrong",
 		"description": "Please try again.",
 		"retry": "Try again"
+	},
+	"RecipeCategories": {
+		"pasta": "Pasta",
+		"meat": "Meat",
+		"fish": "Fish",
+		"vegetable": "Vegetable",
+		"salad": "Salad",
+		"soup": "Soup",
+		"rice": "Rice",
+		"legume": "Legume",
+		"seafood": "Seafood",
+		"fruit": "Fruit",
+		"stew": "Stew",
+		"sauce": "Sauce",
+		"marinade": "Marinade",
+		"wok": "Wok"
 	}
 }

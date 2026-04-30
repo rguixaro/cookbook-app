@@ -3,7 +3,7 @@ import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
 import { db } from '@/server/db'
-import { RecipeSchema, normalizeRecipeCourseAndTags } from '../schemas'
+import { RecipeSchema, normalizeRecipeCourseAndCategories } from '../schemas'
 
 const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN
 
@@ -25,7 +25,7 @@ function toRecipeSchema(
 ): RecipeSchema {
 	return {
 		...recipe,
-		...normalizeRecipeCourseAndTags(recipe.category, recipe.tags),
+		...normalizeRecipeCourseAndCategories(recipe.course, recipe.categories),
 		authorUsername: recipe.author?.username ?? '',
 		images: toImageUrls(recipe.images),
 	}

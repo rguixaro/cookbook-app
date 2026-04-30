@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getTranslations } from 'next-intl/server'
 import { notFound, redirect } from 'next/navigation'
-import { Clock, ExternalLink } from 'lucide-react'
+import { ExternalLink } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -24,13 +24,14 @@ import {
 	SavedStatus,
 	FavouriteStatus,
 } from '@/components/recipes'
-import { IconProps, SITE_URL, cn } from '@/utils'
+import { SITE_URL, cn } from '@/utils'
 import { isCrawlerUserAgent } from '@/utils/crawlers'
 import { Icon } from '@/components/recipes/icon'
 import {
 	RecipeGallery,
 	RecipeGalleryPlaceholder,
 } from '@/components/recipes/gallery'
+import { Input } from '@/ui'
 
 const recipeOgImage = {
 	url: '/images/favicon.png',
@@ -101,8 +102,9 @@ export default async function RecipePage({
 	searchParams?: Promise<{
 		referred?: boolean
 		query?: string
-		category?: string
-		tags?: string
+		course?: string
+		categories?: string
+		sort?: string
 	}>
 }) {
 	const session = await auth()
@@ -114,13 +116,15 @@ export default async function RecipePage({
 	const currentSearchParams = await searchParams
 	const isReferred = currentSearchParams?.referred
 	const query = currentSearchParams?.query
-	const category = currentSearchParams?.category
-	const tags = currentSearchParams?.tags
+	const course = currentSearchParams?.course
+	const categories = currentSearchParams?.categories
+	const sort = currentSearchParams?.sort
 
 	const backParams = new URLSearchParams()
 	if (query) backParams.set('search', query)
-	if (category) backParams.set('category', category)
-	if (tags) backParams.set('tags', tags)
+	if (course) backParams.set('course', course)
+	if (categories) backParams.set('categories', categories)
+	if (sort) backParams.set('sort', sort)
 	const backQuery = backParams.toString() ? `?${backParams.toString()}` : ''
 
 	const user = await getUserByUsername(username)
@@ -130,11 +134,10 @@ export default async function RecipePage({
 			: await getPublicRecipeByUsernameAndSlug(username, slug)
 		: null
 	const t = await getTranslations('RecipesPage')
-	const t_tags = await getTranslations('RecipeTags')
+	const t_courses = await getTranslations('RecipeCourses')
+	const t_categories = await getTranslations('RecipeCategories')
 
-	const backTo = isReferred
-		? `/profiles/${username}${backQuery}`
-		: `/${backQuery}`
+	const backTo = isReferred ? `/profiles/${username}${backQuery}` : `/${backQuery}`
 
 	if (!recipe) notFound()
 
@@ -142,7 +145,9 @@ export default async function RecipePage({
 		return (
 			<main className='mx-auto flex w-10/12 max-w-xl flex-col gap-4 py-10 text-left text-forest-300'>
 				<h1 className='font-title text-3xl font-black'>{recipe.name}</h1>
-				<p className='font-semibold'>{getRecipeDescription(recipe, username)}</p>
+				<p className='font-semibold'>
+					{getRecipeDescription(recipe, username)}
+				</p>
 				{recipe.ingredients.length > 0 && (
 					<section>
 						<h2 className='mb-2 font-title text-xl font-black'>
@@ -159,7 +164,9 @@ export default async function RecipePage({
 					<h2 className='mb-2 font-title text-xl font-black'>
 						{t('instructions')}
 					</h2>
-					<p className='whitespace-pre-line font-medium'>{recipe.instructions}</p>
+					<p className='whitespace-pre-line font-medium'>
+						{recipe.instructions}
+					</p>
 				</section>
 			</main>
 		)
@@ -196,7 +203,10 @@ export default async function RecipePage({
 					<div className='flex space-x-3'>
 						<RecipeShare recipe={recipe} />
 						<RecipeDownload recipe={recipe} author={author} />
-						<FavouriteStatus initial={isFavourited} recipeId={recipe.id} />
+						<FavouriteStatus
+							initial={isFavourited}
+							recipeId={recipe.id}
+						/>
 						{!isOwner ? (
 							<SavedStatus initial={isSaved} recipeId={recipe.id} />
 						) : (
@@ -207,121 +217,158 @@ export default async function RecipePage({
 			</div>
 			<div
 				className={cn(
-					'w-10/12 sm:w-2/4 lg:w-2/6 my-5 rounded-3xl border-8',
+					'w-10/12 sm:w-2/4 lg:w-2/6 my-5 rounded-3xl border-8 border-b-16',
 					'flex flex-col items-center justify-center shadow-center-sm border-forest-150 bg-forest-150',
-				)}
-			>
-				<div className='w-full border-b-8 border-forest-150 bg-forest-150 rounded-t-[20px]'>
-					<div className='bg-forest-50 rounded-[20px] p-4 shadow-center-sm w-full min-h-12.5 flex items-center justify-center'>
-						<Icon name={recipe.category} />
-						<span className='ms-2 text-lg md:text-xl text-forest-300 font-black leading-4 font-title'>
-							{recipe.name}
-						</span>
-					</div>
-				</div>
-				<div className='bg-forest-100 rounded-[20px]'>
-					{recipe.images?.length ? (
-						<RecipeGallery images={recipe.images} />
-					) : (
-						<RecipeGalleryPlaceholder
-							text={isOwner ? t('images-add-in-edit') : t('images-empty')}
-						/>
-					)}
-					<div
-						className={cn(
-							'w-full mb-2 p-5 flex flex-col items-center justify-center',
-						)}
-					>
-						{recipe.time && (
-							<div className='flex mb-3 items-center bg-forest-200 text-forest-50 px-3 py-1 rounded-xl'>
-								<p className='font-extrabold text-sm'>{t('time')}</p>
-								<Clock {...IconProps} className='stroke-forest-50  ms-5 mr-1' />
-								<span className='text-xs md:text-sm font-bold'>{`${recipe.time}'`}</span>
-							</div>
-						)}
-						{recipe.tags.length > 0 && (
-							<div className='flex flex-wrap justify-center gap-1.5 mb-3'>
-								{recipe.tags.map((tag) => (
-									<span
-										key={tag}
-										className='inline-flex items-center text-xs font-semibold text-forest-50 bg-forest-200/75 px-2.5 py-1 rounded-lg'
-									>
-										{t_tags(tag.toLowerCase())}
-									</span>
-								))}
-							</div>
-						)}
-						<div>
-							<p className='font-extrabold text-forest-300 text-sm md:text-base mb-2'>
-								{t('ingredients')}
-							</p>
-							<div className='flex flex-wrap justify-center gap-1.5'>
-								{recipe.ingredients.map((ingredient, index) => (
-									<span
-										key={index}
-										className='inline-flex items-center text-xs font-semibold text-forest-300 bg-forest-150 px-2.5 py-1 rounded-lg'
-									>
-										{ingredient}
-									</span>
-								))}
-							</div>
-						</div>
-						<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
-						<div className='text-sm md:text-base'>
-							<p className='font-extrabold text-forest-300 mb-2'>
-								{t('instructions')}
-							</p>
-							<span className='font-normal text-justify text-forest-400'>
-								{recipe.instructions}
+				)}>
+				<div className='w-full px-2'>
+					<div className='text-left border-y-8 border-forest-150 bg-forest-150 rounded-t-[20px]'>
+						<div className='flex h-12.5 w-full items-center justify-center rounded-[20px] bg-forest-50 px-4 shadow-center-sm'>
+							<span className='text-center text-lg md:text-xl text-forest-200 font-black leading-4 font-title'>
+								{recipe.name}
 							</span>
 						</div>
+					</div>
+					<div className='flex flex-wrap justify-center gap-1.5 px-4 my-2'>
+						<span className='inline-flex items-center gap-1.5 rounded-lg bg-forest-200/75 px-2.5 py-1 text-xs font-bold text-forest-50'>
+							<Icon
+								name={recipe.course}
+								size={14}
+								className='stroke-forest-50'
+							/>
+							{t_courses(recipe.course.toLowerCase())}
+						</span>
+						{recipe.categories.map((category) => (
+							<span
+								key={category}
+								className='inline-flex items-center rounded-lg bg-forest-100 px-2.5 py-1 text-xs font-semibold text-forest-200'>
+								{t_categories(category.toLowerCase())}
+							</span>
+						))}
+					</div>
+					<div className='border-y-8 border-forest-150 py-0 bg-forest-150 rounded-[20px]'>
+						<div className='bg-forest-100 mb-2 rounded-[20px] shadow-center-sm'>
+							{recipe.images?.length ? (
+								<RecipeGallery images={recipe.images} />
+							) : (
+								<RecipeGalleryPlaceholder
+									text={
+										isOwner
+											? t('images-add-in-edit')
+											: t('images-empty')
+									}
+								/>
+							)}
+						</div>
+						{recipe.time && (
+							<section className='bg-forest-150 border-y-8 border-forest-150'>
+								<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-4 pb-4'>
+									<div className='flex items-center justify-between gap-3 space-y-0 px-4'>
+										<div>
+											<span className='text-base md:text-lg font-extrabold text-forest-200 leading-none'>
+												{t('time')}
+											</span>
+										</div>
+										<div className='py-2 sm:px-4 md:px-8' />
+										<div className='inline-flex w-fit max-w-2/3 bg-forest-50 border-2 border-forest-150 rounded-2xl overflow-hidden shadow-center-sm'>
+											<div className='flex px-3 py-1 items-center gap-2 text-center'>
+												<Input
+													value={recipe.time}
+													readOnly
+													tabIndex={-1}
+													aria-label={t('time')}
+													className='text-lg rounded border-none px-0 shadow-none! focus-visible:ring-0 text-right placeholder:text-forest-200/75'
+												/>
+												<span className='shrink-0 whitespace-nowrap text-sm font-bold text-forest-200'>
+													{t('minutes')}
+												</span>
+											</div>
+										</div>
+									</div>
+								</div>
+							</section>
+						)}
+						<section className='bg-forest-150 border-y-8 border-forest-150'>
+							<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-3 pb-4'>
+								<p className='text-base md:text-lg font-extrabold text-forest-200'>
+									{t('ingredients')}
+								</p>
+								<div className='flex flex-wrap justify-center gap-1.5 px-4 pt-3'>
+									{recipe.ingredients.map((ingredient, index) => (
+										<span
+											key={index}
+											className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2.5 py-1 rounded-lg'>
+											{ingredient}
+										</span>
+									))}
+								</div>
+							</div>
+						</section>
+						<section className='bg-forest-150 border-y-8 border-forest-150'>
+							<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-3 pb-4'>
+								<div className='px-4'>
+									<p className='text-base md:text-lg font-extrabold text-forest-200'>
+										{t('instructions')}
+									</p>
+									<p className='shadow-center-sm mt-3 whitespace-pre-line rounded-2xl border-2 border-forest-150 bg-forest-50 px-4 py-3 text-left text-sm md:text-base font-medium text-forest-200'>
+										{recipe.instructions}
+									</p>
+								</div>
+							</div>
+						</section>
 						{recipe.sourceUrls && recipe.sourceUrls.length > 0 && (
-							<>
-								<div className='h-2 w-3/4 my-3 rounded bg-forest-150' />
-								<div className='text-sm md:text-base'>
-									<p className='font-extrabold text-forest-300'>
+							<section className='bg-forest-150 border-t-8 border-forest-150'>
+								<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-3 pb-4'>
+									<p className='text-base md:text-lg font-extrabold text-forest-200'>
 										{t('sources')}
 									</p>
-									<div className='flex flex-col gap-1 mt-1'>
+									<div className='mx-4 mt-3 flex flex-col gap-1.5'>
 										{recipe.sourceUrls.map((url, index) => (
 											<a
 												key={index}
 												href={url}
 												target='_blank'
 												rel='noopener noreferrer'
-												className='flex items-center gap-1.5 text-forest-200 hover:text-forest-300 transition-colors'
-											>
-												<ExternalLink size={14} className='shrink-0' />
-												<span className='truncate text-sm'>
-													{new URL(url).hostname.replace('www.', '')}
+												className='flex items-center justify-between rounded-lg bg-forest-150 px-3 py-1 text-forest-200 transition-colors hover:text-forest-300'>
+												<span className='flex min-w-0 items-center gap-2'>
+													<ExternalLink
+														size={14}
+														className='shrink-0'
+													/>
+													<span className='truncate py-1 text-xs font-semibold'>
+														{new URL(
+															url,
+														).hostname.replace(
+															'www.',
+															'',
+														)}
+													</span>
 												</span>
 											</a>
 										))}
 									</div>
 								</div>
-							</>
+							</section>
 						)}
 					</div>
-				</div>
-				<Link
-					href={`/profiles/${username}`}
-					className='w-full block border-t-8 border-forest-150 bg-forest-150 rounded-b-[20px]'
-				>
-					<div className='flex items-center justify-center gap-3 bg-forest-50 rounded-[20px] px-3 py-2.5 transition-colors duration-200 '>
-						<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-center-sm'>
-							<Image
-								src={author.image}
-								referrerPolicy='no-referrer'
-								alt='Profile image'
-								width={32}
-								height={32}
-							/>
+					<Link
+						href={`/profiles/${username}`}
+						className='w-full block bg-forest-150 rounded-b-[20px]'>
+						<div className='flex items-center justify-center gap-3 bg-forest-50 rounded-[20px] px-3 py-2.5 transition-colors duration-200 '>
+							<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-center-sm'>
+								<Image
+									src={author.image}
+									referrerPolicy='no-referrer'
+									alt='Profile image'
+									width={32}
+									height={32}
+								/>
+							</div>
+							<span className='font-extrabold font-title text-forest-300 text-sm md:text-base truncate'>
+								{`@${author.name}`}
+							</span>
 						</div>
-						<span className='font-extrabold font-title text-forest-300 text-sm md:text-base truncate'>
-							{`@${author.name}`}
-						</span>
-					</div>
-				</Link>
+					</Link>
+				</div>
 			</div>
 		</div>
 	)

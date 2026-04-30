@@ -1,6 +1,7 @@
 import { db } from '@/server/db'
 import { getRecipeImageFromS3 } from '@/lib/s3'
 import { createZipStream, type ZipEntry } from '@/lib/zip'
+import { normalizeRecipeCourseAndCategories } from '@/server/schemas'
 
 type ExportUser = {
 	id: string
@@ -26,7 +27,8 @@ type ExportRecipe = {
 	sourceUrls: string[]
 	createdAt: Date
 	updatedAt: Date
-	category: string
+	course: string
+	categories?: string[]
 	authorId: string
 	author: ExportUser | null
 }
@@ -56,7 +58,11 @@ export type ProfileImagesExportResult =
 const toExportId = (prefix: string, index: number) =>
 	`${prefix}_${String(index + 1).padStart(4, '0')}`
 
-function createIdMap<T>(items: T[], prefix: string, getId: (item: T) => string) {
+function createIdMap<T>(
+	items: T[],
+	prefix: string,
+	getId: (item: T) => string,
+) {
 	return new Map(
 		items.map((item, index) => [getId(item), toExportId(prefix, index)]),
 	)
@@ -72,7 +78,10 @@ function mapOptional(map: Map<string, string>, value?: string | null) {
 	return value ? mapRequired(map, value) : null
 }
 
-export function safeExportFilename(value: string, fallback = 'cookbook-profile') {
+export function safeExportFilename(
+	value: string,
+	fallback = 'cookbook-profile',
+) {
 	const safe = value
 		.normalize('NFKD')
 		.replace(/[\u0300-\u036f]/g, '')
@@ -121,7 +130,9 @@ function createExportIds(user: ExportUser, recipes: ExportRecipe[]): ExportIds {
 		if (recipe.author) usersById.set(recipe.author.id, recipe.author)
 	}
 
-	const imageKeys = Array.from(new Set(recipes.flatMap((recipe) => recipe.images)))
+	const imageKeys = Array.from(
+		new Set(recipes.flatMap((recipe) => recipe.images)),
+	)
 	const imageIds = new Map(
 		imageKeys.map((fileKey, index) => [fileKey, toExportId('image', index)]),
 	)
@@ -233,7 +244,7 @@ export function buildProfileJsonPayload(context: ExportContext) {
 			.map((recipeId) => mapRequired(ids.recipes, recipeId))
 
 	return {
-		schemaVersion: 1,
+		schemaVersion: 4,
 		generatedAt: new Date().toISOString(),
 		generatedBy: mapRequired(ids.users, user.id),
 		profile: {
@@ -246,26 +257,36 @@ export function buildProfileJsonPayload(context: ExportContext) {
 			createdAt: user.createdAt,
 			updatedAt: user.updatedAt,
 		},
-		recipes: recipes.map((recipe) => ({
-			id: mapRequired(ids.recipes, recipe.id),
-			slug: recipe.slug,
-			name: recipe.name,
-			time: recipe.time,
-			instructions: recipe.instructions,
-			ingredients: recipe.ingredients,
-			category: recipe.category,
-			authorId: mapRequired(ids.users, recipe.authorId),
-			author: publicAuthor(recipe.author, ids),
-			images: recipe.images.map((image) => mapRequired(ids.imageFiles, image)),
-			sourceUrls: recipe.sourceUrls,
-			createdAt: recipe.createdAt,
-			updatedAt: recipe.updatedAt,
-			relations: {
-				authored: recipe.authorId === user.id,
-				saved: savedSet.has(recipe.id),
-				favourited: favouriteSet.has(recipe.id),
-			},
-		})),
+		recipes: recipes.map((recipe) => {
+			const normalized = normalizeRecipeCourseAndCategories(
+				recipe.course,
+				recipe.categories,
+			)
+
+			return {
+				id: mapRequired(ids.recipes, recipe.id),
+				slug: recipe.slug,
+				name: recipe.name,
+				time: recipe.time,
+				instructions: recipe.instructions,
+				ingredients: recipe.ingredients,
+				course: normalized.course,
+				categories: normalized.categories,
+				authorId: mapRequired(ids.users, recipe.authorId),
+				author: publicAuthor(recipe.author, ids),
+				images: recipe.images.map((image) =>
+					mapRequired(ids.imageFiles, image),
+				),
+				sourceUrls: recipe.sourceUrls,
+				createdAt: recipe.createdAt,
+				updatedAt: recipe.updatedAt,
+				relations: {
+					authored: recipe.authorId === user.id,
+					saved: savedSet.has(recipe.id),
+					favourited: favouriteSet.has(recipe.id),
+				},
+			}
+		}),
 		lists: {
 			authored: recipes
 				.filter((recipe) => recipe.authorId === user.id)
