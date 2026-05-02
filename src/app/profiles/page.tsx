@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
 
 export const metadata: Metadata = {
-	title: 'Profiles — CookBook',
+	title: 'Profiles - CookBook',
 	description: 'Browse cookbook profiles',
 }
 import { Loader } from 'lucide-react'

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import { headers } from 'next/headers'
 import { getTranslations } from 'next-intl/server'
 import { notFound, redirect } from 'next/navigation'
-import { ExternalLink } from 'lucide-react'
+import { Clock4, ExternalLink } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
@@ -31,7 +31,6 @@ import {
 	RecipeGallery,
 	RecipeGalleryPlaceholder,
 } from '@/components/recipes/gallery'
-import { Input } from '@/ui'
 
 const recipeOgImage = {
 	url: '/images/favicon.png',
@@ -50,10 +49,6 @@ function getRecipeDescription(
 ) {
 	const details = [`by @${username}`]
 	if (recipe.time) details.push(`${recipe.time} min`)
-	if (recipe.ingredients.length) {
-		details.push(`ingredients: ${recipe.ingredients.slice(0, 5).join(', ')}`)
-	}
-
 	return `${recipe.name} ${details.join(' · ')}`
 }
 
@@ -68,8 +63,8 @@ export async function generateMetadata({
 		? ((await getRecipeByAuthAndSlug(user.id, slug)) ??
 			(await getPublicRecipeByUsernameAndSlug(username, slug)))
 		: null
-	if (!recipe) return { title: 'Recipe Not Found — CookBook' }
-	const title = `${recipe.name} — CookBook`
+	if (!recipe) return { title: 'Recipe Not Found - CookBook' }
+	const title = `${recipe.name}`
 	const description = getRecipeDescription(recipe, username)
 	const url = new URL(`/recipes/${username}/${slug}`, SITE_URL).toString()
 
@@ -148,26 +143,6 @@ export default async function RecipePage({
 				<p className='font-semibold'>
 					{getRecipeDescription(recipe, username)}
 				</p>
-				{recipe.ingredients.length > 0 && (
-					<section>
-						<h2 className='mb-2 font-title text-xl font-black'>
-							{t('ingredients')}
-						</h2>
-						<ul className='list-disc space-y-1 ps-5 font-medium'>
-							{recipe.ingredients.map((ingredient) => (
-								<li key={ingredient}>{ingredient}</li>
-							))}
-						</ul>
-					</section>
-				)}
-				<section>
-					<h2 className='mb-2 font-title text-xl font-black'>
-						{t('instructions')}
-					</h2>
-					<p className='whitespace-pre-line font-medium'>
-						{recipe.instructions}
-					</p>
-				</section>
 			</main>
 		)
 	}
@@ -262,23 +237,24 @@ export default async function RecipePage({
 						{recipe.time && (
 							<section className='bg-forest-150 border-y-8 border-forest-150'>
 								<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-4 pb-4'>
-									<div className='flex items-center justify-between gap-3 space-y-0 px-4'>
-										<div>
+									<div className='grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:gap-3 space-y-0 px-4'>
+										<div className='min-w-0 text-left'>
 											<span className='text-base md:text-lg font-extrabold text-forest-200 leading-none'>
 												{t('time')}
 											</span>
 										</div>
-										<div className='py-2 sm:px-4 md:px-8' />
-										<div className='inline-flex w-fit max-w-2/3 bg-forest-50 border-2 border-forest-150 rounded-2xl overflow-hidden shadow-center-sm'>
-											<div className='flex px-3 py-1 items-center gap-2 text-center'>
-												<Input
-													value={recipe.time}
-													readOnly
-													tabIndex={-1}
-													aria-label={t('time')}
-													className='text-lg rounded border-none px-0 shadow-none! focus-visible:ring-0 text-right placeholder:text-forest-200/75'
-												/>
-												<span className='shrink-0 whitespace-nowrap text-sm font-bold text-forest-200'>
+										<div className='shrink-0 bg-forest-50 border-2 border-forest-150 rounded-2xl shadow-center-sm'>
+											<div className='flex flex-col px-3 sm:px-5 py-1 items-center text-center'>
+												<div className='flex flex-wrap items-center justify-between gap-2'>
+													<span className='font-bold text-forest-200'>
+														{recipe.time}
+													</span>
+													<Clock4
+														size={16}
+														className='stroke-forest-200'
+													/>
+												</div>
+												<span className='w-full whitespace-nowrap text-xs text-left text-forest-200'>
 													{t('minutes')}
 												</span>
 											</div>
@@ -316,12 +292,12 @@ export default async function RecipePage({
 							</div>
 						</section>
 						{recipe.sourceUrls && recipe.sourceUrls.length > 0 && (
-							<section className='bg-forest-150 border-t-8 border-forest-150'>
+							<section className='bg-forest-150 border-y-8 border-forest-150'>
 								<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-3 pb-4'>
 									<p className='text-base md:text-lg font-extrabold text-forest-200'>
 										{t('sources')}
 									</p>
-									<div className='mx-4 mt-3 flex flex-col gap-1.5'>
+									<div className='mx-4 mt-3 flex flex-wrap items-center justify-center gap-1.5'>
 										{recipe.sourceUrls.map((url, index) => (
 											<a
 												key={index}
@@ -329,7 +305,7 @@ export default async function RecipePage({
 												target='_blank'
 												rel='noopener noreferrer'
 												className='flex items-center justify-between rounded-lg bg-forest-150 px-3 py-1 text-forest-200 transition-colors hover:text-forest-300'>
-												<span className='flex min-w-0 items-center gap-2'>
+												<span className='flex min-w-0 max-w-full items-center gap-2'>
 													<ExternalLink
 														size={14}
 														className='shrink-0'

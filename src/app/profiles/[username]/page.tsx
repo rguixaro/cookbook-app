@@ -13,12 +13,12 @@ export async function generateMetadata({
 }): Promise<Metadata> {
 	const { username } = await params
 	const { profile } = await getProfileByUsername(username)
-	if (!profile) return { title: 'Profile Not Found — CookBook' }
+	if (!profile) return { title: 'Profile Not Found - CookBook' }
 	return {
-		title: `@${profile.name} — CookBook`,
+		title: `@${profile.name} - CookBook`,
 		description: `View ${profile.name}'s recipes on CookBook`,
 		openGraph: {
-			title: `@${profile.name} — CookBook`,
+			title: `@${profile.name} - CookBook`,
 			description: `View ${profile.name}'s recipes on CookBook`,
 			images: profile.image ? [profile.image] : [],
 		},
@@ -91,10 +91,13 @@ export default async function ProfilePage({
 						<div className='bg-forest-200/40 h-0.5 w-1 rounded-2xl' />
 						<span>
 							{t('member-since', {
-								date: profile.createdAt.toLocaleDateString(undefined, {
-									month: 'short',
-									year: 'numeric',
-								}),
+								date: profile.createdAt.toLocaleDateString(
+									undefined,
+									{
+										month: 'short',
+										year: 'numeric',
+									},
+								),
 							})}
 						</span>
 					</div>

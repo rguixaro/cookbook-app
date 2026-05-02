@@ -131,9 +131,9 @@ describe('ItemRecipe image loading', () => {
 			/>,
 		)
 
+		expect(screen.getByText('Fig')).toBeInTheDocument()
 		expect(screen.getByText('Apple')).toBeInTheDocument()
-		expect(screen.getByText('Banana')).toBeInTheDocument()
-		expect(screen.queryByText('Carrot')).not.toBeInTheDocument()
+		expect(screen.queryByText('Banana')).not.toBeInTheDocument()
 		expect(screen.getByText('+6')).toBeInTheDocument()
 	})
 

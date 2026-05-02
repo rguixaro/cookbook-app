@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Clock, ImageIcon, LoaderIcon } from 'lucide-react'
+import { ImageIcon, LoaderIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { type z } from 'zod'
 
@@ -40,6 +40,9 @@ import {
 } from '@/ui'
 import { cn } from '@/utils'
 
+type RecipeFormInput = z.input<typeof CreateRecipeSchema>
+type RecipeFormOutput = z.output<typeof CreateRecipeSchema>
+
 export default function NewRecipePage() {
 	const t = useTranslations('RecipesPage')
 	const t_toasts = useTranslations('toasts')
@@ -47,7 +50,7 @@ export default function NewRecipePage() {
 
 	const [loading, setLoading] = useState<boolean>(false)
 
-	const form = useForm<z.infer<typeof CreateRecipeSchema>>({
+	const form = useForm<RecipeFormInput, unknown, RecipeFormOutput>({
 		resolver: zodResolver(CreateRecipeSchema),
 		defaultValues: {
 			name: '',
@@ -68,7 +71,7 @@ export default function NewRecipePage() {
 	 * onSubmit form handler
 	 * @param values
 	 */
-	const onSubmit = async (values: z.infer<typeof CreateRecipeSchema>) => {
+	const onSubmit = async (values: RecipeFormOutput) => {
 		try {
 			setLoading(true)
 			const { error, message, recipeId, recipePath } = await createRecipe({

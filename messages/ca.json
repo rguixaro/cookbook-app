@@ -27,7 +27,6 @@
 	"errors": {
 		"recipe-name-too-short": "El nom és massa curt",
 		"course-required": "Cal seleccionar un plat",
-		"categories-required": "Selecciona almenys una categoria",
 		"categories-too-many": "Selecciona fins a 3 categories",
 		"categories-duplicate": "Les categories no es poden duplicar",
 		"time-invalid": "El temps ha de ser un número",

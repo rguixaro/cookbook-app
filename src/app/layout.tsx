@@ -14,10 +14,10 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 export const metadata: Metadata = {
 	metadataBase: new URL(siteUrl),
 	title: 'CookBook',
-	description: 'CookBook App',
+	description: 'CookBook',
 	openGraph: {
 		title: 'CookBook',
-		description: 'CookBook App',
+		description: 'CookBook',
 		siteName: 'CookBook',
 		images: [
 			{
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
 	twitter: {
 		card: 'summary',
 		title: 'CookBook',
-		description: 'CookBook App',
+		description: 'CookBook',
 		images: ['/images/favicon.png'],
 	},
 }

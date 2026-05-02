@@ -157,7 +157,9 @@ export async function fetchRecipes(params: {
 			...(ownFeedOr && { OR: ownFeedOr }),
 			...(search && {
 				name: {
-					contains: search.slice(0, 50).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+					contains: search
+						.slice(0, 50)
+						.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
 					mode: 'insensitive' as const,
 				},
 			}),
@@ -187,7 +189,9 @@ export async function fetchRecipes(params: {
 
 			return {
 				recipes: results.map(mapRecipe),
-				nextCursor: hasMore ? (results[results.length - 1]?.id ?? null) : null,
+				nextCursor: hasMore
+					? (results[results.length - 1]?.id ?? null)
+					: null,
 			}
 		}
 
@@ -228,9 +232,7 @@ interface createRecipeResult {
  * @param values {z.infer<typeof CreateRecipeSchema>}
  * @returns Promise<createRecipeResult>
  */
-export const createRecipe = async (
-	values: unknown,
-): Promise<createRecipeResult> => {
+export const createRecipe = async (values: unknown): Promise<createRecipeResult> => {
 	const currentUser = await auth()
 
 	/** Not authenticated */
@@ -239,15 +241,8 @@ export const createRecipe = async (
 	const parsed = CreateRecipeSchema.safeParse(values)
 	if (!parsed.success) return { error: true, message: 'error' }
 
-	const {
-		name,
-		course,
-		categories,
-		time,
-		ingredients,
-		instructions,
-		sourceUrls,
-	} = parsed.data
+	const { name, course, categories, time, ingredients, instructions, sourceUrls } =
+		parsed.data
 
 	const slug = slugify(name)
 	if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
@@ -308,15 +303,8 @@ export const updateRecipe = async (
 	const parsed = CreateRecipeSchema.safeParse(values)
 	if (!parsed.success) return { error: true, message: 'error' }
 
-	const {
-		name,
-		course,
-		categories,
-		time,
-		ingredients,
-		instructions,
-		sourceUrls,
-	} = parsed.data
+	const { name, course, categories, time, ingredients, instructions, sourceUrls } =
+		parsed.data
 
 	const slug = slugify(name)
 	if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
@@ -537,7 +525,10 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 
 		const affectedUsers = await db.user.findMany({
 			where: {
-				OR: [{ savedRecipes: { has: id } }, { favouriteRecipes: { has: id } }],
+				OR: [
+					{ savedRecipes: { has: id } },
+					{ favouriteRecipes: { has: id } },
+				],
 			},
 			select: { id: true, savedRecipes: true, favouriteRecipes: true },
 		})
@@ -632,7 +623,7 @@ export const uploadRecipeImages = async (
 		})
 		if (!freshRecipe) {
 			Sentry.captureMessage(
-				'uploadRecipeImages: race condition — recipe not found on re-fetch',
+				'uploadRecipeImages: race condition, recipe not found on re-fetch',
 				{
 					level: 'warning',
 					tags: { action: 'uploadRecipeImages', step: 'race-check' },

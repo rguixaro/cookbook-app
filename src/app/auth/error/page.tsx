@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 
 export const metadata: Metadata = {
-	title: 'Authentication Error — CookBook',
+	title: 'Authentication Error - CookBook',
 }
 import { CircleX } from 'lucide-react'
 

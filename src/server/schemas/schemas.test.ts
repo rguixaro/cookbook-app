@@ -69,25 +69,25 @@ describe('CreateRecipeSchema', () => {
 		expect(result.success).toBe(false)
 	})
 
-	it('rejects empty categories array', () => {
+	it('accepts empty categories array', () => {
 		const result = CreateRecipeSchema.safeParse({
 			...validRecipe,
 			categories: [],
 		})
 
-		expect(result.success).toBe(false)
-		if (!result.success) {
-			expect(result.error.issues[0]?.message).toBe('categories-required')
+		expect(result.success).toBe(true)
+		if (result.success) {
+			expect(result.data.categories).toEqual([])
 		}
 	})
 
-	it('rejects missing categories', () => {
+	it('defaults missing categories to an empty array', () => {
 		const { categories: _categories, ...recipeWithoutCategories } = validRecipe
 		const result = CreateRecipeSchema.safeParse(recipeWithoutCategories)
 
-		expect(result.success).toBe(false)
-		if (!result.success) {
-			expect(result.error.issues[0]?.message).toBe('categories-required')
+		expect(result.success).toBe(true)
+		if (result.success) {
+			expect(result.data.categories).toEqual([])
 		}
 	})
 
