@@ -17,18 +17,18 @@ manner.
 
 ## Features
 
-- **Recipe management** — create, edit, and delete recipes with ingredients,
+- **Recipe management**: create, edit, and delete recipes with ingredients,
   instructions, cooking time, categories, and source URLs
-- **Image gallery** — upload up to 3 images per recipe, stored on S3 and served via
+- **Image gallery**: upload up to 3 images per recipe, stored on S3 and served via
   CloudFront CDN
-- **Search & filter** — search recipes by name, filter by category (8 types) or
+- **Search & filter**: search recipes by name, filter by category (8 types) or
   favourites
-- **Social** — favourite and save recipes from other users, browse public chef
+- **Social**: favourite and save recipes from other users, browse public chef
   profiles
-- **Sharing** — share recipe links or download them as a styled PNG image
-- **Privacy controls** — toggle profile visibility to restrict access to your recipes
-- **i18n** — English, Spanish, and Catalan
-- **Auth** — Google OAuth via Auth.js
+- **Sharing**: share recipe links or download them as a styled PNG image
+- **Privacy controls**: toggle profile visibility to restrict access to your recipes
+- **i18n**: English, Spanish, and Catalan
+- **Auth**: Google OAuth via Auth.js
 
 ## Getting Started
 
@@ -84,7 +84,7 @@ via [GitHub Actions](.github/workflows/test.yml).
 pnpm test              # unit & component tests (Vitest)
 pnpm test:coverage     # tests + coverage report (HTML in coverage/)
 pnpm test:watch        # watch mode
-pnpm test:e2e          # e2e tests (Playwright — auto-starts dev server)
+pnpm test:e2e          # e2e tests
 pnpm test:e2e:ui       # e2e with interactive UI
 ```
 

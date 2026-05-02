@@ -41,7 +41,7 @@ export async function GET(req: Request) {
 		if (!response.ok) {
 			console.error(
 				`[Proxy] CloudFront returned ${response.status} for ${targetUrl.pathname}`,
-				response.status === 403 ? '— cookies may be expired or invalid' : '',
+				response.status === 403 ? '- cookies may be expired or invalid' : '',
 			)
 			return NextResponse.json(
 				{ error: 'Failed to fetch image' },
