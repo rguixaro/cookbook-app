@@ -61,6 +61,9 @@ interface EditRecipeProps {
 	recipe: Recipe
 }
 
+type RecipeFormInput = z.input<typeof CreateRecipeSchema>
+type RecipeFormOutput = z.output<typeof CreateRecipeSchema>
+
 const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN ?? ''
 
 /**
@@ -83,7 +86,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
 	const [deleteConfirmation, setDeleteConfirmation] = useState<string>('')
 
-	const form = useForm<z.infer<typeof CreateRecipeSchema>>({
+	const form = useForm<RecipeFormInput, unknown, RecipeFormOutput>({
 		resolver: zodResolver(CreateRecipeSchema),
 		defaultValues: {
 			name: props.recipe.name,
@@ -122,7 +125,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	 * onSubmit form handler
 	 * @param values
 	 */
-	const onSubmit = async (values: z.infer<typeof CreateRecipeSchema>) => {
+	const onSubmit = async (values: RecipeFormOutput) => {
 		try {
 			setLoading(true)
 			const { error, message, recipePath } = await updateRecipe(
