@@ -121,7 +121,7 @@ export function ItemRecipe({
 
 	const allChips = useMemo(
 		() =>
-			recipe.ingredients
+			[...recipe.ingredients]
 				.sort((a, b) => (a.length < b.length ? -1 : 1))
 				.map(cleanIngredient)
 				.filter(Boolean),
