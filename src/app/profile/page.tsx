@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
 
 export const metadata: Metadata = {
-	title: 'My Profile — CookBook',
+	title: 'My Profile - CookBook',
 }
 import { GoBack } from '@/components/layout'
 import { ExportAccount, UpdateAccount } from '@/components/profile'

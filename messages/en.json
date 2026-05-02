@@ -27,7 +27,6 @@
 	"errors": {
 		"recipe-name-too-short": "Name is too short",
 		"course-required": "The course is required",
-		"categories-required": "Select at least one category",
 		"categories-too-many": "Select up to 3 categories",
 		"categories-duplicate": "Categories cannot be duplicated",
 		"time-invalid": "Time must be a number",

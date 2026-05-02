@@ -4,7 +4,7 @@ import { notFound, redirect } from 'next/navigation'
 import { auth } from '@/auth'
 
 export const metadata: Metadata = {
-	title: 'Edit Recipe — CookBook',
+	title: 'Edit Recipe - CookBook',
 }
 import { getRecipeByAuthAndSlug, getUserByUsername } from '@/server/queries'
 import { EditRecipe } from '@/components/recipes/form'

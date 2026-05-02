@@ -69,12 +69,12 @@ export function normalizeRecipeCourseAndCategories(
 }
 
 const RecipeCategoriesInputSchema = z
-	.array(RecipeCategorySchema, { error: 'categories-required' })
-	.min(1, { message: 'categories-required' })
+	.array(RecipeCategorySchema)
 	.max(3, { message: 'categories-too-many' })
 	.refine((categories) => new Set(categories).size === categories.length, {
 		message: 'categories-duplicate',
 	})
+	.default([])
 
 export const RecipeSchema = z.object({
 	id: z.string(),

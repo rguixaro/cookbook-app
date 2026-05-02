@@ -8,7 +8,7 @@ import { LoginIcon, SocialLogin } from '@/components/auth'
 import { cn } from '@/utils'
 
 export const metadata: Metadata = {
-	title: 'Sign In — CookBook',
+	title: 'Sign In - CookBook',
 	description: 'Sign in to your CookBook account',
 }
 

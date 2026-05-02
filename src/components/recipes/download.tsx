@@ -3,7 +3,7 @@
 import { useCallback, useRef } from 'react'
 import { useTranslations } from 'next-intl'
 import Image from 'next/image'
-import { ArrowDownToLine, ExternalLink } from 'lucide-react'
+import { ArrowDownToLine, Clock4, ExternalLink } from 'lucide-react'
 import * as Sentry from '@sentry/nextjs'
 import { toPng } from 'html-to-image'
 import { toast } from 'sonner'
@@ -11,7 +11,6 @@ import { toast } from 'sonner'
 import { Icon } from '@/components/recipes/icon'
 import { RecipeGalleryPlaceholder } from '@/components/recipes/gallery'
 
-import { Input } from '@/ui'
 import { cn, SITE_URL } from '@/utils'
 
 type DownloadableRecipe = {
@@ -137,16 +136,16 @@ export const RecipeDownload = ({
 								<div className='bg-forest-100 mb-2 rounded-[20px] shadow-center-sm'>
 									{recipe.images && recipe.images.length > 0 ? (
 										recipe.images.length === 1 ? (
-											<div className='w-full p-3'>
+											<div className='w-full p-4'>
 												<img
 													src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
 													alt='Recipe photo'
-													className='w-full aspect-4/3 object-cover rounded-xl'
+													className='w-full aspect-4/3 object-cover rounded-xl shadow-center-sm'
 												/>
 											</div>
 										) : recipe.images.length === 2 ? (
-											<div className='w-full px-4 pt-3'>
-												<div className='grid grid-cols-2 gap-2'>
+											<div className='w-full p-4'>
+												<div className='grid grid-cols-2 gap-4'>
 													{recipe.images
 														.slice(0, 2)
 														.map((img, i) => (
@@ -154,20 +153,20 @@ export const RecipeDownload = ({
 																key={i}
 																src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
 																alt={`Recipe photo ${i + 1}`}
-																className='w-full aspect-square object-cover rounded-xl'
+																className='w-full aspect-square object-cover rounded-xl shadow-center-sm'
 															/>
 														))}
 												</div>
 											</div>
 										) : (
-											<div className='w-full px-4 pt-3'>
-												<div className='flex flex-col gap-2'>
+											<div className='w-full p-4'>
+												<div className='flex flex-col gap-4'>
 													<img
 														src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
 														alt='Recipe photo 1'
-														className='w-full aspect-4/3 object-cover rounded-xl'
+														className='w-full aspect-4/3 object-cover rounded-xl shadow-center-sm'
 													/>
-													<div className='grid grid-cols-2 gap-2'>
+													<div className='grid grid-cols-2 gap-4'>
 														{recipe.images
 															.slice(1, 3)
 															.map((img, i) => (
@@ -175,7 +174,7 @@ export const RecipeDownload = ({
 																	key={i}
 																	src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
 																	alt={`Recipe photo ${i + 2}`}
-																	className='w-full aspect-square object-cover rounded-xl'
+																	className='w-full aspect-square object-cover rounded-xl shadow-center-sm'
 																/>
 															))}
 													</div>
@@ -191,23 +190,24 @@ export const RecipeDownload = ({
 								{recipe.time && (
 									<section className='bg-forest-150 border-y-8 border-forest-150'>
 										<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-4 pb-4'>
-											<div className='flex items-center justify-between gap-3 space-y-0 px-4'>
-												<div>
+											<div className='grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:gap-3 space-y-0 px-4'>
+												<div className='min-w-0 text-left'>
 													<span className='text-base md:text-lg font-extrabold text-forest-200 leading-none'>
 														{t('time')}
 													</span>
 												</div>
-												<div className='py-2' />
-												<div className='inline-flex w-fit max-w-2/3 bg-forest-50 border-2 border-forest-150 rounded-2xl overflow-hidden shadow-center-sm'>
-													<div className='flex px-3 py-1 items-center gap-2 text-center'>
-														<Input
-															value={recipe.time}
-															readOnly
-															tabIndex={-1}
-															aria-label={t('time')}
-															className='text-lg rounded border-none px-0 shadow-none! focus-visible:ring-0 text-right placeholder:text-forest-200/75'
-														/>
-														<span className='shrink-0 whitespace-nowrap text-sm font-bold text-forest-200'>
+												<div className='shrink-0 bg-forest-50 border-2 border-forest-150 rounded-2xl shadow-center-sm'>
+													<div className='flex flex-col px-3 sm:px-5 py-1 items-center text-center'>
+														<div className='flex flex-wrap items-center justify-between gap-2'>
+															<span className='font-bold text-forest-200'>
+																{recipe.time}
+															</span>
+															<Clock4
+																size={16}
+																className='stroke-forest-200'
+															/>
+														</div>
+														<span className='w-full whitespace-nowrap text-xs text-left text-forest-200'>
 															{t('minutes')}
 														</span>
 													</div>
@@ -248,18 +248,18 @@ export const RecipeDownload = ({
 								</section>
 								{recipe.sourceUrls &&
 									recipe.sourceUrls.length > 0 && (
-										<section className='bg-forest-150 border-t-8 border-forest-150'>
+										<section className='bg-forest-150 border-y-8 border-forest-150'>
 											<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-3 pb-4'>
 												<p className='text-base md:text-lg font-extrabold text-forest-200'>
 													{t('sources')}
 												</p>
-												<div className='mx-4 mt-3 flex flex-col gap-1.5'>
+												<div className='mx-4 mt-3 flex flex-wrap items-center justify-center gap-1.5'>
 													{recipe.sourceUrls.map(
 														(url, index) => (
 															<div
 																key={index}
-																className='flex items-center justify-between rounded-lg bg-forest-150 px-3 py-1 text-forest-200'>
-																<span className='flex min-w-0 items-center gap-2'>
+																className='flex min-w-0 max-w-full items-center justify-between rounded-lg bg-forest-150 px-3 py-1 text-forest-200'>
+																<span className='flex min-w-0 max-w-full items-center gap-2'>
 																	<ExternalLink
 																		size={14}
 																		className='shrink-0'

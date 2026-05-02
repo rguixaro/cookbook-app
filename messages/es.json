@@ -27,7 +27,6 @@
 	"errors": {
 		"recipe-name-too-short": "El nombre es demasiado corto",
 		"course-required": "Es necesario seleccionar un plato",
-		"categories-required": "Selecciona al menos una categoría",
 		"categories-too-many": "Selecciona hasta 3 categorías",
 		"categories-duplicate": "Las categorías no se pueden duplicar",
 		"time-invalid": "El tiempo debe ser un número",
