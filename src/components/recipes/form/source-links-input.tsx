@@ -113,12 +113,16 @@ export const SourceLinksInput = ({
 					{t('source-links-invalid')}
 				</p>
 			)}
-			<div className={cn('mx-4', values.length > 0 && 'mt-3')}>
+			<div
+				className={cn(
+					'flex flex-wrap items-center justify-center mx-4 gap-1.5',
+					values.length > 0 && 'mt-3',
+				)}>
 				{values.map((url, index) => (
 					<div
 						key={index}
-						className='flex items-center justify-between bg-forest-150 text-forest-200 rounded-lg py-1 px-3'>
-						<div className='flex items-center gap-2 min-w-0'>
+						className='flex min-w-0 max-w-full items-center justify-between bg-forest-150 text-forest-200 rounded-lg py-1 px-3'>
+						<div className='flex min-w-0 max-w-full items-center gap-2'>
 							<Link size={14} className='shrink-0' />
 							<span className='py-1 truncate font-semibold text-xs'>
 								{url}

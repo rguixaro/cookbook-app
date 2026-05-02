@@ -28,7 +28,7 @@ const motions: Variants = {
 
 const MAX_RECIPE_ITEM_CHIPS = 5
 
-/** Strip quantities, numbers, parentheses — keep just the ingredient name */
+/** Strip quantities, numbers, parentheses, keep just the ingredient name */
 function cleanIngredient(raw: string) {
 	const cleaned = raw
 		.replace(/\(.*?\)/g, '')
@@ -51,9 +51,7 @@ function RecipeListImage({
 	alt: string
 	cookiesReady: boolean
 }) {
-	const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>(
-		'loading',
-	)
+	const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
 
 	useEffect(() => {
 		setStatus('loading')
@@ -68,15 +66,13 @@ function RecipeListImage({
 
 	return (
 		<div
-			className='w-36 shrink-0 relative border-l-8 border-transparent bg-forest-150'
-			data-testid='recipe-image-rail'
-		>
+			className='w-28 shrink-0 relative border-l-8 border-transparent bg-forest-150'
+			data-testid='recipe-image-rail'>
 			{showSpinner && (
 				<div
 					role='status'
 					aria-label='Loading recipe image'
-					className='absolute inset-0 flex items-center justify-center'
-				>
+					className='absolute inset-0 flex items-center justify-center'>
 					<LoaderIcon size={24} className='animate-spin text-forest-200' />
 				</div>
 			)}
@@ -84,8 +80,7 @@ function RecipeListImage({
 				<div
 					role='img'
 					aria-label='Recipe image failed to load'
-					className='absolute inset-0 flex items-center justify-center'
-				>
+					className='absolute inset-0 flex items-center justify-center'>
 					<ImageIcon size={24} className='text-forest-200' />
 				</div>
 			)}
@@ -125,7 +120,11 @@ export function ItemRecipe({
 	const cookiesReady = useCookiesReady()
 
 	const allChips = useMemo(
-		() => recipe.ingredients.map(cleanIngredient).filter(Boolean),
+		() =>
+			recipe.ingredients
+				.sort((a, b) => (a.length < b.length ? -1 : 1))
+				.map(cleanIngredient)
+				.filter(Boolean),
 		[recipe.ingredients],
 	)
 	const fixedChipCount = (recipe.time ? 1 : 0) + 1 + recipe.categories.length
@@ -147,20 +146,17 @@ export function ItemRecipe({
 	return (
 		<Link
 			href={`/recipes/${recipe.authorUsername}/${recipe.slug}${queryParams}`}
-			className='w-full'
-		>
+			className='w-full'>
 			<motion.div
 				initial='offscreen'
 				whileInView='onscreen'
 				variants={motions}
-				viewport={{ once: true, amount: 0.01 }}
-			>
+				viewport={{ once: true, amount: 0.01 }}>
 				<div
 					className={cn(
 						'w-full my-2 flex shadow-center-sm overflow-hidden',
 						'bg-forest-100 border-8 border-forest-150 rounded-2xl',
-					)}
-				>
+					)}>
 					<div className='flex flex-col flex-1 min-w-0 bg-forest-150'>
 						<div className='bg-forest-150 rounded-xl rounded-b-none border-b-8 border-forest-150'>
 							<div className='w-full bg-forest-50 px-4 py-2 rounded-xl'>
@@ -192,17 +188,17 @@ export function ItemRecipe({
 								{recipe.categories.map((category) => (
 									<span
 										key={category}
-										className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2 py-0.5 rounded-lg'
-									>
+										className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2 py-0.5 rounded-lg'>
 										{t_categories(category.toLowerCase())}
 									</span>
 								))}
 								{chipsToRender.map((name, i) => (
 									<span
 										key={i}
-										className='inline-flex max-w-[9rem] min-w-0 items-center rounded-lg bg-forest-150 px-2 py-0.5 text-xs font-semibold text-forest-300'
-									>
-										<span className='min-w-0 truncate'>{name}</span>
+										className='inline-flex max-w-[9rem] min-w-0 items-center rounded-lg bg-forest-150 px-2 py-0.5 text-xs font-semibold text-forest-300'>
+										<span className='min-w-0 truncate'>
+											{name}
+										</span>
 									</span>
 								))}
 								{hiddenCount > 0 && (
