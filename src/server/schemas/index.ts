@@ -37,8 +37,19 @@ export const RecipeSorts = [
 
 export type RecipeSort = (typeof RecipeSorts)[number]
 
+export const RecipeComplementTypes = ['Sauce', 'Marinade', 'Garnish'] as const
+
+export type RecipeComplementType = (typeof RecipeComplementTypes)[number]
+
 const RecipeCourseSchema = z.enum(RecipeCourses)
 const RecipeCategorySchema = z.enum(RecipeCategories)
+const RecipeComplementTypeSchema = z.enum(RecipeComplementTypes)
+const RecipeComplementValueSchema = z.object({
+	type: RecipeComplementTypeSchema,
+	ingredients: z.array(z.string()),
+	instructions: z.string(),
+})
+export const INGREDIENT_MAX_LENGTH = 35
 
 export const isRecipeCourse = (value: string): value is RecipeCourse =>
 	(RecipeCourses as readonly string[]).includes(value)
@@ -68,6 +79,13 @@ export function normalizeRecipeCourseAndCategories(
 	}
 }
 
+export function normalizeRecipeComplements(
+	complements?: unknown,
+): RecipeComplementSchema[] {
+	const result = z.array(RecipeComplementValueSchema).safeParse(complements ?? [])
+	return result.success ? result.data : []
+}
+
 const RecipeCategoriesInputSchema = z
 	.array(RecipeCategorySchema)
 	.max(3, { message: 'categories-too-many' })
@@ -83,6 +101,7 @@ export const RecipeSchema = z.object({
 	time: z.number().nullable(),
 	instructions: z.string(),
 	ingredients: z.array(z.string()),
+	complements: z.array(RecipeComplementValueSchema),
 	course: RecipeCourseSchema,
 	categories: z.array(RecipeCategorySchema),
 	authorId: z.string(),
@@ -101,14 +120,88 @@ export const ProfileSchema = z.object({
 	recipesCount: z.number(),
 })
 
-const IngredientSchema = z
-	.string()
-	.trim()
-	.min(2, { message: 'ingredient-invalid' })
-	.max(30, { message: 'ingredient-too-long' })
-	.refine((value) => (value.match(/\p{Script=Latin}/gu)?.length ?? 0) >= 2, {
-		message: 'ingredient-invalid',
+const hasMeaningfulIngredientText = (value: string) =>
+	(value.match(/\p{Script=Latin}/gu)?.length ?? 0) >= 2
+
+const createIngredientSchema = (
+	allowedOverlongIngredients: readonly string[] = [],
+) => {
+	const allowedOverlongValues = new Set(
+		allowedOverlongIngredients.map((ingredient) => ingredient.trim()),
+	)
+
+	return z
+		.string()
+		.trim()
+		.min(2, { message: 'ingredient-invalid' })
+		.refine(
+			(value) =>
+				value.length <= INGREDIENT_MAX_LENGTH ||
+				allowedOverlongValues.has(value),
+			{ message: 'ingredient-too-long' },
+		)
+		.refine(hasMeaningfulIngredientText, {
+			message: 'ingredient-invalid',
+		})
+}
+
+const createIngredientsArraySchema = (
+	allowedOverlongIngredients: readonly string[] = [],
+) =>
+	z
+		.array(createIngredientSchema(allowedOverlongIngredients))
+		.superRefine((ingredients, ctx) => {
+			const remainingAllowed = new Map<string, number>()
+			for (const ingredient of allowedOverlongIngredients) {
+				const value = ingredient.trim()
+				if (value.length <= INGREDIENT_MAX_LENGTH) continue
+				remainingAllowed.set(value, (remainingAllowed.get(value) ?? 0) + 1)
+			}
+
+			ingredients.forEach((ingredient, index) => {
+				if (ingredient.length <= INGREDIENT_MAX_LENGTH) return
+
+				const remaining = remainingAllowed.get(ingredient) ?? 0
+				if (remaining > 0) {
+					remainingAllowed.set(ingredient, remaining - 1)
+					return
+				}
+
+				ctx.addIssue({
+					code: 'custom',
+					message: 'ingredient-too-long',
+					path: [index],
+				})
+			})
+		})
+		.nonempty({ message: 'ingredients-required' })
+
+const IngredientSchema = createIngredientSchema()
+
+const createComplementSchema = (
+	allowedOverlongIngredients: readonly string[] = [],
+) =>
+	z.object({
+		type: RecipeComplementTypeSchema,
+		ingredients: createIngredientsArraySchema(allowedOverlongIngredients),
+		instructions: z
+			.string()
+			.trim()
+			.max(10000, { message: 'instructions-too-long' }),
 	})
+
+const createComplementsSchema = (
+	allowedOverlongIngredients: readonly string[] = [],
+) =>
+	z
+		.array(createComplementSchema(allowedOverlongIngredients))
+		.default([])
+		.refine(
+			(complements) =>
+				new Set(complements.map((complement) => complement.type)).size ===
+				complements.length,
+			{ message: 'complements-duplicate' },
+		)
 
 export const CreateRecipeSchema = z.object({
 	name: z
@@ -130,6 +223,7 @@ export const CreateRecipeSchema = z.object({
 		.string()
 		.min(10, { message: 'instructions-too-short' })
 		.max(10000, { message: 'instructions-too-long' }),
+	complements: createComplementsSchema(),
 	sourceUrls: z
 		.array(
 			z
@@ -142,6 +236,14 @@ export const CreateRecipeSchema = z.object({
 		)
 		.max(2),
 })
+
+export const createEditRecipeSchema = (
+	existingIngredients: readonly string[] = [],
+) =>
+	CreateRecipeSchema.extend({
+		ingredients: createIngredientsArraySchema(existingIngredients),
+		complements: createComplementsSchema(existingIngredients),
+	})
 
 export const UpdateProfileSchema = z.object({
 	name: z
@@ -157,3 +259,4 @@ export type UpdateProfileInput = z.TypeOf<typeof UpdateProfileSchema>
 export type RecipeSchema = z.TypeOf<typeof RecipeSchema>
 export type ProfileSchema = z.TypeOf<typeof ProfileSchema>
 export type CreateRecipeInput = z.TypeOf<typeof CreateRecipeSchema>
+export type RecipeComplementSchema = RecipeSchema['complements'][number]
