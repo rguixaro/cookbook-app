@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
+import { useEffect } from 'react'
+import { useForm } from 'react-hook-form'
 import { renderWithProviders, userEvent } from '@/test/render'
 import { EditRecipe } from './edit'
 import type { Recipe } from '@/types'
+import { Form, FormField, FormItem, FormMessage } from '@/ui'
 
 const routerMocks = vi.hoisted(() => ({
 	replace: vi.fn(),
@@ -29,10 +32,12 @@ vi.mock('@sentry/nextjs', () => ({
 	captureException: vi.fn(),
 }))
 
-import { deleteRecipe } from '@/server/actions'
+import { deleteRecipe, updateRecipe, updateRecipeImages } from '@/server/actions'
 import { toast } from 'sonner'
 
 const mockDeleteRecipe = vi.mocked(deleteRecipe)
+const mockUpdateRecipe = vi.mocked(updateRecipe)
+const mockUpdateRecipeImages = vi.mocked(updateRecipeImages)
 
 const recipe: Recipe = {
 	id: 'recipe-1',
@@ -41,6 +46,7 @@ const recipe: Recipe = {
 	time: 45,
 	instructions: 'Cook the rice with stock until tender.',
 	ingredients: ['rice', 'stock'],
+	complements: [],
 	createdAt: new Date('2026-01-01T00:00:00.000Z'),
 	updatedAt: new Date('2026-01-01T00:00:00.000Z'),
 	course: 'SecondCourse',
@@ -55,8 +61,35 @@ beforeEach(() => {
 	vi.clearAllMocks()
 })
 
-function renderEditRecipe() {
-	return renderWithProviders(<EditRecipe recipe={recipe} />)
+function renderEditRecipe(overrides: Partial<Recipe> = {}) {
+	return renderWithProviders(<EditRecipe recipe={{ ...recipe, ...overrides }} />)
+}
+
+function NestedIngredientErrorForm() {
+	const form = useForm<{ ingredients: string[] }>({
+		defaultValues: { ingredients: ['rice'] },
+	})
+
+	useEffect(() => {
+		form.setError('ingredients.0', {
+			type: 'manual',
+			message: 'ingredient-too-long',
+		})
+	}, [form])
+
+	return (
+		<Form {...form}>
+			<FormField
+				control={form.control}
+				name='ingredients'
+				render={() => (
+					<FormItem>
+						<FormMessage />
+					</FormItem>
+				)}
+			/>
+		</Form>
+	)
 }
 
 describe('EditRecipe delete flow', () => {
@@ -91,8 +124,43 @@ describe('EditRecipe delete flow', () => {
 
 		const message = screen.getByText('Enter at least two letters')
 		expect(message).toBeInTheDocument()
-		expect(message).toHaveClass('bg-forest-150')
+		expect(message).toHaveClass('bg-forest-50')
 		expect(screen.getAllByText('Enter at least two letters')).toHaveLength(1)
+	})
+
+	it('renders nested ingredient errors without an undefined translation key', async () => {
+		renderWithProviders(<NestedIngredientErrorForm />)
+
+		expect(
+			await screen.findByText('Use 35 characters or fewer'),
+		).toBeInTheDocument()
+		expect(screen.queryByText('error.undefined')).not.toBeInTheDocument()
+	})
+
+	it('submits when unchanged legacy overlong ingredients are present', async () => {
+		const legacyIngredient = 'very long preserved lemon ingredient name'
+		mockUpdateRecipe.mockResolvedValue({
+			error: false,
+			recipePath: '/recipes/testuser/paella-updated',
+		})
+		mockUpdateRecipeImages.mockResolvedValue({ error: false })
+		const user = userEvent.setup()
+		renderEditRecipe({ ingredients: [legacyIngredient] })
+
+		const nameInput = screen.getByDisplayValue('Paella')
+		await user.clear(nameInput)
+		await user.type(nameInput, 'Paella updated')
+		await user.click(screen.getByRole('button', { name: 'Update' }))
+
+		await waitFor(() => {
+			expect(mockUpdateRecipe).toHaveBeenCalledWith(
+				'recipe-1',
+				expect.objectContaining({
+					name: 'Paella updated',
+					ingredients: [legacyIngredient],
+				}),
+			)
+		})
 	})
 
 	it('opens confirmation dialog and requires the confirmation word', async () => {

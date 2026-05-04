@@ -153,7 +153,7 @@ const FormMessage = React.forwardRef<
 >(({ className, parentClassName, children, ...props }, ref) => {
 	const t = useTranslations('errors')
 	const { error, formMessageId } = useFormField()
-	const body = error ? String(error?.message) : children
+	const body = error ? findFirstErrorMessage(error) : children
 
 	if (!body) return null
 
@@ -162,7 +162,7 @@ const FormMessage = React.forwardRef<
 			ref={ref}
 			id={formMessageId}
 			className={cn(
-				'text-xs font-semibold text-forest-200/75 bg-forest-150 mx-5 px-2 py-1 my-1 rounded-lg',
+				'text-xs font-bold text-forest-200/75 bg-forest-50 mx-5 px-2 py-1 my-1 rounded-lg text-center',
 				className,
 			)}
 			{...props}>
@@ -177,6 +177,26 @@ const FormMessage = React.forwardRef<
 	return message
 })
 FormMessage.displayName = 'FormMessage'
+
+function findFirstErrorMessage(error: unknown): string | undefined {
+	if (!error || typeof error !== 'object') return undefined
+
+	const maybeMessage = (error as { message?: unknown }).message
+	if (typeof maybeMessage === 'string' && maybeMessage.length > 0) {
+		return maybeMessage
+	}
+
+	const values = Array.isArray(error)
+		? error
+		: Object.values(error as Record<string, unknown>)
+
+	for (const value of values) {
+		const message = findFirstErrorMessage(value)
+		if (message) return message
+	}
+
+	return undefined
+}
 
 export {
 	useFormField,

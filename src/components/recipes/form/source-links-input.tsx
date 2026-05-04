@@ -109,7 +109,7 @@ export const SourceLinksInput = ({
 			</FormControl>
 			<FormMessage className={cn('mb-0 mt-0', values.length == 0 && 'mt-3')} />
 			{showInvalidUrl && !onInputErrorChange && (
-				<p className='mt-1 text-left text-[0.8rem] font-bold text-forest-400'>
+				<p className='mt-1 text-xs font-bold text-forest-200/75 bg-forest-50 mx-5 px-2 py-1 rounded-lg text-center'>
 					{t('source-links-invalid')}
 				</p>
 			)}
