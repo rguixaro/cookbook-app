@@ -8,10 +8,12 @@ import { auth } from '@/auth'
 import { db } from '@/server/db'
 import {
 	CreateRecipeSchema,
+	createEditRecipeSchema,
 	isRecipeCourse,
 	isRecipeCategory,
 	normalizeRecipeSort,
 	normalizeRecipeCourseAndCategories,
+	normalizeRecipeComplements,
 	type RecipeSchema,
 } from '@/server/schemas'
 import { formatLongSentence, slugify } from '@/server/utils'
@@ -32,6 +34,9 @@ const mapRecipe = (recipe: RecipeWithAuthor): RecipeSchema => {
 	return {
 		...data,
 		...normalizeRecipeCourseAndCategories(recipe.course, recipe.categories),
+		complements: normalizeRecipeComplements(
+			'complements' in recipe ? recipe.complements : undefined,
+		),
 		authorUsername: author?.username ?? '',
 		images: toImageUrls(recipe.images),
 	}
@@ -241,8 +246,16 @@ export const createRecipe = async (values: unknown): Promise<createRecipeResult>
 	const parsed = CreateRecipeSchema.safeParse(values)
 	if (!parsed.success) return { error: true, message: 'error' }
 
-	const { name, course, categories, time, ingredients, instructions, sourceUrls } =
-		parsed.data
+	const {
+		name,
+		course,
+		categories,
+		time,
+		ingredients,
+		instructions,
+		complements,
+		sourceUrls,
+	} = parsed.data
 
 	const slug = slugify(name)
 	if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
@@ -256,6 +269,7 @@ export const createRecipe = async (values: unknown): Promise<createRecipeResult>
 				time,
 				ingredients,
 				instructions: formatLongSentence(instructions),
+				complements,
 				sourceUrls: sourceUrls ?? [],
 				authorId: currentUser.user.id,
 				slug,
@@ -300,15 +314,6 @@ export const updateRecipe = async (
 	/** Not authenticated */
 	if (!currentUser) return { error: true, message: 'error' }
 
-	const parsed = CreateRecipeSchema.safeParse(values)
-	if (!parsed.success) return { error: true, message: 'error' }
-
-	const { name, course, categories, time, ingredients, instructions, sourceUrls } =
-		parsed.data
-
-	const slug = slugify(name)
-	if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
-
 	try {
 		const recipe = await db.recipe.findFirst({
 			where: { id, authorId: currentUser.user.id },
@@ -316,6 +321,25 @@ export const updateRecipe = async (
 		})
 
 		if (!recipe) return { error: true, message: 'error' }
+
+		const parsed = createEditRecipeSchema(recipe.ingredients ?? []).safeParse(
+			values,
+		)
+		if (!parsed.success) return { error: true, message: 'error' }
+
+		const {
+			name,
+			course,
+			categories,
+			time,
+			ingredients,
+			instructions,
+			complements,
+			sourceUrls,
+		} = parsed.data
+
+		const slug = slugify(name)
+		if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
 
 		await db.recipe.update({
 			where: { id, authorId: currentUser.user.id },
@@ -326,6 +350,7 @@ export const updateRecipe = async (
 				time,
 				ingredients,
 				instructions: formatLongSentence(instructions),
+				complements,
 				sourceUrls: sourceUrls ?? [],
 				slug,
 			},

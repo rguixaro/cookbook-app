@@ -3,6 +3,8 @@ import {
 	CreateRecipeSchema,
 	RecipeCategories,
 	UpdateProfileSchema,
+	createEditRecipeSchema,
+	normalizeRecipeComplements,
 	normalizeRecipeCourseAndCategories,
 } from './index'
 
@@ -20,6 +22,108 @@ describe('CreateRecipeSchema', () => {
 	it('accepts valid input', () => {
 		const result = CreateRecipeSchema.safeParse(validRecipe)
 		expect(result.success).toBe(true)
+	})
+
+	it('defaults missing complements to an empty array', () => {
+		const result = CreateRecipeSchema.safeParse(validRecipe)
+
+		expect(result.success).toBe(true)
+		if (result.success) {
+			expect(result.data.complements).toEqual([])
+		}
+	})
+
+	it('accepts valid complements', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			complements: [
+				{
+					type: 'Sauce',
+					ingredients: ['tomato', 'olive oil'],
+					instructions: 'Simmer the tomato and oil until glossy.',
+				},
+				{
+					type: 'Garnish',
+					ingredients: ['parsley'],
+					instructions: 'Chop the parsley and scatter before serving.',
+				},
+			],
+		})
+
+		expect(result.success).toBe(true)
+		if (result.success) {
+			expect(result.data.ingredients).toEqual(validRecipe.ingredients)
+			expect(result.data.instructions).toBe(validRecipe.instructions)
+			expect(result.data.complements).toHaveLength(2)
+		}
+	})
+
+	it('rejects complement without ingredients', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			complements: [
+				{
+					type: 'Sauce',
+					ingredients: [],
+					instructions: 'Simmer the sauce until it thickens.',
+				},
+			],
+		})
+
+		expect(result.success).toBe(false)
+	})
+
+	it('accepts complements without instructions', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			complements: [
+				{
+					type: 'Sauce',
+					ingredients: ['tomato'],
+					instructions: '',
+				},
+			],
+		})
+
+		expect(result.success).toBe(true)
+	})
+
+	it('rejects invalid complement types', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			complements: [
+				{
+					type: 'Butter',
+					ingredients: ['butter'],
+					instructions: 'Melt the butter before serving.',
+				},
+			],
+		})
+
+		expect(result.success).toBe(false)
+	})
+
+	it('rejects duplicate complement types', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			complements: [
+				{
+					type: 'Sauce',
+					ingredients: ['tomato'],
+					instructions: 'Simmer the tomato until it thickens.',
+				},
+				{
+					type: 'Sauce',
+					ingredients: ['parsley'],
+					instructions: 'Chop the parsley and mix it through.',
+				},
+			],
+		})
+
+		expect(result.success).toBe(false)
+		if (!result.success) {
+			expect(result.error.issues[0]?.message).toBe('complements-duplicate')
+		}
 	})
 
 	it('rejects name shorter than 3 chars', () => {
@@ -108,18 +212,22 @@ describe('CreateRecipeSchema', () => {
 	})
 
 	it('normalizes recipe course and filters categories during reads', () => {
-		expect(
-			normalizeRecipeCourseAndCategories('FirstCourse', ['Pasta']),
-		).toEqual({
-			course: 'FirstCourse',
-			categories: ['Pasta'],
-		})
+		expect(normalizeRecipeCourseAndCategories('FirstCourse', ['Pasta'])).toEqual(
+			{
+				course: 'FirstCourse',
+				categories: ['Pasta'],
+			},
+		)
 		expect(
 			normalizeRecipeCourseAndCategories('Pizza', ['Fish', 'Pizza']),
 		).toEqual({
 			course: 'FirstCourse',
 			categories: ['Fish'],
 		})
+	})
+
+	it('normalizes missing recipe complements during reads', () => {
+		expect(normalizeRecipeComplements(undefined)).toEqual([])
 	})
 
 	it('rejects time less than 1', () => {
@@ -155,13 +263,49 @@ describe('CreateRecipeSchema', () => {
 		}
 	})
 
-	it('rejects ingredients longer than 30 characters', () => {
+	it('rejects ingredients longer than 35 characters', () => {
 		const result = CreateRecipeSchema.safeParse({
 			...validRecipe,
-			ingredients: ['1234567890123456789012345678901'],
+			ingredients: ['123456789012345678901234567890103124'],
 		})
 
 		expect(result.success).toBe(false)
+	})
+
+	it('accepts unchanged legacy edit ingredients longer than 35 characters', () => {
+		const legacyIngredient = 'very long preserved lemon ingredient name'
+		const result = createEditRecipeSchema([legacyIngredient]).safeParse({
+			...validRecipe,
+			ingredients: [legacyIngredient],
+		})
+
+		expect(result.success).toBe(true)
+	})
+
+	it('rejects new edit ingredients longer than 35 characters', () => {
+		const legacyIngredient = 'very long preserved lemon ingredient name'
+		const result = createEditRecipeSchema([legacyIngredient]).safeParse({
+			...validRecipe,
+			ingredients: [`${legacyIngredient} changed`],
+		})
+
+		expect(result.success).toBe(false)
+		if (!result.success) {
+			expect(result.error.issues[0]?.message).toBe('ingredient-too-long')
+		}
+	})
+
+	it('rejects extra copies of unchanged legacy overlong ingredients', () => {
+		const legacyIngredient = 'very long preserved lemon ingredient name'
+		const result = createEditRecipeSchema([legacyIngredient]).safeParse({
+			...validRecipe,
+			ingredients: [legacyIngredient, legacyIngredient],
+		})
+
+		expect(result.success).toBe(false)
+		if (!result.success) {
+			expect(result.error.issues[0]?.message).toBe('ingredient-too-long')
+		}
 	})
 
 	it('accepts ingredients with quantities and text', () => {

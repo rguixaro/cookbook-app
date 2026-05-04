@@ -50,6 +50,7 @@ function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
 		categories: ['Pasta'],
 		time: 30,
 		ingredients: ['pasta', 'egg', 'bacon'],
+		complements: [],
 		instructions: 'Cook the pasta with eggs and bacon.',
 		images: ['https://assets.example.com/images/pasta.jpg'],
 		sourceUrls: [],

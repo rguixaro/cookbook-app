@@ -31,6 +31,18 @@ enum Category {
   Wok
 }
 
+enum ComplementType {
+  Sauce
+  Marinade
+  Garnish
+}
+
+type RecipeComplement {
+  type         ComplementType
+  ingredients  String[]
+  instructions String
+}
+
 model Recipe {
   id           String     @id @default(auto()) @map("_id") @db.ObjectId
   slug         String
@@ -38,6 +50,7 @@ model Recipe {
   time         Int?
   instructions String
   ingredients  String[]
+  complements  RecipeComplement[]
   images       String[]
   sourceUrls   String[]
   createdAt    DateTime   @default(now())
