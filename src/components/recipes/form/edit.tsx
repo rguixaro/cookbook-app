@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslations } from 'next-intl'
 import { useForm } from 'react-hook-form'
 import { useRouter } from 'next/navigation'
@@ -12,6 +12,7 @@ import * as Sentry from '@sentry/nextjs'
 
 import {
 	CreateRecipeSchema,
+	createEditRecipeSchema,
 	type RecipeCourse,
 	type RecipeCategory,
 } from '@/server/schemas'
@@ -27,6 +28,13 @@ import {
 	IngredientSelector,
 	SourceLinksInput,
 	CategorySelector,
+	RecipeComplementsInput,
+	createRecipeComplementFromValue,
+	hasRecipeComplementErrors,
+	serializeRecipeComplements,
+	validateRecipeComplements,
+	type RecipeComplement,
+	type RecipeComplementErrors,
 } from '@/components/recipes/form'
 import { RecipeImageInput } from '@/components/recipes/form/image-input'
 import {
@@ -86,11 +94,17 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	const [deleteDialogOpen, setDeleteDialogOpen] = useState<boolean>(false)
 	const [deleteConfirmation, setDeleteConfirmation] = useState<string>('')
 
+	const editRecipeSchema = useMemo(
+		() => createEditRecipeSchema(props.recipe.ingredients),
+		[props.recipe.ingredients],
+	)
+
 	const form = useForm<RecipeFormInput, unknown, RecipeFormOutput>({
-		resolver: zodResolver(CreateRecipeSchema),
+		resolver: zodResolver(editRecipeSchema),
 		defaultValues: {
 			name: props.recipe.name,
 			ingredients: props.recipe.ingredients,
+			complements: props.recipe.complements ?? [],
 			time: undefined,
 			instructions: props.recipe.instructions,
 			course: props.recipe.course as RecipeCourse,
@@ -101,6 +115,12 @@ export const EditRecipe = (props: EditRecipeProps) => {
 
 	const [ingredients, setIngredients] = useState<string[]>(
 		form.getValues('ingredients') || [],
+	)
+	const [complements, setComplements] = useState<RecipeComplement[]>(
+		() => props.recipe.complements?.map(createRecipeComplementFromValue) ?? [],
+	)
+	const [complementErrors, setComplementErrors] = useState<RecipeComplementErrors>(
+		{},
 	)
 	const [categories, setCategories] = useState<RecipeCategory[]>(
 		props.recipe.categories ?? [],
@@ -125,13 +145,25 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	 * onSubmit form handler
 	 * @param values
 	 */
+	const validateComplements = useCallback(() => {
+		const nextComplementErrors = validateRecipeComplements(complements)
+		setComplementErrors(nextComplementErrors)
+		return !hasRecipeComplementErrors(nextComplementErrors)
+	}, [complements])
+
 	const onSubmit = async (values: RecipeFormOutput) => {
+		if (!validateComplements()) return
+
 		try {
 			setLoading(true)
+			const serializedComplements = serializeRecipeComplements({
+				complements,
+			})
 			const { error, message, recipePath } = await updateRecipe(
 				props.recipe.id,
 				{
 					...values,
+					complements: serializedComplements,
 					sourceUrls: sourceUrls.filter((url) => url.trim() !== ''),
 				},
 			)
@@ -235,6 +267,14 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	}, [ingredients, form, isSubmitted])
 
 	useEffect(() => {
+		setComplementErrors((current) =>
+			hasRecipeComplementErrors(current)
+				? validateRecipeComplements(complements)
+				: current,
+		)
+	}, [complements])
+
+	useEffect(() => {
 		form.setValue('categories', categories, {
 			shouldValidate: isSubmitted,
 		})
@@ -303,7 +343,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 				)}>
 				<Form {...form}>
 					<form
-						onSubmit={form.handleSubmit(onSubmit)}
+						onSubmit={form.handleSubmit(onSubmit, validateComplements)}
 						onKeyDown={(e) => checkKeyDown(e)}
 						className='w-full px-2'>
 						<FormField
@@ -322,7 +362,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 											disabled={loading || deleting}
 										/>
 									</FormControl>
-									<FormMessage className='bg-forest-100 text-center mt-3 mb-0' />
+									<FormMessage className='mt-3 mb-0' />
 								</FormItem>
 							)}
 						/>
@@ -399,12 +439,12 @@ export const EditRecipe = (props: EditRecipeProps) => {
 									<div className='bg-forest-150 border-y-8 border-forest-150'>
 										<FormItem className='bg-forest-100 rounded-[20px] shadow-center-sm pt-4 pb-4'>
 											<div className='grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:gap-3 space-y-0 px-4'>
-												<FormLabel className='min-w-0 text-left leading-none'>
+												<FormLabel className='min-w-0 text-center leading-none'>
 													{t('time')}
 												</FormLabel>
 												<FormControl>
 													<div className='shrink-0 bg-forest-50 border-2 border-forest-150 rounded-2xl overflow-hidden shadow-center-sm'>
-														<div className='flex flex-col px-3 sm:px-5 py-1 items-center text-center'>
+														<div className='flex flex-col px-3 sm:px-5 md:px-12 py-1 items-center text-center'>
 															<Input
 																{...field}
 																value={
@@ -493,6 +533,12 @@ export const EditRecipe = (props: EditRecipeProps) => {
 												</FormControl>
 											</div>
 											<FormMessage className='mt-3 mb-0' />
+											<RecipeComplementsInput
+												complements={complements}
+												setComplements={setComplements}
+												errors={complementErrors}
+												disabled={loading || deleting}
+											/>
 										</FormItem>
 									</div>
 								)}

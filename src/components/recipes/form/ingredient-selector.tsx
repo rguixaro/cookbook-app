@@ -6,15 +6,16 @@ import { X } from 'lucide-react'
 
 import { cn } from '@/utils'
 import { Button, FormControl, FormMessage, InputGlobalStyles } from '@/ui'
+import { INGREDIENT_MAX_LENGTH } from '@/server/schemas'
 
 interface IngredientSelectorProps {
 	values: string[]
 	setValues: (value: string[]) => void
 	disabled?: boolean
 	onInputErrorChange?: (message: string | null) => void
+	showFormMessage?: boolean
+	showPlaceholder?: boolean
 }
-
-const INGREDIENT_MAX_LENGTH = 30
 
 const hasMeaningfulIngredientText = (value: string) =>
 	(value.match(/\p{Script=Latin}/gu)?.length ?? 0) >= 2
@@ -27,6 +28,8 @@ export const IngredientSelector = ({
 	setValues,
 	disabled = false,
 	onInputErrorChange,
+	showFormMessage = true,
+	showPlaceholder = true,
 }: IngredientSelectorProps) => {
 	const t = useTranslations('RecipesPage')
 	const [currIngredient, setCurrIngredient] = useState<string>('')
@@ -100,8 +103,7 @@ export const IngredientSelector = ({
 					className={cn(
 						'mt-3 flex items-center gap-2 mx-4',
 						values.length > 0 && 'my-3',
-					)}
-				>
+					)}>
 					<input
 						value={currIngredient}
 						aria-label={t('ingredients')}
@@ -109,7 +111,7 @@ export const IngredientSelector = ({
 							InputGlobalStyles,
 							'rounded-2xl py-5 bg-forest-50 border-2 focus-visible:ring-0 placeholder:text-forest-200/75',
 						)}
-						placeholder={t('ingredients-placeholder')}
+						placeholder={showPlaceholder ? t('ingredients-placeholder') : undefined}
 						disabled={disabled}
 						maxLength={INGREDIENT_MAX_LENGTH}
 						onChange={(e) => setCurrIngredient(e.currentTarget.value)}
@@ -120,15 +122,18 @@ export const IngredientSelector = ({
 						type='button'
 						className='shrink-0 py-5'
 						disabled={!canAdd}
-						onClick={addCurrentIngredient}
-					>
+						onClick={addCurrentIngredient}>
 						<b>{t('ingredients-add')}</b>
 					</Button>
 				</div>
 			</FormControl>
-			<FormMessage className={cn('mb-0 mt-0', values.length == 0 && 'mt-3')} />
+			{showFormMessage && (
+				<FormMessage
+					className={cn('mb-0 mt-0', values.length == 0 && 'mt-3')}
+				/>
+			)}
 			{inputErrorMessage && !onInputErrorChange && (
-				<p className='mt-1 text-left text-[0.8rem] font-bold text-forest-400'>
+				<p className='mt-1 text-xs font-bold text-forest-200/75 bg-forest-50 rounded-lg text-center'>
 					{t(inputErrorMessage)}
 				</p>
 			)}
@@ -136,13 +141,11 @@ export const IngredientSelector = ({
 				className={cn(
 					'flex flex-wrap justify-center gap-1.5 mt-0',
 					values.length > 0 && 'mt-3',
-				)}
-			>
+				)}>
 				{values.map((ingredient, index) => (
 					<span
 						key={index}
-						className='inline-flex items-center gap-1 text-xs font-semibold text-forest-200 bg-forest-150 ps-2.5 pe-1 py-1 rounded-lg'
-					>
+						className='inline-flex items-center gap-1 text-xs font-semibold text-forest-200 bg-forest-150 ps-2.5 pe-1 py-1 rounded-lg'>
 						<span>{ingredient}</span>
 						<button
 							type='button'
@@ -151,8 +154,9 @@ export const IngredientSelector = ({
 							})}
 							disabled={disabled}
 							className='hover:text-forest-400 transition-colors'
-							onClick={() => setValues(values.filter((_, i) => i !== index))}
-						>
+							onClick={() =>
+								setValues(values.filter((_, i) => i !== index))
+							}>
 							<X size={12} />
 						</button>
 					</span>
