@@ -9,9 +9,9 @@ import { toPng } from 'html-to-image'
 import { toast } from 'sonner'
 
 import { Icon } from '@/components/recipes/icon'
-import { RecipeGalleryPlaceholder } from '@/components/recipes/gallery'
 
 import { cn, SITE_URL } from '@/utils'
+import { RecipeComplementTypes, type RecipeComplement } from '@/types'
 
 type DownloadableRecipe = {
 	slug: string
@@ -20,6 +20,7 @@ type DownloadableRecipe = {
 	categories: string[]
 	time: number | null
 	ingredients: string[]
+	complements: RecipeComplement[]
 	instructions: string
 	images?: string[]
 	sourceUrls?: string[]
@@ -92,6 +93,12 @@ export const RecipeDownload = ({
 	}, [ref, recipe, t_toasts])
 
 	if (!recipe) return null
+	const complements = RecipeComplementTypes.flatMap((type) =>
+		recipe.complements.filter((complement) => complement.type === type),
+	)
+	const complementsWithInstructions = complements.filter(
+		(complement) => complement.instructions.trim() !== '',
+	)
 
 	return (
 		<button
@@ -133,9 +140,9 @@ export const RecipeDownload = ({
 								))}
 							</div>
 							<div className='border-y-8 border-forest-150 py-0 bg-forest-150 rounded-[20px]'>
-								<div className='bg-forest-100 mb-2 rounded-[20px] shadow-center-sm'>
-									{recipe.images && recipe.images.length > 0 ? (
-										recipe.images.length === 1 ? (
+								{recipe.images && recipe.images.length > 0 && (
+									<div className='bg-forest-100 mb-2 rounded-[20px] shadow-center-sm'>
+										{recipe.images.length === 1 ? (
 											<div className='w-full p-4'>
 												<img
 													src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
@@ -180,24 +187,20 @@ export const RecipeDownload = ({
 													</div>
 												</div>
 											</div>
-										)
-									) : (
-										<RecipeGalleryPlaceholder
-											text={t('images-empty')}
-										/>
-									)}
-								</div>
+										)}
+									</div>
+								)}
 								{recipe.time && (
 									<section className='bg-forest-150 border-y-8 border-forest-150'>
 										<div className='bg-forest-100 rounded-[20px] shadow-center-sm pt-4 pb-4'>
 											<div className='grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:gap-3 space-y-0 px-4'>
-												<div className='min-w-0 text-left'>
+												<div className='min-w-0 text-center'>
 													<span className='text-base md:text-lg font-extrabold text-forest-200 leading-none'>
 														{t('time')}
 													</span>
 												</div>
 												<div className='shrink-0 bg-forest-50 border-2 border-forest-150 rounded-2xl shadow-center-sm'>
-													<div className='flex flex-col px-3 sm:px-5 py-1 items-center text-center'>
+													<div className='flex flex-col px-3 sm:px-5 md:px-12 py-1 items-center text-center'>
 														<div className='flex flex-wrap items-center justify-between gap-2'>
 															<span className='font-bold text-forest-200'>
 																{recipe.time}
@@ -221,16 +224,43 @@ export const RecipeDownload = ({
 										<p className='text-base md:text-lg font-extrabold text-forest-200'>
 											{t('ingredients')}
 										</p>
-										<div className='flex flex-wrap justify-center gap-1.5 px-4 pt-3'>
-											{recipe.ingredients.map(
-												(ingredient, index) => (
-													<span
-														key={index}
-														className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2.5 py-1 rounded-lg'>
-														{ingredient}
-													</span>
-												),
-											)}
+										<div className='space-y-4 px-4 pt-3'>
+											<div className='flex flex-wrap justify-center gap-1.5'>
+												{complements.length > 0 && (
+													<p className='w-fit self-center text-xs font-bold text-forest-50 bg-forest-200/75 px-2 py-1 rounded-lg'>
+														{t('ingredients-main')}
+													</p>
+												)}
+												{recipe.ingredients.map(
+													(ingredient, index) => (
+														<span
+															key={index}
+															className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2.5 py-1 rounded-lg'>
+															{ingredient}
+														</span>
+													),
+												)}
+											</div>
+											{complements.map((complement) => (
+												<div key={complement.type}>
+													<div className='flex flex-wrap justify-center gap-1.5'>
+														<p className='w-fit self-center text-xs font-bold text-forest-50 bg-forest-200/75 px-2 py-1 rounded-lg'>
+															{t(
+																`complement-${complement.type.toLowerCase()}`,
+															)}
+														</p>
+														{complement.ingredients.map(
+															(ingredient, index) => (
+																<span
+																	key={`${complement.type}-${index}`}
+																	className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2.5 py-1 rounded-lg'>
+																	{ingredient}
+																</span>
+															),
+														)}
+													</div>
+												</div>
+											))}
 										</div>
 									</div>
 								</section>
@@ -240,9 +270,29 @@ export const RecipeDownload = ({
 											<p className='text-base md:text-lg font-extrabold text-forest-200'>
 												{t('instructions')}
 											</p>
-											<p className='shadow-center-sm mt-3 whitespace-pre-line rounded-2xl border-2 border-forest-150 bg-forest-50 px-4 py-3 text-left text-sm md:text-base font-medium text-forest-200'>
-												{recipe.instructions}
-											</p>
+											<div className='shadow-center-sm mt-3 rounded-2xl border-2 border-forest-150 bg-forest-50 px-4 py-3 text-left text-sm md:text-base font-medium text-forest-200'>
+												<p className='whitespace-pre-line'>
+													{recipe.instructions}
+												</p>
+												{complementsWithInstructions.map(
+													(complement) => (
+														<div
+															key={complement.type}
+															className='mt-4'>
+															<p className='w-fit text-xs font-bold text-forest-50 bg-forest-200/75 px-2 py-1 rounded-lg'>
+																{t(
+																	`complement-${complement.type.toLowerCase()}`,
+																)}
+															</p>
+															<p className='mt-1 whitespace-pre-line'>
+																{
+																	complement.instructions
+																}
+															</p>
+														</div>
+													),
+												)}
+											</div>
 										</div>
 									</div>
 								</section>
@@ -258,7 +308,7 @@ export const RecipeDownload = ({
 														(url, index) => (
 															<div
 																key={index}
-																className='flex min-w-0 max-w-full items-center justify-between rounded-lg bg-forest-150 px-3 py-1 text-forest-200'>
+																className='flex min-w-0 max-w-full items-center justify-between rounded-lg bg-forest-150 px-3 py-1 text-forest-200 transition-colors hover:text-forest-300'>
 																<span className='flex min-w-0 max-w-full items-center gap-2'>
 																	<ExternalLink
 																		size={14}
@@ -282,7 +332,7 @@ export const RecipeDownload = ({
 									)}
 							</div>
 							<div className='w-full block bg-forest-150 rounded-b-[20px]'>
-								<div className='w-full flex items-center justify-center gap-3 bg-forest-50 rounded-[20px] px-3 py-2.5'>
+								<div className='w-full flex items-center justify-center gap-3 bg-forest-50 rounded-[20px] px-3 py-2.5 transition-colors duration-200'>
 									<div className='w-8 h-8 shrink-0 rounded-lg overflow-hidden shadow-center-sm'>
 										<Image
 											src={author.image}
@@ -292,7 +342,7 @@ export const RecipeDownload = ({
 											height={32}
 										/>
 									</div>
-									<span className='font-extrabold font-title text-forest-300 leading-4 text-sm truncate'>
+									<span className='font-extrabold font-title text-forest-300 text-sm md:text-base truncate'>
 										{`@${author.name}`}
 									</span>
 								</div>
