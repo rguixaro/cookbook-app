@@ -57,10 +57,10 @@ describe('IngredientSelector', () => {
 		expect(screen.getByText('salt')).toBeInTheDocument()
 	})
 
-	it('sets a 30 character input limit', () => {
+	it('sets a 35 character input limit', () => {
 		renderWithProviders(<TestIngredientSelector />)
 
-		expect(getIngredientInput()).toHaveAttribute('maxLength', '30')
+		expect(getIngredientInput()).toHaveAttribute('maxLength', '35')
 	})
 
 	it('ignores empty values', () => {
@@ -79,14 +79,14 @@ describe('IngredientSelector', () => {
 		expect(screen.getByText('Enter at least two letters')).toBeInTheDocument()
 	})
 
-	it('does not allow typing more than 30 characters', async () => {
+	it('does not allow typing more than 35 characters', async () => {
 		const user = userEvent.setup()
 		renderWithProviders(<TestIngredientSelector />)
 
-		await user.type(getIngredientInput(), '1234567890123456789012345678901')
+		await user.type(getIngredientInput(), '123456789012345678901234567890123456')
 
 		expect(screen.getByRole('button', { name: 'Add' })).toBeDisabled()
-		expect(getIngredientInput()).toHaveValue('123456789012345678901234567890')
+		expect(getIngredientInput()).toHaveValue('12345678901234567890123456789012345')
 	})
 
 	it('ignores invalid ingredients from paste', () => {

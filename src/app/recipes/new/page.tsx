@@ -21,6 +21,12 @@ import {
 	IngredientSelector,
 	SourceLinksInput,
 	CategorySelector,
+	RecipeComplementsInput,
+	hasRecipeComplementErrors,
+	serializeRecipeComplements,
+	validateRecipeComplements,
+	type RecipeComplement,
+	type RecipeComplementErrors,
 } from '@/components/recipes/form'
 import {
 	parseOptionalIntegerInput,
@@ -55,6 +61,7 @@ export default function NewRecipePage() {
 		defaultValues: {
 			name: '',
 			ingredients: [],
+			complements: [],
 			categories: [],
 			time: undefined,
 			instructions: '',
@@ -63,6 +70,10 @@ export default function NewRecipePage() {
 	})
 
 	const [ingredients, setIngredients] = useState<string[]>([])
+	const [complements, setComplements] = useState<RecipeComplement[]>([])
+	const [complementErrors, setComplementErrors] = useState<RecipeComplementErrors>(
+		{},
+	)
 	const [categories, setCategories] = useState<RecipeCategory[]>([])
 	const [sourceUrls, setSourceUrls] = useState<string[]>([])
 	const isSubmitted = form.formState.isSubmitted
@@ -71,11 +82,23 @@ export default function NewRecipePage() {
 	 * onSubmit form handler
 	 * @param values
 	 */
+	const validateComplements = useCallback(() => {
+		const nextComplementErrors = validateRecipeComplements(complements)
+		setComplementErrors(nextComplementErrors)
+		return !hasRecipeComplementErrors(nextComplementErrors)
+	}, [complements])
+
 	const onSubmit = async (values: RecipeFormOutput) => {
+		if (!validateComplements()) return
+
 		try {
 			setLoading(true)
+			const serializedComplements = serializeRecipeComplements({
+				complements,
+			})
 			const { error, message, recipeId, recipePath } = await createRecipe({
 				...values,
+				complements: serializedComplements,
 				sourceUrls: sourceUrls.filter((url) => url.trim() !== ''),
 			})
 			if (error || !recipeId || !recipePath) {
@@ -98,6 +121,14 @@ export default function NewRecipePage() {
 			shouldValidate: isSubmitted,
 		})
 	}, [ingredients, form, isSubmitted])
+
+	useEffect(() => {
+		setComplementErrors((current) =>
+			hasRecipeComplementErrors(current)
+				? validateRecipeComplements(complements)
+				: current,
+		)
+	}, [complements])
 
 	useEffect(() => {
 		form.setValue('categories', categories, {
@@ -166,7 +197,7 @@ export default function NewRecipePage() {
 				)}>
 				<Form {...form}>
 					<form
-						onSubmit={form.handleSubmit(onSubmit)}
+						onSubmit={form.handleSubmit(onSubmit, validateComplements)}
 						onKeyDown={(e) => checkKeyDown(e)}
 						className='w-full px-2'>
 						<FormField
@@ -185,7 +216,7 @@ export default function NewRecipePage() {
 											disabled={loading}
 										/>
 									</FormControl>
-									<FormMessage className='bg-forest-100 text-center mt-3 mb-0' />
+									<FormMessage className='mt-3 mb-0' />
 								</FormItem>
 							)}
 						/>
@@ -260,14 +291,13 @@ export default function NewRecipePage() {
 								render={({ field }) => (
 									<div className='bg-forest-150 border-y-8 border-forest-150'>
 										<FormItem className='bg-forest-100 rounded-[20px] shadow-center-sm pt-4 pb-4'>
-											<div className='flex items-center justify-between gap-3 space-y-0 px-4'>
-												<FormLabel className='leading-none'>
+											<div className='grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:gap-3 space-y-0 px-4'>
+												<FormLabel className='min-w-0 text-center leading-none'>
 													{t('time')}
 												</FormLabel>
-												<div className='py-2 sm:px-4 md:px-8' />
 												<FormControl>
-													<div className='inline-flex w-fit max-w-2/3 bg-forest-50 border-2 border-forest-150 rounded-2xl overflow-hidden shadow-center-sm'>
-														<div className='flex px-3 py-1 items-center gap-2 text-center'>
+													<div className='shrink-0 bg-forest-50 border-2 border-forest-150 rounded-2xl overflow-hidden shadow-center-sm'>
+														<div className='flex flex-col px-3 sm:px-5 md:px-12 py-1 items-center text-center'>
 															<Input
 																{...field}
 																value={
@@ -290,11 +320,11 @@ export default function NewRecipePage() {
 																onPaste={
 																	preventNonDigitPaste
 																}
-																className='text-lg rounded border-none px-0 shadow-none! focus-visible:ring-0 text-right placeholder:text-forest-200/75'
+																className='h-auto w-[4ch] min-w-0 py-0 text-base font-bold rounded border-none px-0 shadow-none! focus-visible:ring-0 text-center placeholder:text-forest-200/75'
 																placeholder='25'
 																disabled={loading}
 															/>
-															<span className='shrink-0 whitespace-nowrap text-sm font-bold text-forest-200'>
+															<span className='w-full whitespace-nowrap text-xs text-left text-forest-200'>
 																{t('minutes')}
 															</span>
 														</div>
@@ -351,6 +381,12 @@ export default function NewRecipePage() {
 												</FormControl>
 											</div>
 											<FormMessage className='mt-3 mb-0' />
+											<RecipeComplementsInput
+												complements={complements}
+												setComplements={setComplements}
+												errors={complementErrors}
+												disabled={loading}
+											/>
 										</FormItem>
 									</div>
 								)}

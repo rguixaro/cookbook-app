@@ -1,7 +1,10 @@
 import { db } from '@/server/db'
 import { getRecipeImageFromS3 } from '@/lib/s3'
 import { createZipStream, type ZipEntry } from '@/lib/zip'
-import { normalizeRecipeCourseAndCategories } from '@/server/schemas'
+import {
+	normalizeRecipeComplements,
+	normalizeRecipeCourseAndCategories,
+} from '@/server/schemas'
 
 type ExportUser = {
 	id: string
@@ -23,6 +26,7 @@ type ExportRecipe = {
 	time: number | null
 	instructions: string
 	ingredients: string[]
+	complements?: unknown
 	images: string[]
 	sourceUrls: string[]
 	createdAt: Date
@@ -270,6 +274,7 @@ export function buildProfileJsonPayload(context: ExportContext) {
 				time: recipe.time,
 				instructions: recipe.instructions,
 				ingredients: recipe.ingredients,
+				complements: normalizeRecipeComplements(recipe.complements),
 				course: normalized.course,
 				categories: normalized.categories,
 				authorId: mapRequired(ids.users, recipe.authorId),

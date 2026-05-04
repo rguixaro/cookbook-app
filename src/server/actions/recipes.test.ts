@@ -401,11 +401,46 @@ describe('createRecipe', () => {
 				name: 'Paella Valenciana',
 				course: 'SecondCourse',
 				categories: ['Fish', 'Rice'],
+				ingredients: ['rice', 'shrimp', 'saffron'],
+				complements: [],
 				slug: 'paella-valenciana',
 				authorId: 'user-1',
 			}),
 			include: { author: { select: { username: true } } },
 		})
+	})
+
+	it('persists complement data separately from main recipe fields', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.create.mockResolvedValue({
+			id: 'recipe-1',
+			slug: 'paella-valenciana',
+			author: { username: 'testuser' },
+		} as any)
+
+		const complements = [
+			{
+				type: 'Sauce' as const,
+				ingredients: ['tomato', 'olive oil'],
+				instructions: 'Simmer the tomato and oil until glossy.',
+			},
+		]
+
+		const result = await createRecipe({
+			...validRecipeInput,
+			complements,
+		})
+
+		expect(result.error).toBe(false)
+		expect(mockDb.recipe.create).toHaveBeenCalledWith(
+			expect.objectContaining({
+				data: expect.objectContaining({
+					ingredients: validRecipeInput.ingredients,
+					instructions: validRecipeInput.instructions,
+					complements,
+				}),
+			}),
+		)
 	})
 
 	it('returns error on duplicate slug (P2002)', async () => {
@@ -476,6 +511,90 @@ describe('updateRecipe', () => {
 			recipePath: '/recipes/testuser/paella-valenciana',
 		})
 		expect(mockDb.recipe.update).toHaveBeenCalled()
+	})
+
+	it('updates complement data separately from main recipe fields', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			id: 'recipe-1',
+			slug: 'old-paella',
+			ingredients: validRecipeInput.ingredients,
+			author: { username: 'testuser' },
+		} as any)
+		mockDb.recipe.update.mockResolvedValue({} as any)
+
+		const complements = [
+			{
+				type: 'Marinade' as const,
+				ingredients: ['lemon', 'garlic'],
+				instructions: 'Mix the lemon and garlic and rest the fish.',
+			},
+		]
+
+		const result = await updateRecipe('recipe-1', {
+			...validRecipeInput,
+			complements,
+		})
+
+		expect(result.error).toBe(false)
+		expect(mockDb.recipe.update).toHaveBeenCalledWith(
+			expect.objectContaining({
+				data: expect.objectContaining({
+					ingredients: validRecipeInput.ingredients,
+					instructions: validRecipeInput.instructions,
+					complements,
+				}),
+			}),
+		)
+	})
+
+	it('updates recipe with unchanged legacy overlong ingredient', async () => {
+		const legacyIngredient = 'very long preserved lemon ingredient name'
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			id: 'recipe-1',
+			slug: 'old-paella',
+			ingredients: [legacyIngredient],
+			author: { username: 'testuser' },
+		} as any)
+		mockDb.recipe.update.mockResolvedValue({} as any)
+
+		const result = await updateRecipe('recipe-1', {
+			...validRecipeInput,
+			ingredients: [legacyIngredient],
+		})
+
+		expect(result).toEqual({
+			error: false,
+			recipeId: 'recipe-1',
+			recipePath: '/recipes/testuser/paella-valenciana',
+		})
+		expect(mockDb.recipe.update).toHaveBeenCalledWith(
+			expect.objectContaining({
+				data: expect.objectContaining({
+					ingredients: [legacyIngredient],
+				}),
+			}),
+		)
+	})
+
+	it('rejects changed legacy overlong ingredient', async () => {
+		const legacyIngredient = 'very long preserved lemon ingredient name'
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			id: 'recipe-1',
+			slug: 'old-paella',
+			ingredients: [legacyIngredient],
+			author: { username: 'testuser' },
+		} as any)
+
+		const result = await updateRecipe('recipe-1', {
+			...validRecipeInput,
+			ingredients: [`${legacyIngredient} changed`],
+		})
+
+		expect(result).toEqual({ error: true, message: 'error' })
+		expect(mockDb.recipe.update).not.toHaveBeenCalled()
 	})
 })
 

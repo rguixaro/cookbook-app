@@ -3,7 +3,11 @@ import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
 import { db } from '@/server/db'
-import { RecipeSchema, normalizeRecipeCourseAndCategories } from '../schemas'
+import {
+	RecipeSchema,
+	normalizeRecipeComplements,
+	normalizeRecipeCourseAndCategories,
+} from '../schemas'
 
 const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN
 
@@ -26,6 +30,9 @@ function toRecipeSchema(
 	return {
 		...recipe,
 		...normalizeRecipeCourseAndCategories(recipe.course, recipe.categories),
+		complements: normalizeRecipeComplements(
+			'complements' in recipe ? recipe.complements : undefined,
+		),
 		authorUsername: recipe.author?.username ?? '',
 		images: toImageUrls(recipe.images),
 	}

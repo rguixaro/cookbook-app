@@ -35,6 +35,16 @@ export const RecipeSorts = [
 
 export type RecipeSort = (typeof RecipeSorts)[number]
 
+export const RecipeComplementTypes = ['Sauce', 'Marinade', 'Garnish'] as const
+
+export type RecipeComplementType = (typeof RecipeComplementTypes)[number]
+
+export interface RecipeComplement {
+	type: RecipeComplementType
+	ingredients: string[]
+	instructions: string
+}
+
 export interface Recipe {
 	id: string
 	slug: string
@@ -42,6 +52,7 @@ export interface Recipe {
 	time: number | null
 	instructions: string
 	ingredients: string[]
+	complements: RecipeComplement[]
 	createdAt: Date
 	updatedAt: Date
 	course: RecipeCourse
