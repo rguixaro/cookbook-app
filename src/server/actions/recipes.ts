@@ -80,8 +80,12 @@ export async function fetchRecipes(params: {
 	saved?: boolean
 	userId?: string
 	sort?: string
-}): Promise<{ recipes: RecipeSchema[]; nextCursor: string | null }> {
-	const empty = { recipes: [], nextCursor: null }
+}): Promise<{
+	recipes: RecipeSchema[]
+	nextCursor: string | null
+	totalCount: number
+}> {
+	const empty = { recipes: [], nextCursor: null, totalCount: 0 }
 	const currentUser = await auth()
 	if (!currentUser) return empty
 
@@ -197,19 +201,23 @@ export async function fetchRecipes(params: {
 				nextCursor: hasMore
 					? (results[results.length - 1]?.id ?? null)
 					: null,
+				totalCount: sorted.length,
 			}
 		}
 
-		const results = await db.recipe.findMany({
-			where,
-			include: { author: { select: { username: true } } },
-			orderBy:
-				recipeSort === 'createdAtAsc'
-					? [{ createdAt: 'asc' }, { id: 'asc' }]
-					: [{ createdAt: 'desc' }, { id: 'desc' }],
-			take: safeTake + 1,
-			...(cursor && { cursor: { id: cursor }, skip: 1 }),
-		})
+		const [results, totalCount] = await Promise.all([
+			db.recipe.findMany({
+				where,
+				include: { author: { select: { username: true } } },
+				orderBy:
+					recipeSort === 'createdAtAsc'
+						? [{ createdAt: 'asc' }, { id: 'asc' }]
+						: [{ createdAt: 'desc' }, { id: 'desc' }],
+				take: safeTake + 1,
+				...(cursor && { cursor: { id: cursor }, skip: 1 }),
+			}),
+			db.recipe.count({ where }),
+		])
 
 		const hasMore = results.length > safeTake
 		if (hasMore) results.pop()
@@ -217,6 +225,7 @@ export async function fetchRecipes(params: {
 		return {
 			recipes: results.map(mapRecipe),
 			nextCursor: hasMore ? (results[results.length - 1]?.id ?? null) : null,
+			totalCount,
 		}
 	} catch (error) {
 		Sentry.captureException(error, { tags: { action: 'fetchRecipes' } })

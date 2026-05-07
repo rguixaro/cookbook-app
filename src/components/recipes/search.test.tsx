@@ -4,10 +4,11 @@ import { screen, waitFor } from '@testing-library/react'
 import { renderWithProviders, userEvent } from '@/test/render'
 import { SearchRecipes } from './search'
 
-const mockReplace = vi.fn()
+const navigationState = vi.hoisted(() => ({ query: '' }))
+const mockReplace = vi.hoisted(() => vi.fn())
 
 vi.mock('next/navigation', () => ({
-	useSearchParams: () => new URLSearchParams(),
+	useSearchParams: () => new URLSearchParams(navigationState.query),
 	usePathname: () => '/',
 	useRouter: () => ({ replace: mockReplace }),
 }))
@@ -35,7 +36,10 @@ vi.mock('use-debounce', () => ({
 	useDebouncedCallback: (fn: Function) => fn,
 }))
 
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => {
+	vi.clearAllMocks()
+	navigationState.query = ''
+})
 
 describe('SearchRecipes', () => {
 	it('renders the search input and filters/favourites buttons', () => {
@@ -58,6 +62,113 @@ describe('SearchRecipes', () => {
 			const lastCall =
 				mockReplace.mock.calls[mockReplace.mock.calls.length - 1][0]
 			expect(lastCall).toContain('search=')
+		})
+	})
+
+	it('can use a separate URL param for profile recipe search', async () => {
+		const user = userEvent.setup()
+		navigationState.query = 'search=olg'
+		renderWithProviders(
+			<SearchRecipes
+				withAvatar={false}
+				searchParamName='recipeSearch'
+			/>,
+		)
+
+		const input = screen.getByPlaceholderText('Search')
+		await user.type(input, 'pasta')
+
+		await waitFor(() => {
+			expect(mockReplace).toHaveBeenCalled()
+			const lastCall =
+				mockReplace.mock.calls[mockReplace.mock.calls.length - 1][0]
+			expect(lastCall).toContain('search=olg')
+			expect(lastCall).toContain('recipeSearch=')
+		})
+	})
+
+	it('clears the input when the search param is removed by navigation', async () => {
+		navigationState.query = 'search=pasta'
+		const { rerender } = renderWithProviders(
+			<SearchRecipes withAvatar={false} />,
+		)
+
+		const input = screen.getByPlaceholderText('Search')
+		expect(input).toHaveValue('pasta')
+
+		navigationState.query = ''
+		rerender(<SearchRecipes withAvatar={false} />)
+
+		await waitFor(() => {
+			expect(input).toHaveValue('')
+		})
+	})
+
+	it('clears selected recipe filters when filter params are removed by navigation', async () => {
+		const user = userEvent.setup()
+		navigationState.query =
+			'course=FirstCourse&categories=Pasta&sort=timeAsc&favourites=true'
+		const { rerender } = renderWithProviders(
+			<SearchRecipes withAvatar={false} />,
+		)
+
+		expect(screen.getByText('Quickest')).toBeInTheDocument()
+		expect(screen.getByText('First course')).toBeInTheDocument()
+		expect(screen.getByText('Pasta')).toBeInTheDocument()
+
+		navigationState.query = ''
+		rerender(<SearchRecipes withAvatar={false} />)
+
+		await waitFor(() => {
+			expect(screen.queryByText('Quickest')).not.toBeInTheDocument()
+			expect(screen.queryByText('First course')).not.toBeInTheDocument()
+			expect(screen.queryByText('Pasta')).not.toBeInTheDocument()
+		})
+
+		await user.click(screen.getByText('Favourites'))
+
+		await waitFor(() => {
+			expect(mockReplace).toHaveBeenLastCalledWith(
+				expect.stringContaining('favourites=true'),
+			)
+		})
+	})
+
+	it('wraps the expanded search when clicking the search icon again', async () => {
+		const user = userEvent.setup()
+		renderWithProviders(<SearchRecipes />)
+
+		const input = screen.getByPlaceholderText('Search')
+		const searchButton = screen.getByRole('button', { name: 'Search' })
+
+		expect(input).toHaveClass('opacity-0')
+
+		await user.click(searchButton)
+		await waitFor(() => {
+			expect(input).toHaveClass('opacity-100')
+		})
+
+		await user.click(searchButton)
+		await waitFor(() => {
+			expect(input).toHaveClass('opacity-0')
+		})
+	})
+
+	it('uses the wrapped recipe search when the avatar group is hidden', async () => {
+		const user = userEvent.setup()
+		renderWithProviders(<SearchRecipes withAvatar={false} />)
+
+		const input = screen.getByPlaceholderText('Search')
+		const searchButton = screen.getByRole('button', { name: 'Search' })
+		const wrapper = input.parentElement
+
+		expect(wrapper).toHaveClass('bg-forest-100')
+		expect(wrapper).toHaveClass('w-14')
+		expect(input).toHaveClass('opacity-0')
+
+		await user.click(searchButton)
+		await waitFor(() => {
+			expect(input).toHaveClass('opacity-100')
 		})
 	})
 

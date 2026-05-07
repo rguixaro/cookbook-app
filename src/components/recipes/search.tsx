@@ -6,9 +6,8 @@ import { useDebouncedCallback } from 'use-debounce'
 import { AnimatePresence } from 'motion/react'
 import * as motion from 'motion/react-client'
 import { useTranslations } from 'next-intl'
-import { ArrowDown, ArrowUp, ListFilter, X } from 'lucide-react'
+import { ListFilter, X } from 'lucide-react'
 
-import { useDebounce } from '@/hooks'
 import { UserButton, SocialButton } from '@/components/layout'
 import { type RecipeCourse, type RecipeSort } from '@/types'
 import { Button, SearchInput } from '@/ui'
@@ -36,9 +35,11 @@ const parseSort = (value: string | null): RecipeSort =>
 export const SearchRecipes = ({
 	withAvatar = true,
 	listFilter = 'favourites',
+	searchParamName = 'search',
 }: {
 	withAvatar?: boolean
 	listFilter?: ListFilter
+	searchParamName?: string
 }) => {
 	const t = useTranslations('RecipesPage')
 	const t_courses = useTranslations('RecipeCourses')
@@ -51,29 +52,26 @@ export const SearchRecipes = ({
 	const inputRef = useRef<HTMLInputElement>(null)
 
 	const [status, setStatus] = useState<SearchState>('hidden')
-	const debouncedStatus = useDebounce(status, 100)
+	const isSearchOpen = status !== 'hidden'
 
-	const [inputValue, setInputValue] = useState(
-		searchParams.get('search')?.toString() || '',
-	)
+	const searchValue = searchParams.get(searchParamName)?.toString() || ''
+	const courseValue =
+		(searchParams.get('course')?.toString() as RecipeCourse) || null
+	const categoriesValue = searchParams.get('categories')?.toString() || ''
+	const sortValue = parseSort(searchParams.get('sort'))
+	const isListFilteredValue = searchParams.get(listFilter) === 'true'
+	const [inputValue, setInputValue] = useState(searchValue)
 
-	const [course, setCourse] = useState<RecipeCourse | null>(
-		(searchParams.get('course')?.toString() as RecipeCourse) || null,
-	)
+	const [course, setCourse] = useState<RecipeCourse | null>(courseValue)
 	const [categories, setCategories] = useState<string[]>(
-		searchParams
-			.get('categories')
-			?.split(',')
+		categoriesValue
+			.split(',')
 			.map((category) => category.trim())
-			.filter(Boolean) ?? [],
+			.filter(Boolean),
 	)
-	const [sort, setSort] = useState<RecipeSort>(
-		parseSort(searchParams.get('sort')),
-	)
+	const [sort, setSort] = useState<RecipeSort>(sortValue)
 
-	const [isListFiltered, setIsListFiltered] = useState(
-		searchParams.get(listFilter) === 'true',
-	)
+	const [isListFiltered, setIsListFiltered] = useState(isListFilteredValue)
 
 	const tCourse = (course?: string) => {
 		if (!course) return ''
@@ -100,8 +98,8 @@ export const SearchRecipes = ({
 	const handleSearch = useDebouncedCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
 			const params = new URLSearchParams(searchParams)
-			if (e.target.value) params.set('search', e.target.value)
-			else params.delete('search')
+			if (e.target.value) params.set(searchParamName, e.target.value)
+			else params.delete(searchParamName)
 
 			router.replace(`${pathname}?${params.toString()}`)
 		},
@@ -173,15 +171,13 @@ export const SearchRecipes = ({
 	 * Change the status of the search input
 	 */
 	const onStatusChange = () => {
-		const value = inputRef.current?.value
 		if (status === 'hidden') {
 			setStatus('visible')
 			inputRef.current?.focus()
-		} else if (status === 'visible') {
-			setStatus(value ? 'outlined' : 'hidden')
-		} else if (status === 'outlined') {
-			if (!value) setStatus('hidden')
+			return
 		}
+
+		setStatus('hidden')
 	}
 
 	/**
@@ -192,18 +188,31 @@ export const SearchRecipes = ({
 		if (!value) setStatus('hidden')
 	}
 
-	/**
-	 * If there is a search param, set the status to outlined
-	 */
 	useEffect(() => {
-		if (searchParams.get('search')) {
+		setInputValue(searchValue)
+		if (searchValue) {
 			setStatus('outlined')
+			return
 		}
-	}, [searchParams])
+
+		setStatus((current) => (current === 'outlined' ? 'hidden' : current))
+	}, [searchValue])
+
+	useEffect(() => {
+		setCourse(courseValue)
+		setCategories(
+			categoriesValue
+				.split(',')
+				.map((category) => category.trim())
+				.filter(Boolean),
+		)
+		setSort(sortValue)
+		setIsListFiltered(isListFilteredValue)
+	}, [categoriesValue, courseValue, isListFilteredValue, sortValue])
 
 	return (
-		<div className='w-11/12 sm:w-3/5 lg:w-3/8 flex flex-col my-4'>
-			<div className='w-full flex items-end justify-between mb-4'>
+		<div className='w-11/12 sm:w-3/5 lg:w-3/8 flex flex-col my-5'>
+			<div className='w-full flex items-center gap-3 mb-4'>
 				<SearchInput
 					placeholder={t('search')}
 					value={inputValue}
@@ -225,30 +234,29 @@ export const SearchRecipes = ({
 						onStatusChange()
 					}}
 					wrapperClassName={cn(
-						'duration-1000 transition-transform',
-						debouncedStatus !== 'hidden' ? 'translate-x-0.5' : 'translate-x-0',
+						'flex-none transition-[width,max-width] duration-500 ease-in-out',
+						isSearchOpen
+							? 'w-[calc(100%-7rem)] max-w-[calc(100%-7rem)] sm:w-72 md:w-80 sm:max-w-72 md:max-w-80'
+							: 'w-14',
 					)}
 					inputClassName={cn(
-						'w-0',
-						debouncedStatus === 'hidden'
-							? 'opacity-0 pointer-events-none'
-							: 'w-full pointer-events-auto',
+						'transition-all duration-500',
+						isSearchOpen
+							? 'w-full opacity-100 pointer-events-auto'
+							: 'w-0 opacity-0 pointer-events-none',
 					)}
-					searchButtonClassName={cn(
-						'bg-forest-100',
-						debouncedStatus !== 'hidden'
-							? 'translate-x-1 bg-forest-150 border-l-4 border-forest-200'
-							: 'translate-x-0',
-					)}
+					searchButtonClassName={cn(isSearchOpen && 'bg-forest-150')}
 					searchIconClassName={cn(
-						debouncedStatus === 'visible' && 'rotate-90',
-						debouncedStatus === 'hidden'
-							? 'text-forest-200'
-							: 'text-forest-300',
+						status === 'visible' && 'rotate-90',
+						isSearchOpen ? 'text-forest-300' : 'text-forest-200',
+					)}
+					clearButtonClassName={cn(
+						!isSearchOpen &&
+							'opacity-0 translate-x-2 pointer-events-none',
 					)}
 				/>
 				{withAvatar && (
-					<div className='flex bg-forest-100 p-1 px-3 rounded-xl space-x-3'>
+					<div className='ml-auto flex shrink-0 bg-forest-100 p-1 px-3 rounded-xl space-x-3'>
 						<SocialButton />
 						<UserButton />
 					</div>
@@ -272,7 +280,11 @@ export const SearchRecipes = ({
 				<div className='grow' />
 				<Button size={'sm'} onClick={handleToggleListFilter}>
 					{listFilter === 'saved' ? (
-						<BookmarkIcon filled={isListFiltered} size={16} color='#fefff2' />
+						<BookmarkIcon
+							filled={isListFiltered}
+							size={16}
+							color='#fefff2'
+						/>
 					) : (
 						<HeartIcon filled={isListFiltered} size={16} />
 					)}
@@ -298,12 +310,10 @@ export const SearchRecipes = ({
 									y: -8,
 									transition: { duration: 0.2 },
 								}}
-								className='bg-forest-200/75 rounded-xl text-forest-50 flex items-center'
-							>
+								className='bg-forest-200/75 rounded-xl text-forest-50 flex items-center'>
 								<button
 									onClick={handleRemoveSort}
-									className='flex items-center justify-center gap-2 px-3 py-1'
-								>
+									className='flex items-center justify-center gap-2 px-3 py-1'>
 									<span className='font-semibold text-sm md:text-base'>
 										{tSort(sort)}
 									</span>
@@ -325,12 +335,10 @@ export const SearchRecipes = ({
 									y: -8,
 									transition: { duration: 0.2 },
 								}}
-								className='bg-forest-200/75 rounded-xl text-forest-50 flex items-center'
-							>
+								className='bg-forest-200/75 rounded-xl text-forest-50 flex items-center'>
 								<button
 									onClick={handleRemoveCourse}
-									className='flex items-center justify-center gap-2 px-3 py-1'
-								>
+									className='flex items-center justify-center gap-2 px-3 py-1'>
 									<span className='font-semibold text-sm md:text-base'>
 										{tCourse(course)}
 									</span>
@@ -352,12 +360,10 @@ export const SearchRecipes = ({
 									y: -8,
 									transition: { duration: 0.2 },
 								}}
-								className='bg-forest-150 rounded-xl text-forest-200 flex items-center'
-							>
+								className='bg-forest-150 rounded-xl text-forest-200 flex items-center'>
 								<button
 									onClick={() => handleRemoveCategory(category)}
-									className='flex items-center justify-center gap-2 px-3 py-1'
-								>
+									className='flex items-center justify-center gap-2 px-3 py-1'>
 									<span className='font-semibold text-sm md:text-base'>
 										{tCategory(category)}
 									</span>

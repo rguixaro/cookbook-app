@@ -153,4 +153,31 @@ describe('ItemRecipe image loading', () => {
 		expect(chipText).toHaveClass('truncate')
 		expect(chipText.parentElement).toHaveClass('max-w-[9rem]', 'min-w-0')
 	})
+
+	it('uses the feed search param name in recipe detail links', () => {
+		renderWithProviders(<ItemRecipe recipe={makeRecipe()} query='pasta' />)
+
+		expect(screen.getByRole('link')).toHaveAttribute(
+			'href',
+			'/recipes/chef/pasta-carbonara?search=pasta',
+		)
+	})
+
+	it('preserves profile and recipe search params for referred recipe links', () => {
+		renderWithProviders(
+			<ItemRecipe
+				recipe={makeRecipe()}
+				referred
+				query='pasta'
+				searchParamName='recipeSearch'
+				profileSearchParam='olga'
+				saved
+			/>,
+		)
+
+		expect(screen.getByRole('link')).toHaveAttribute(
+			'href',
+			'/recipes/chef/pasta-carbonara?referred=true&search=olga&recipeSearch=pasta&saved=true',
+		)
+	})
 })
