@@ -104,15 +104,23 @@ export function ItemRecipe({
 	recipe,
 	referred = false,
 	query,
+	searchParamName = 'search',
+	profileSearchParam,
 	course,
 	categories,
+	favourites,
+	saved,
 	sort,
 }: {
 	recipe: RecipeSchema
 	referred?: boolean
 	query?: string
+	searchParamName?: string
+	profileSearchParam?: string
 	course?: string
 	categories?: string
+	favourites?: boolean
+	saved?: boolean
 	sort?: string
 }) {
 	const t_courses = useTranslations('RecipeCourses')
@@ -137,9 +145,16 @@ export function ItemRecipe({
 
 	const params = new URLSearchParams()
 	if (referred) params.set('referred', 'true')
-	if (query) params.set('query', query.trim())
+	const trimmedProfileSearch = profileSearchParam?.trim()
+	if (trimmedProfileSearch && searchParamName !== 'search') {
+		params.set('search', trimmedProfileSearch)
+	}
+	const trimmedQuery = query?.trim()
+	if (trimmedQuery) params.set(searchParamName, trimmedQuery)
 	if (course) params.set('course', course)
 	if (categories) params.set('categories', categories)
+	if (favourites) params.set('favourites', 'true')
+	if (saved) params.set('saved', 'true')
 	if (sort) params.set('sort', sort)
 	const queryParams = params.toString() ? `?${params.toString()}` : ''
 

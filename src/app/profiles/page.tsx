@@ -1,14 +1,15 @@
 import type { Metadata } from 'next'
 import { Suspense } from 'react'
 import { getTranslations } from 'next-intl/server'
+import { Loader } from 'lucide-react'
 
 export const metadata: Metadata = {
 	title: 'Profiles - CookBook',
 	description: 'Browse cookbook profiles',
 }
-import { Loader } from 'lucide-react'
 
 import { GoBack } from '@/components/layout'
+import { ResultCountChip } from '@/components/layout/result-count-chip'
 import { ProfilesFeed, SearchProfiles } from '@/components/profiles'
 
 export default async function ProfilesPage({
@@ -18,8 +19,21 @@ export default async function ProfilesPage({
 }) {
 	const searchParam = (await searchParams)?.search
 	const t = await getTranslations('ProfilesPage')
+	const hasSearch = Boolean(searchParam?.trim())
 
 	const LoadingSkeleton = () => {
+		if (hasSearch) {
+			return (
+				<ResultCountChip
+					label={t('users-count', { count: 0 })}
+					loading
+					loadingLabel={t('searching')}
+					reserveLabel={t('users-count', { count: 1 })}
+					className='mb-2'
+				/>
+			)
+		}
+
 		return (
 			<div className='flex flex-col mt-5 justify-center items-center text-forest-200'>
 				<Loader size={18} className='animate-spin' />
