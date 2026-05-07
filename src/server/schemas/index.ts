@@ -44,8 +44,18 @@ export type RecipeComplementType = (typeof RecipeComplementTypes)[number]
 const RecipeCourseSchema = z.enum(RecipeCourses)
 const RecipeCategorySchema = z.enum(RecipeCategories)
 const RecipeComplementTypeSchema = z.enum(RecipeComplementTypes)
+const RecipeComplementNameSchema = z.preprocess(
+	(value) => {
+		if (value == null) return undefined
+		if (typeof value !== 'string') return value
+		const trimmed = value.trim()
+		return trimmed === '' ? undefined : trimmed
+	},
+	z.string().max(60, { message: 'complement-name-too-long' }).optional(),
+)
 const RecipeComplementValueSchema = z.object({
 	type: RecipeComplementTypeSchema,
+	name: RecipeComplementNameSchema.optional(),
 	ingredients: z.array(z.string()),
 	instructions: z.string(),
 })
@@ -118,6 +128,16 @@ export const ProfileSchema = z.object({
 	username: z.string(),
 	image: z.string(),
 	recipesCount: z.number(),
+	latestRecipe: z
+		.object({
+			name: z.string(),
+			slug: z.string(),
+			time: z.number().nullable(),
+			course: RecipeCourseSchema,
+			categories: z.array(RecipeCategorySchema),
+			image: z.string().nullable(),
+		})
+		.nullable(),
 })
 
 const hasMeaningfulIngredientText = (value: string) =>
@@ -183,6 +203,7 @@ const createComplementSchema = (
 ) =>
 	z.object({
 		type: RecipeComplementTypeSchema,
+		name: RecipeComplementNameSchema.optional(),
 		ingredients: createIngredientsArraySchema(allowedOverlongIngredients),
 		instructions: z
 			.string()

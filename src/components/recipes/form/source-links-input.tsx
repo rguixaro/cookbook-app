@@ -89,7 +89,7 @@ export const SourceLinksInput = ({
 						value={currUrl}
 						className={cn(
 							InputGlobalStyles,
-							'rounded-2xl py-5 bg-forest-50 border-2 focus-visible:ring-0 placeholder:text-forest-200/75',
+							'rounded-2xl py-5 bg-forest-50 border-2 focus-visible:ring-0 placeholder:text-forest-200/50',
 						)}
 						placeholder={t('source-links-placeholder')}
 						disabled={disabled || hasReachedLimit}

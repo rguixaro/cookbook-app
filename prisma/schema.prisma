@@ -39,6 +39,7 @@ enum ComplementType {
 
 type RecipeComplement {
   type         ComplementType
+  name         String?
   ingredients  String[]
   instructions String
 }

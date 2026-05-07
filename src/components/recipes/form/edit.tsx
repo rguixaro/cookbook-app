@@ -329,7 +329,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	}
 
 	return (
-		<div className='flex flex-col items-center pt-2 my-2 text-center w-full z-0'>
+		<div className='flex flex-col items-center mt-5 text-center w-full z-0'>
 			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
 				<GoBack
 					to={`/recipes/${props.recipe.authorUsername}/${props.recipe.slug}`}
@@ -355,7 +355,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 										<Input
 											{...field}
 											autoComplete='off'
-											className='text-center bg-forest-50 text-forest-200 text-lg md:text-xl font-title font-black leading-4 placeholder:font-normal placeholder:font-sans placeholder:text-forest-200/75 placeholder:text-sm placeholder:leading-normal border-0 rounded-[20px] focus-visible:ring-0 shadow-none h-12.5 px-4'
+											className='text-center bg-forest-50 text-forest-200 text-lg md:text-xl font-title font-black leading-4 placeholder:font-normal placeholder:font-sans placeholder:text-forest-200/50 placeholder:text-sm placeholder:leading-normal border-0 rounded-[20px] focus-visible:ring-0 shadow-none h-12.5 px-4'
 											placeholder={t(
 												'recipe-name-placeholder',
 											)}
@@ -467,14 +467,14 @@ export const EditRecipe = (props: EditRecipeProps) => {
 																onPaste={
 																	preventNonDigitPaste
 																}
-																className='h-auto w-[4ch] min-w-0 py-0 text-base font-bold rounded border-none px-0 shadow-none! focus-visible:ring-0 text-center placeholder:text-forest-200/75'
+																className='h-auto w-[4ch] min-w-0 py-0 text-base font-bold rounded border-none px-0 shadow-none! focus-visible:ring-0 text-center placeholder:text-forest-200/50'
 																placeholder='25'
 																disabled={
 																	loading ||
 																	deleting
 																}
 															/>
-															<span className='w-full whitespace-nowrap text-xs text-left text-forest-200'>
+															<span className='w-full whitespace-nowrap text-xs text-left font-semibold text-forest-200'>
 																{t('minutes')}
 															</span>
 														</div>
@@ -522,7 +522,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 														onKeyDown={(e) =>
 															e.stopPropagation()
 														}
-														className='mt-3 border-2 bg-forest-50 text-forest-200 placeholder:text-forest-200/75'
+														className='mt-3 border-2 bg-forest-50 text-forest-200 placeholder:text-forest-200/50'
 														placeholder={t(
 															'instructions-add',
 														)}

@@ -16,6 +16,7 @@ vi.mock('@/server/db', () => ({
 		},
 		recipe: {
 			create: vi.fn(),
+			count: vi.fn(),
 			findFirst: vi.fn(),
 			findUnique: vi.fn(),
 			findMany: vi.fn(),
@@ -72,6 +73,7 @@ const validRecipeInput = {
 
 beforeEach(() => {
 	vi.clearAllMocks()
+	mockDb.recipe.count.mockResolvedValue(1)
 })
 
 describe('fetchRecipes', () => {
@@ -95,7 +97,7 @@ describe('fetchRecipes', () => {
 		mockAuth.mockResolvedValue(null as any)
 
 		const result = await fetchRecipes({})
-		expect(result).toEqual({ recipes: [], nextCursor: null })
+		expect(result).toEqual({ recipes: [], nextCursor: null, totalCount: 0 })
 	})
 
 	it('returns recipes for own feed (own + saved)', async () => {
@@ -115,7 +117,7 @@ describe('fetchRecipes', () => {
 		mockDb.user.findUnique.mockResolvedValue({ isPrivate: true } as any)
 
 		const result = await fetchRecipes({ userId: 'user-2' })
-		expect(result).toEqual({ recipes: [], nextCursor: null })
+		expect(result).toEqual({ recipes: [], nextCursor: null, totalCount: 0 })
 	})
 
 	it('returns empty when target user not found', async () => {
@@ -123,7 +125,7 @@ describe('fetchRecipes', () => {
 		mockDb.user.findUnique.mockResolvedValue(null)
 
 		const result = await fetchRecipes({ userId: 'nonexistent' })
-		expect(result).toEqual({ recipes: [], nextCursor: null })
+		expect(result).toEqual({ recipes: [], nextCursor: null, totalCount: 0 })
 	})
 
 	it('returns recipes for public user', async () => {
@@ -151,10 +153,15 @@ describe('fetchRecipes', () => {
 		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
 		const recipes = Array.from({ length: 11 }, (_, i) => makeRecipe(`r${i}`))
 		mockDb.recipe.findMany.mockResolvedValue(recipes as any)
+		mockDb.recipe.count.mockResolvedValue(42)
 
 		const result = await fetchRecipes({})
 		expect(result.recipes).toHaveLength(10)
 		expect(result.nextCursor).toBe('r9')
+		expect(result.totalCount).toBe(42)
+		expect(mockDb.recipe.count).toHaveBeenCalledWith({
+			where: expect.any(Object),
+		})
 	})
 
 	it('caps take at 50', async () => {
@@ -175,7 +182,7 @@ describe('fetchRecipes', () => {
 		} as any)
 
 		const result = await fetchRecipes({ favourites: true })
-		expect(result).toEqual({ recipes: [], nextCursor: null })
+		expect(result).toEqual({ recipes: [], nextCursor: null, totalCount: 0 })
 	})
 
 	it('returns empty for saved filter with no saved IDs', async () => {
@@ -185,7 +192,7 @@ describe('fetchRecipes', () => {
 		} as any)
 
 		const result = await fetchRecipes({ saved: true, userId: 'user-1' })
-		expect(result).toEqual({ recipes: [], nextCursor: null })
+		expect(result).toEqual({ recipes: [], nextCursor: null, totalCount: 0 })
 	})
 
 	it('filters a public user profile by current user saved recipes', async () => {
@@ -363,7 +370,7 @@ describe('fetchRecipes', () => {
 		mockDb.recipe.findMany.mockRejectedValue(new Error('DB down'))
 
 		const result = await fetchRecipes({})
-		expect(result).toEqual({ recipes: [], nextCursor: null })
+		expect(result).toEqual({ recipes: [], nextCursor: null, totalCount: 0 })
 	})
 })
 
@@ -421,6 +428,7 @@ describe('createRecipe', () => {
 		const complements = [
 			{
 				type: 'Sauce' as const,
+				name: 'Romesco',
 				ingredients: ['tomato', 'olive oil'],
 				instructions: 'Simmer the tomato and oil until glossy.',
 			},
@@ -526,6 +534,7 @@ describe('updateRecipe', () => {
 		const complements = [
 			{
 				type: 'Marinade' as const,
+				name: 'Lemon garlic marinade',
 				ingredients: ['lemon', 'garlic'],
 				instructions: 'Mix the lemon and garlic and rest the fish.',
 			},

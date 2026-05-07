@@ -100,6 +100,27 @@ export const getFavouriteRecipeIds = cache(async (): Promise<string[]> => {
 })
 
 /**
+ * Get aggregate stats for a recipe.
+ */
+export const getRecipeStats = cache(async (recipeId: string) => {
+	try {
+		const [savedCount, favouriteCount] = await Promise.all([
+			db.user.count({
+				where: { savedRecipes: { has: recipeId } },
+			}),
+			db.user.count({
+				where: { favouriteRecipes: { has: recipeId } },
+			}),
+		])
+
+		return { savedCount, favouriteCount }
+	} catch (error) {
+		Sentry.captureException(error, { tags: { query: 'getRecipeStats' } })
+		return { savedCount: 0, favouriteCount: 0 }
+	}
+})
+
+/**
  * Get recipes by userId.
  * Auth required.
  * @returns Promise<{ recipes: Recipe[] } | null>
@@ -278,17 +299,49 @@ export const getProfilesByName = cache(async (name: string) => {
 				image: true,
 				isPrivate: true,
 				_count: { select: { recipes: true } },
+				recipes: {
+					orderBy: { createdAt: 'desc' },
+					take: 1,
+					select: {
+						name: true,
+						slug: true,
+						time: true,
+						course: true,
+						categories: true,
+						images: true,
+					},
+				},
 			},
 			take: 10,
 		})
 
-		const mappedProfiles = profiles.map((profile) => ({
-			id: profile.id,
-			name: profile.name ?? '',
-			username: profile.username!,
-			image: profile.image ?? '',
-			recipesCount: profile._count.recipes,
-		}))
+		const mappedProfiles = profiles.map((profile) => {
+			const latestRecipe = profile.recipes?.[0]
+			const normalizedLatestRecipe = latestRecipe
+				? normalizeRecipeCourseAndCategories(
+						latestRecipe.course,
+						latestRecipe.categories,
+					)
+				: null
+
+			return {
+				id: profile.id,
+				name: profile.name ?? '',
+				username: profile.username!,
+				image: profile.image ?? '',
+				recipesCount: profile._count.recipes,
+				latestRecipe: latestRecipe
+					? {
+							name: latestRecipe.name,
+							slug: latestRecipe.slug,
+							time: latestRecipe.time,
+							course: normalizedLatestRecipe!.course,
+							categories: normalizedLatestRecipe!.categories,
+							image: toImageUrls(latestRecipe.images)[0] ?? null,
+						}
+					: null,
+			}
+		})
 
 		return { profiles: mappedProfiles }
 	} catch (error) {

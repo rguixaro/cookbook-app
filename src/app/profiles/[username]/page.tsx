@@ -35,6 +35,7 @@ export default async function ProfilePage({
 	params: Promise<{ username: string }>
 	searchParams?: Promise<{
 		search?: string
+		recipeSearch?: string
 		course?: string
 		categories?: string
 		saved?: string
@@ -42,21 +43,27 @@ export default async function ProfilePage({
 	}>
 }) {
 	const { username } = await params
-	const searchParam = (await searchParams)?.search
-	const courseParam = (await searchParams)?.course
-	const categoriesParam = (await searchParams)?.categories
-	const savedParam = (await searchParams)?.saved === 'true'
-	const sortParam = (await searchParams)?.sort
+	const paramsValue = await searchParams
+	const profileSearchParam = paramsValue?.search
+	const recipeSearchParam = paramsValue?.recipeSearch
+	const courseParam = paramsValue?.course
+	const categoriesParam = paramsValue?.categories
+	const savedParam = paramsValue?.saved === 'true'
+	const sortParam = paramsValue?.sort
 
 	const { profile } = await getProfileByUsername(username)
 	if (!profile) notFound()
 
 	const t = await getTranslations('RecipesPage')
+	const backParams = new URLSearchParams()
+	if (profileSearchParam) backParams.set('search', profileSearchParam)
+	const backQuery = backParams.toString()
+	const backTo = backQuery ? `/profiles?${backQuery}` : '/profiles'
 
 	return (
-		<div className='flex flex-col items-center pt-2 my-2 text-forest-400 w-full'>
+		<div className='flex flex-col items-center mt-5 text-forest-400 w-full'>
 			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
-				<GoBack />
+				<GoBack to={backTo} />
 			</div>
 			<div className='flex flex-col items-center w-full'>
 				<SyncProfileName name={profile.name ?? ''} />
@@ -102,12 +109,18 @@ export default async function ProfilePage({
 						</span>
 					</div>
 				</div>
-				<SearchRecipes withAvatar={false} listFilter='saved' />
+				<SearchRecipes
+					withAvatar={false}
+					listFilter='saved'
+					searchParamName='recipeSearch'
+				/>
 				<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
 					<RecipesFeed
 						referred
 						userId={profile.id}
-						searchParam={searchParam}
+						searchParam={recipeSearchParam}
+						searchParamName='recipeSearch'
+						profileSearchParam={profileSearchParam}
 						courseParam={courseParam}
 						categoriesParam={categoriesParam}
 						savedParam={savedParam}

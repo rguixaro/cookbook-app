@@ -2,14 +2,37 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useTranslations } from 'next-intl'
+import { AnimatePresence, motion } from 'motion/react'
 import { Loader, LoaderIcon, Utensils } from 'lucide-react'
 
 import { fetchRecipes } from '@/server/actions'
 import { useInfiniteScroll } from '@/hooks'
 import { Info } from '@/components/layout'
+import { ResultCountChip } from '@/components/layout/result-count-chip'
 import { ItemRecipe } from '@/components/recipes/item'
+import { AddRecipe } from '@/components/recipes/add'
+import {
+	RecipesNoResultsContent,
+	recipesNoResultsMotionProps,
+} from '@/components/recipes/no-results'
 import { TypographyH4 } from '@/ui'
 import type { RecipeSchema } from '@/server/schemas'
+
+type RecipesFeedState = 'loading-empty' | 'results' | 'search-empty' | 'empty'
+
+const recipesFeedMotionProps = {
+	initial: { opacity: 0, y: 12 },
+	animate: { opacity: 1, y: 0 },
+	exit: { opacity: 0, y: -12 },
+	transition: { type: 'spring', stiffness: 380, damping: 30 },
+} as const
+
+const recipesSkeletonMotionProps = {
+	initial: false,
+	animate: { opacity: 1, y: 0 },
+	exit: { opacity: 0, y: 0 },
+	transition: { duration: 0 },
+} as const
 
 function RecipeSkeleton() {
 	return (
@@ -41,6 +64,8 @@ export const RecipesFeed = ({
 	sortParam,
 	userId,
 	referred = false,
+	searchParamName = 'search',
+	profileSearchParam,
 }: {
 	searchParam?: string
 	courseParam?: string
@@ -50,12 +75,25 @@ export const RecipesFeed = ({
 	sortParam?: string
 	userId?: string
 	referred?: boolean
+	searchParamName?: string
+	profileSearchParam?: string
 }) => {
 	const t = useTranslations('common')
+	const tRecipes = useTranslations('RecipesPage')
 	const [recipes, setRecipes] = useState<RecipeSchema[]>([])
 	const [nextCursor, setNextCursor] = useState<string | null>(null)
+	const [totalCount, setTotalCount] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
 	const fetchIdRef = useRef(0)
+	const search = searchParam?.trim() ?? ''
+	const hasSearch = search.length > 0
+	const hasActiveListQuery =
+		hasSearch ||
+		Boolean(courseParam?.trim()) ||
+		Boolean(categoriesParam?.trim()) ||
+		Boolean(favouritesParam) ||
+		Boolean(savedParam) ||
+		Boolean(sortParam?.trim())
 
 	const hasMore = nextCursor !== null
 
@@ -78,13 +116,16 @@ export const RecipesFeed = ({
 			if (fetchIdRef.current !== id) return
 
 			setRecipes((prev) => {
-				const combined = cursor ? [...prev, ...result.recipes] : result.recipes
+				const combined = cursor
+					? [...prev, ...result.recipes]
+					: result.recipes
 				const seen = new Set<string>()
 				return combined.filter((r) =>
 					seen.has(r.id) ? false : seen.add(r.id) && true,
 				)
 			})
 			setNextCursor(result.nextCursor)
+			setTotalCount(result.totalCount)
 			setIsLoading(false)
 		},
 		[
@@ -101,6 +142,7 @@ export const RecipesFeed = ({
 	useEffect(() => {
 		setRecipes([])
 		setNextCursor(null)
+		setTotalCount(0)
 		loadPage()
 	}, [loadPage])
 
@@ -111,55 +153,122 @@ export const RecipesFeed = ({
 
 	const sentinelRef = useInfiniteScroll(loadMore, hasMore && !isLoading)
 
+	const isFirstPageLoading = isLoading && recipes.length === 0
 	const isEmpty = recipes.length === 0 && !isLoading
+	const feedState: RecipesFeedState = isFirstPageLoading
+		? 'loading-empty'
+		: recipes.length > 0
+			? 'results'
+			: hasActiveListQuery
+				? 'search-empty'
+				: 'empty'
+	const shouldShowFloatingAddRecipe = !referred && feedState === 'results'
+	const previousFeedStateRef = useRef<RecipesFeedState>(feedState)
+	const previousFeedState = previousFeedStateRef.current
+	const isSkeletonHandoff =
+		previousFeedState === 'loading-empty' && feedState !== 'loading-empty'
+
+	useEffect(() => {
+		previousFeedStateRef.current = feedState
+	}, [feedState])
 
 	return (
 		<div className='w-full h-full flex flex-col items-center'>
-			{recipes.map((recipe) => (
-				<ItemRecipe
-					key={recipe.id}
-					recipe={recipe}
-					referred={referred}
-					query={searchParam}
-					course={courseParam}
-					categories={categoriesParam}
-					sort={sortParam}
-				/>
-			))}
-
-			{/* Loading skeletons */}
-			{isLoading && (
-				<>
-					{recipes.length === 0 ? (
-						<>
-							<RecipeSkeleton />
-							<RecipeSkeleton />
-							<RecipeSkeleton />
-							<RecipeSkeleton />
-							<RecipeSkeleton />
-						</>
-					) : (
-						<div className='flex flex-col mt-3 justify-center items-center text-forest-200'>
-							<Loader size={18} className='animate-spin' />
-						</div>
-					)}
-				</>
-			)}
-
-			{/* Scroll sentinel */}
-			<div ref={sentinelRef} />
-
-			{/* Empty states */}
-			{referred ? (
-				isEmpty && (
-					<div className='mt-10 h-32 flex flex-col items-center justify-center text-forest-200 text-center'>
-						<Utensils size={48} />
-						<TypographyH4 className='mt-2 mb-5'>{t('no-recipes')}</TypographyH4>
-					</div>
-				)
-			) : (
-				<Info enabled={isEmpty} mode='recipes' />
-			)}
+			<ResultCountChip
+				label={tRecipes('recipe-count', { count: totalCount })}
+				loading={isFirstPageLoading}
+				loadingLabel={tRecipes('searching')}
+				reserveLabel={tRecipes('recipe-count', { count: 1 })}
+				className='mb-2'
+			/>
+			<AnimatePresence mode='wait' initial={false}>
+				{feedState === 'loading-empty' && (
+					<motion.div
+						key='recipes-loading-empty'
+						{...recipesSkeletonMotionProps}
+						className='w-full'>
+						<RecipeSkeleton />
+						<RecipeSkeleton />
+						<RecipeSkeleton />
+						<RecipeSkeleton />
+						<RecipeSkeleton />
+					</motion.div>
+				)}
+				{feedState === 'results' && (
+					<motion.div
+						key='recipes-results'
+						{...recipesFeedMotionProps}
+						initial={
+							isSkeletonHandoff
+								? false
+								: recipesFeedMotionProps.initial
+						}
+						className='w-full flex flex-col items-center'>
+						{recipes.map((recipe) => (
+							<ItemRecipe
+								key={recipe.id}
+								recipe={recipe}
+								referred={referred}
+								query={searchParam}
+								searchParamName={searchParamName}
+								profileSearchParam={profileSearchParam}
+								course={courseParam}
+								categories={categoriesParam}
+								favourites={favouritesParam}
+								saved={savedParam}
+								sort={sortParam}
+							/>
+						))}
+						{isLoading && (
+							<div className='flex flex-col mt-3 justify-center items-center text-forest-200'>
+								<Loader size={18} className='animate-spin' />
+							</div>
+						)}
+						<div ref={sentinelRef} />
+					</motion.div>
+				)}
+				{feedState === 'search-empty' && (
+					<motion.div
+						key='recipes-search-empty'
+						{...recipesNoResultsMotionProps}
+						className='flex w-full flex-col items-center'>
+						<RecipesNoResultsContent
+							search={search}
+							showCreate={!referred}
+							searchParamName={searchParamName}
+						/>
+					</motion.div>
+				)}
+				{feedState === 'empty' && (
+					<motion.div
+						key='recipes-empty'
+						{...recipesFeedMotionProps}
+						initial={
+							isSkeletonHandoff
+								? false
+								: recipesFeedMotionProps.initial
+						}
+						className='w-full flex flex-col items-center'>
+						{referred ? (
+							<div className='mt-10 h-32 flex flex-col items-center justify-center text-forest-200 text-center'>
+								<Utensils size={48} />
+								<TypographyH4 className='mt-2 mb-5'>
+									{t('no-recipes')}
+								</TypographyH4>
+							</div>
+						) : (
+							<div className='mt-10 flex min-h-32 flex-col items-center justify-center text-forest-200 text-center'>
+								<Utensils size={48} />
+								<TypographyH4 className='mt-2 mb-5'>
+									{t('no-recipes')}
+								</TypographyH4>
+								<AddRecipe className='rounded-xl px-8 py-2 shadow-center-sm' />
+							</div>
+						)}
+					</motion.div>
+				)}
+			</AnimatePresence>
+			{shouldShowFloatingAddRecipe && <Info enabled={false} mode='recipes' />}
 		</div>
 	)
 }
