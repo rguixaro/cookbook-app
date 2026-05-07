@@ -15,6 +15,7 @@ interface IngredientSelectorProps {
 	onInputErrorChange?: (message: string | null) => void
 	showFormMessage?: boolean
 	showPlaceholder?: boolean
+	placeholder?: string
 }
 
 const hasMeaningfulIngredientText = (value: string) =>
@@ -30,6 +31,7 @@ export const IngredientSelector = ({
 	onInputErrorChange,
 	showFormMessage = true,
 	showPlaceholder = true,
+	placeholder,
 }: IngredientSelectorProps) => {
 	const t = useTranslations('RecipesPage')
 	const [currIngredient, setCurrIngredient] = useState<string>('')
@@ -109,9 +111,13 @@ export const IngredientSelector = ({
 						aria-label={t('ingredients')}
 						className={cn(
 							InputGlobalStyles,
-							'rounded-2xl py-5 bg-forest-50 border-2 focus-visible:ring-0 placeholder:text-forest-200/75',
+							'rounded-2xl py-5 bg-forest-50 border-2 focus-visible:ring-0 placeholder:text-forest-200/50',
 						)}
-						placeholder={showPlaceholder ? t('ingredients-placeholder') : undefined}
+						placeholder={
+							showPlaceholder
+								? (placeholder ?? t('ingredients-placeholder'))
+								: undefined
+						}
 						disabled={disabled}
 						maxLength={INGREDIENT_MAX_LENGTH}
 						onChange={(e) => setCurrIngredient(e.currentTarget.value)}

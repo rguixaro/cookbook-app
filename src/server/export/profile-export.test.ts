@@ -35,6 +35,14 @@ const makeRecipe = (overrides: Record<string, unknown>) => ({
 	time: 30,
 	instructions: 'Cook the owned recipe.',
 	ingredients: ['salt'],
+	complements: [
+		{
+			type: 'Sauce',
+			name: 'Romesco',
+			ingredients: ['almonds'],
+			instructions: 'Blend until smooth.',
+		},
+	],
 	images: ['images/recipe_real/owned.jpg'],
 	sourceUrls: ['https://example.com/owned'],
 	createdAt: date('2024-01-01T00:00:00.000Z'),
@@ -129,6 +137,14 @@ describe('buildProfileJsonPayload', () => {
 		expect(serialized).not.toContain('recipe-real-saved')
 		expect(serialized).not.toContain('images/recipe_real')
 		expect(payload.recipes[0].images).toEqual(['photos/0001-image_0001.jpg'])
+		expect(payload.recipes[0].complements).toEqual([
+			{
+				type: 'Sauce',
+				name: 'Romesco',
+				ingredients: ['almonds'],
+				instructions: 'Blend until smooth.',
+			},
+		])
 		expect(payload.recipes[1].images).toEqual(['photos/0002-image_0002.jpg'])
 		expect(payload.lists.favourites).toEqual(['recipe_0001'])
 	})

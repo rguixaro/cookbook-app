@@ -41,6 +41,7 @@ export type RecipeComplementType = (typeof RecipeComplementTypes)[number]
 
 export interface RecipeComplement {
 	type: RecipeComplementType
+	name?: string
 	ingredients: string[]
 	instructions: string
 }

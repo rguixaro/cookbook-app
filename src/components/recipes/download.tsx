@@ -99,6 +99,8 @@ export const RecipeDownload = ({
 	const complementsWithInstructions = complements.filter(
 		(complement) => complement.instructions.trim() !== '',
 	)
+	const getComplementLabel = (complement: (typeof complements)[number]) =>
+		complement.name?.trim() || t(`complement-${complement.type.toLowerCase()}`)
 
 	return (
 		<button
@@ -210,7 +212,7 @@ export const RecipeDownload = ({
 																className='stroke-forest-200'
 															/>
 														</div>
-														<span className='w-full whitespace-nowrap text-xs text-left text-forest-200'>
+														<span className='w-full whitespace-nowrap text-xs text-left font-semibold text-forest-200'>
 															{t('minutes')}
 														</span>
 													</div>
@@ -226,11 +228,6 @@ export const RecipeDownload = ({
 										</p>
 										<div className='space-y-4 px-4 pt-3'>
 											<div className='flex flex-wrap justify-center gap-1.5'>
-												{complements.length > 0 && (
-													<p className='w-fit self-center text-xs font-bold text-forest-50 bg-forest-200/75 px-2 py-1 rounded-lg'>
-														{t('ingredients-main')}
-													</p>
-												)}
 												{recipe.ingredients.map(
 													(ingredient, index) => (
 														<span
@@ -245,8 +242,8 @@ export const RecipeDownload = ({
 												<div key={complement.type}>
 													<div className='flex flex-wrap justify-center gap-1.5'>
 														<p className='w-fit self-center text-xs font-bold text-forest-50 bg-forest-200/75 px-2 py-1 rounded-lg'>
-															{t(
-																`complement-${complement.type.toLowerCase()}`,
+															{getComplementLabel(
+																complement,
 															)}
 														</p>
 														{complement.ingredients.map(
@@ -280,8 +277,8 @@ export const RecipeDownload = ({
 															key={complement.type}
 															className='mt-4'>
 															<p className='w-fit text-xs font-bold text-forest-50 bg-forest-200/75 px-2 py-1 rounded-lg'>
-																{t(
-																	`complement-${complement.type.toLowerCase()}`,
+																{getComplementLabel(
+																	complement,
 																)}
 															</p>
 															<p className='mt-1 whitespace-pre-line'>
