@@ -16,6 +16,7 @@ type SearchInputProps = {
 	inputClassName?: string
 	searchButtonClassName?: string
 	searchIconClassName?: string
+	clearButtonClassName?: string
 	wrapperClassName?: string
 }
 
@@ -30,10 +31,16 @@ export function SearchInput({
 	inputClassName,
 	searchButtonClassName,
 	searchIconClassName,
+	clearButtonClassName,
 	wrapperClassName,
 }: SearchInputProps) {
 	return (
-		<div className={cn('h-8 flex relative', wrapperClassName)}>
+		<div
+			className={cn(
+				'relative flex h-10 min-w-14 overflow-hidden rounded-xl bg-forest-100 px-3 py-1',
+				wrapperClassName,
+			)}
+		>
 			<input
 				type='text'
 				ref={inputRef}
@@ -43,16 +50,18 @@ export function SearchInput({
 				value={value}
 				onChange={onChange}
 				className={cn(
-					'relative block h-8 text-sm z-10 bg-forest-100 text-forest-200 font-medium placeholder-forest-200/75',
-					'transition-all duration-500 rounded-xl focus:outline-none ring-4 ring-forest-100 ps-12 pe-3',
+					'relative z-10 block h-8 min-w-0 rounded-xl bg-transparent text-sm font-medium text-forest-200 placeholder-forest-200/75',
+					'ps-10 pe-8 transition-all duration-500 focus:outline-none',
 					inputClassName,
 				)}
 				required
 			/>
 			<SearchButton
+				aria-label={placeholder}
 				onClick={onSearchButtonClick}
+				onPointerDown={(e) => e.preventDefault()}
 				className={cn(
-					'absolute top-1/2 -translate-y-1/2 transition-transform',
+					'absolute left-3 top-1/2 -translate-y-1/2',
 					searchButtonClassName,
 				)}
 				iconClassName={searchIconClassName}
@@ -61,11 +70,13 @@ export function SearchInput({
 				type='button'
 				onClick={onClear}
 				className={cn(
-					'absolute top-1/2 right-0 -translate-y-1/2 z-30 text-forest-300 transition-all duration-200 ease-in-out',
+					'absolute top-1/2 right-3 -translate-y-1/2 z-30 text-forest-300 transition-all duration-200 ease-in-out',
 					value
-						? 'opacity-100 -translate-x-2'
+						? 'opacity-100 -translate-x-1'
 						: 'opacity-0 translate-x-2 pointer-events-none',
-				)}>
+					clearButtonClassName,
+				)}
+			>
 				<X className='w-4 h-4' />
 			</button>
 		</div>

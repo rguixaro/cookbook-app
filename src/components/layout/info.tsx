@@ -20,8 +20,20 @@ const addRecipeBottomOffset = 56
 
 type InfoMode = 'recipes' | 'profiles'
 
-export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
+export function Info({
+	enabled,
+	mode,
+	search,
+}: {
+	enabled: boolean
+	mode: InfoMode
+	search?: string
+}) {
 	const t = useTranslations('common')
+	const searchTerm = search?.trim() ?? ''
+	const noProfilesText = searchTerm
+		? t('no-users-for', { search: searchTerm })
+		: t('no-profiles')
 
 	const [status, setStatus] = useState<'bottom' | 'middle' | 'initial'>('initial')
 
@@ -84,7 +96,9 @@ export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
 					<div className='h-36 flex flex-col items-center justify-center text-forest-200 text-center'>
 						<Utensils size={48} />
 						<TypographyH4 className='mt-2 mb-5'>
-							{t('no-recipes')}
+							{searchTerm
+								? t('no-recipes-for', { search: searchTerm })
+								: t('no-recipes')}
 						</TypographyH4>
 					</div>
 				</motion.div>
@@ -100,7 +114,7 @@ export function Info({ enabled, mode }: { enabled: boolean; mode: InfoMode }) {
 							<>
 								<ChefHat size={48} />
 								<TypographyH4 className='mt-2 mb-5'>
-									{t('no-profiles')}
+									{noProfilesText}
 								</TypographyH4>
 							</>
 						) : (

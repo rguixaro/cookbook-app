@@ -13,14 +13,19 @@ export function SearchButton({
 	className,
 	iconClassName,
 	onClick,
+	type = 'button',
+	...props
 }: SearchButtonProps) {
 	return (
 		<button
+			type={type}
 			onClick={onClick}
 			className={cn(
 				'w-8 h-8 rounded-xl flex items-center justify-center z-40 hover:bg-forest-150 transition-all duration-300',
 				className,
-			)}>
+			)}
+			{...props}
+		>
 			<Search
 				className={cn(
 					'w-7 h-7 p-1 text-forest-200 transition-all duration-300',
