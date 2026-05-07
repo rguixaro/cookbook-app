@@ -39,6 +39,7 @@ describe('CreateRecipeSchema', () => {
 			complements: [
 				{
 					type: 'Sauce',
+					name: '  Tomato sauce  ',
 					ingredients: ['tomato', 'olive oil'],
 					instructions: 'Simmer the tomato and oil until glossy.',
 				},
@@ -55,6 +56,44 @@ describe('CreateRecipeSchema', () => {
 			expect(result.data.ingredients).toEqual(validRecipe.ingredients)
 			expect(result.data.instructions).toBe(validRecipe.instructions)
 			expect(result.data.complements).toHaveLength(2)
+			expect(result.data.complements[0]?.name).toBe('Tomato sauce')
+		}
+	})
+
+	it('accepts legacy complements without names', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			complements: [
+				{
+					type: 'Sauce',
+					ingredients: ['tomato', 'olive oil'],
+					instructions: 'Simmer the tomato and oil until glossy.',
+				},
+			],
+		})
+
+		expect(result.success).toBe(true)
+		if (result.success) {
+			expect(result.data.complements[0]?.name).toBeUndefined()
+		}
+	})
+
+	it('rejects complement names longer than 60 chars', () => {
+		const result = CreateRecipeSchema.safeParse({
+			...validRecipe,
+			complements: [
+				{
+					type: 'Sauce',
+					name: 'a'.repeat(61),
+					ingredients: ['tomato'],
+					instructions: 'Simmer the tomato until it thickens.',
+				},
+			],
+		})
+
+		expect(result.success).toBe(false)
+		if (!result.success) {
+			expect(result.error.issues[0]?.message).toBe('complement-name-too-long')
 		}
 	})
 
@@ -228,6 +267,26 @@ describe('CreateRecipeSchema', () => {
 
 	it('normalizes missing recipe complements during reads', () => {
 		expect(normalizeRecipeComplements(undefined)).toEqual([])
+	})
+
+	it('normalizes named recipe complements during reads', () => {
+		expect(
+			normalizeRecipeComplements([
+				{
+					type: 'Sauce',
+					name: '  Romesco  ',
+					ingredients: ['almonds'],
+					instructions: 'Blend until smooth.',
+				},
+			]),
+		).toEqual([
+			{
+				type: 'Sauce',
+				name: 'Romesco',
+				ingredients: ['almonds'],
+				instructions: 'Blend until smooth.',
+			},
+		])
 	})
 
 	it('rejects time less than 1', () => {

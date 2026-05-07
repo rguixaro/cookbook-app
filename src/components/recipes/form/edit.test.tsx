@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { screen, waitFor } from '@testing-library/react'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
-import { renderWithProviders, userEvent } from '@/test/render'
+import { fireEvent, renderWithProviders, userEvent } from '@/test/render'
 import { EditRecipe } from './edit'
 import type { Recipe } from '@/types'
 import { Form, FormField, FormItem, FormMessage } from '@/ui'
@@ -161,6 +161,66 @@ describe('EditRecipe delete flow', () => {
 				}),
 			)
 		})
+	})
+
+	it('renders and submits named complements', async () => {
+		mockUpdateRecipe.mockResolvedValue({
+			error: false,
+			recipePath: '/recipes/testuser/paella-updated',
+		})
+		mockUpdateRecipeImages.mockResolvedValue({ error: false })
+		renderEditRecipe({
+			complements: [
+				{
+					type: 'Sauce',
+					name: 'Romesco',
+					ingredients: ['almonds'],
+					instructions: 'Blend until smooth.',
+				},
+			],
+		})
+
+		const nameInput = screen.getByDisplayValue('Romesco')
+		fireEvent.change(nameInput, { target: { value: '  Salsa brava  ' } })
+		fireEvent.click(screen.getByRole('button', { name: 'Update' }))
+
+		await waitFor(() => {
+			expect(mockUpdateRecipe).toHaveBeenCalledWith(
+				'recipe-1',
+				expect.objectContaining({
+					complements: [
+						{
+							type: 'Sauce',
+							name: 'Salsa brava',
+							ingredients: ['almonds'],
+							instructions: 'Blend until smooth.',
+						},
+					],
+				}),
+			)
+		})
+	})
+
+	it('shows a complement name length error before submitting', async () => {
+		renderEditRecipe({
+			complements: [
+				{
+					type: 'Sauce',
+					name: 'Romesco',
+					ingredients: ['almonds'],
+					instructions: 'Blend until smooth.',
+				},
+			],
+		})
+
+		const nameInput = screen.getByDisplayValue('Romesco')
+		fireEvent.change(nameInput, { target: { value: 'a'.repeat(61) } })
+		fireEvent.click(screen.getByRole('button', { name: 'Update' }))
+
+		expect(
+			await screen.findByText('Use 60 characters or fewer'),
+		).toBeInTheDocument()
+		expect(mockUpdateRecipe).not.toHaveBeenCalled()
 	})
 
 	it('opens confirmation dialog and requires the confirmation word', async () => {

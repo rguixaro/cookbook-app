@@ -14,6 +14,7 @@ import {
 	getUserByUsername,
 	getSavedRecipeIds,
 	getFavouriteRecipeIds,
+	getRecipeStats,
 } from '@/server/queries'
 import { GoBack } from '@/components/layout'
 import { SyncProfileName } from '@/components/profile'
@@ -23,6 +24,7 @@ import {
 	RecipeShare,
 	SavedStatus,
 	FavouriteStatus,
+	RecipeInfo,
 } from '@/components/recipes'
 import { SITE_URL, cn } from '@/utils'
 import { isCrawlerUserAgent } from '@/utils/crawlers'
@@ -51,6 +53,14 @@ function getRecipeDescription(
 	const details = [`by @${username}`]
 	if (recipe.time) details.push(`${recipe.time} min`)
 	return `${recipe.name} ${details.join(' · ')}`
+}
+
+function formatRecipeInfoDate(date: Date) {
+	return date.toLocaleDateString(undefined, {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+	})
 }
 
 export async function generateMetadata({
@@ -98,8 +108,12 @@ export default async function RecipePage({
 	searchParams?: Promise<{
 		referred?: boolean
 		query?: string
+		search?: string
+		recipeSearch?: string
 		course?: string
 		categories?: string
+		favourites?: string
+		saved?: string
 		sort?: string
 	}>
 }) {
@@ -111,15 +125,25 @@ export default async function RecipePage({
 	const { slug, username } = await params
 	const currentSearchParams = await searchParams
 	const isReferred = currentSearchParams?.referred
-	const query = currentSearchParams?.query
+	const legacyQuery = currentSearchParams?.query
+	const search = currentSearchParams?.search
+	const recipeSearch = currentSearchParams?.recipeSearch
 	const course = currentSearchParams?.course
 	const categories = currentSearchParams?.categories
+	const favourites = currentSearchParams?.favourites
+	const saved = currentSearchParams?.saved
 	const sort = currentSearchParams?.sort
 
 	const backParams = new URLSearchParams()
-	if (query) backParams.set('search', query)
+	if (search) backParams.set('search', search)
+	if (recipeSearch) backParams.set('recipeSearch', recipeSearch)
+	else if (legacyQuery) {
+		backParams.set(isReferred ? 'recipeSearch' : 'search', legacyQuery)
+	}
 	if (course) backParams.set('course', course)
 	if (categories) backParams.set('categories', categories)
+	if (favourites === 'true') backParams.set('favourites', 'true')
+	if (saved === 'true') backParams.set('saved', 'true')
 	if (sort) backParams.set('sort', sort)
 	const backQuery = backParams.toString() ? `?${backParams.toString()}` : ''
 
@@ -153,6 +177,9 @@ export default async function RecipePage({
 	const isSaved = savedIds.includes(recipe.id)
 	const favouriteIds = await getFavouriteRecipeIds()
 	const isFavourited = favouriteIds.includes(recipe.id)
+	const recipeStats = isOwner
+		? await getRecipeStats(recipe.id)
+		: { savedCount: 0, favouriteCount: 0 }
 
 	async function getAuthor(): Promise<{
 		name: string
@@ -176,12 +203,14 @@ export default async function RecipePage({
 	const complementsWithInstructions = complements.filter(
 		(complement) => complement.instructions.trim() !== '',
 	)
+	const getComplementLabel = (complement: (typeof complements)[number]) =>
+		complement.name?.trim() || t(`complement-${complement.type.toLowerCase()}`)
 	const imagePlaceholderText = isOwner
 		? t('images-add-in-edit')
 		: t('images-empty')
 
 	return (
-		<div className='flex flex-col items-center pt-2 my-2 text-center w-full'>
+		<div className='flex flex-col items-center mt-5 text-center w-full'>
 			<SyncProfileName name={author.name} />
 			<div className='w-11/12 sm:w-3/5 lg:w-3/8'>
 				<GoBack text={'recipes'} to={backTo}>
@@ -260,7 +289,7 @@ export default async function RecipePage({
 														className='stroke-forest-200'
 													/>
 												</div>
-												<span className='w-full whitespace-nowrap text-xs text-left text-forest-200'>
+												<span className='w-full whitespace-nowrap text-xs text-left font-semibold text-forest-200'>
 													{t('minutes')}
 												</span>
 											</div>
@@ -276,11 +305,6 @@ export default async function RecipePage({
 								</p>
 								<div className='space-y-4 px-4 pt-3'>
 									<div className='flex flex-wrap justify-center gap-1.5'>
-										{complements.length > 0 && (
-											<p className='w-fit self-center text-xs font-bold text-forest-50 bg-forest-200/75 px-2 py-1 rounded-lg'>
-												{t('ingredients-main')}
-											</p>
-										)}
 										{recipe.ingredients.map(
 											(ingredient, index) => (
 												<span
@@ -295,9 +319,7 @@ export default async function RecipePage({
 										<div key={complement.type}>
 											<div className='flex flex-wrap justify-center gap-1.5'>
 												<p className='w-fit self-center text-xs font-bold text-forest-50 bg-forest-200/75 px-2 py-1 rounded-lg'>
-													{t(
-														`complement-${complement.type.toLowerCase()}`,
-													)}
+													{getComplementLabel(complement)}
 												</p>
 												{complement.ingredients.map(
 													(ingredient, index) => (
@@ -330,8 +352,8 @@ export default async function RecipePage({
 													key={complement.type}
 													className='mt-4'>
 													<p className='w-fit text-xs font-bold text-forest-50 bg-forest-200/75 px-2 py-1 rounded-lg'>
-														{t(
-															`complement-${complement.type.toLowerCase()}`,
+														{getComplementLabel(
+															complement,
 														)}
 													</p>
 													<p className='mt-1 whitespace-pre-line'>
@@ -398,6 +420,15 @@ export default async function RecipePage({
 						</div>
 					</Link>
 				</div>
+			</div>
+			<div className='-mt-2 mb-4 flex w-10/12 justify-center sm:w-2/4 lg:w-2/6'>
+				<RecipeInfo
+					createdAt={formatRecipeInfoDate(recipe.createdAt)}
+					isOwner={isOwner}
+					updatedAt={formatRecipeInfoDate(recipe.updatedAt)}
+					savedCount={recipeStats.savedCount}
+					favouriteCount={recipeStats.favouriteCount}
+				/>
 			</div>
 		</div>
 	)

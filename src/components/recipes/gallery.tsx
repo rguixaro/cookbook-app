@@ -297,7 +297,9 @@ export function RecipeGalleryPlaceholder({ text }: { text: string }) {
 		<div className='w-full p-3'>
 			<div className='flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-forest-200/25 bg-forest-150 px-3 py-6'>
 				<ImageIcon size={24} className='text-forest-200' />
-				<span className='text-center text-xs text-forest-200'>{text}</span>
+				<span className='text-center text-xs font-semibold text-forest-200'>
+					{text}
+				</span>
 			</div>
 		</div>
 	)
