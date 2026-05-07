@@ -10,6 +10,7 @@ vi.mock('@/server/db', () => ({
 			findUnique: vi.fn(),
 			findFirst: vi.fn(),
 			findMany: vi.fn(),
+			count: vi.fn(),
 		},
 		recipe: {
 			findMany: vi.fn(),
@@ -29,6 +30,7 @@ import {
 	getUserByUsername,
 	getSavedRecipeIds,
 	getFavouriteRecipeIds,
+	getRecipeStats,
 	getRecipesByUserId,
 	getRecipeByAuthAndSlug,
 	getPublicRecipeByUsernameAndSlug,
@@ -134,6 +136,32 @@ describe('getFavouriteRecipeIds', () => {
 
 		const result = await getFavouriteRecipeIds()
 		expect(result).toEqual(['recipe-3'])
+	})
+})
+
+describe('getRecipeStats', () => {
+	it('returns saved and favourite counts for a recipe', async () => {
+		mockDb.user.count
+			.mockResolvedValueOnce(4 as any)
+			.mockResolvedValueOnce(2 as any)
+
+		const result = await getRecipeStats('recipe-1')
+
+		expect(result).toEqual({ savedCount: 4, favouriteCount: 2 })
+		expect(mockDb.user.count).toHaveBeenNthCalledWith(1, {
+			where: { savedRecipes: { has: 'recipe-1' } },
+		})
+		expect(mockDb.user.count).toHaveBeenNthCalledWith(2, {
+			where: { favouriteRecipes: { has: 'recipe-1' } },
+		})
+	})
+
+	it('returns zero counts on database error', async () => {
+		mockDb.user.count.mockRejectedValue(new Error('DB error'))
+
+		const result = await getRecipeStats('recipe-1')
+
+		expect(result).toEqual({ savedCount: 0, favouriteCount: 0 })
 	})
 })
 
@@ -394,6 +422,16 @@ describe('getProfilesByName', () => {
 				image: 'img.jpg',
 				isPrivate: false,
 				_count: { recipes: 5 },
+				recipes: [
+					{
+						name: 'Fresh Pasta',
+						slug: 'fresh-pasta',
+						time: 30,
+						course: 'FirstCourse',
+						categories: ['Pasta'],
+						images: [],
+					},
+				],
 			},
 		] as any)
 
@@ -406,6 +444,14 @@ describe('getProfilesByName', () => {
 					username: 'johndoe',
 					image: 'img.jpg',
 					recipesCount: 5,
+					latestRecipe: {
+						name: 'Fresh Pasta',
+						slug: 'fresh-pasta',
+						time: 30,
+						course: 'FirstCourse',
+						categories: ['Pasta'],
+						image: null,
+					},
 				},
 			],
 		})
