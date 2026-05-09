@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
+import { useState, type ComponentPropsWithoutRef, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import { isRedirectError } from 'next/dist/client/components/redirect-error'
 import { LoaderIcon } from 'lucide-react'
@@ -25,13 +25,17 @@ interface DeleteAccountProps {
 	email: string
 }
 
+type FormSubmitHandler = NonNullable<
+	ComponentPropsWithoutRef<'form'>['onSubmit']
+>
+
 export const DeleteAccount = (props: DeleteAccountProps) => {
 	const t = useTranslations('ProfilePage')
 
 	const [confirmEmail, setConfirmEmail] = useState<string>('')
 	const [loading, setLoading] = useState<boolean>(false)
 
-	const handleDeleteAccount = async (e: React.FormEvent<HTMLFormElement>) => {
+	const handleDeleteAccount: FormSubmitHandler = async (e) => {
 		e.preventDefault()
 		if (confirmEmail !== props.email) {
 			toast.error(t('email-unmatched'))

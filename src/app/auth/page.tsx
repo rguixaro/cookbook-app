@@ -3,7 +3,7 @@ import { getTranslations } from 'next-intl/server'
 import type { LucideIcon } from 'lucide-react'
 import { BookMarked, FolderHeart, Search, Share2 } from 'lucide-react'
 
-import { LoginIcon, SocialLogin } from '@/components/auth'
+import { CredentialsLogin, LoginIcon } from '@/components/auth'
 
 import { cn } from '@/utils'
 
@@ -66,20 +66,20 @@ export default async function LoginPage() {
 				))}
 			</div>
 			<div className='mt-8 grid w-full max-w-sm gap-5 px-4 pb-8 duration-500 animate-in fade-in-30 slide-in-from-bottom-2 lg:hidden'>
-				{loginFeatures.slice(2).map((feature, index) => (
+				{loginFeatures.slice(0, 2).map((feature, index) => (
 					<MobileFeatureNote
 						feature={feature}
-						index={index + 2}
+						index={index}
 						key={feature.title}
 						t={t}
 					/>
 				))}
 			</div>
-			<div className='border-8 border-forest-150 rounded-[20px] shadow-center-sm'>
+			<div className='w-full max-w-sm overflow-hidden rounded-[20px] border-8 border-forest-150 bg-forest-150 shadow-center-sm'>
 				<div className='bg-forest-150'>
 					<div
 						className={cn(
-							'w-full max-w-sm overflow-hidden bg-forest-50 rounded-xl ',
+							'w-full overflow-hidden bg-forest-50 rounded-xl ',
 							'duration-300 animate-in fade-in-15 slide-in-from-bottom-3',
 						)}>
 						<div className='p-4 text-center text-forest-300'>
@@ -87,7 +87,7 @@ export default async function LoginPage() {
 								<LoginIcon />
 								<div className='pt-5 text-2xl font-medium duration-500 animate-in fade-in-20 md:text-3xl'>
 									{t('login-to')}
-									<p className='font-title text-3xl font-bold md:text-4xl'>
+									<p className='font-title pt-2 text-3xl font-bold md:text-4xl leading-8'>
 										{t('login-name')}
 									</p>
 								</div>
@@ -96,8 +96,8 @@ export default async function LoginPage() {
 					</div>
 				</div>
 				<div className='w-full h-2 bg-forest-150' />
-				<div className='bg-forest-150'>
-					<SocialLogin />
+				<div className='bg-forest-150 p-4'>
+					<CredentialsLogin />
 				</div>
 			</div>
 			<div className='mt-8 grid w-full max-w-sm gap-5 px-4 pb-8 duration-500 animate-in fade-in-30 slide-in-from-bottom-2 lg:hidden'>

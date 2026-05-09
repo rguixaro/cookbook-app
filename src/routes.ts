@@ -2,7 +2,12 @@
  * Routes used for authentication.
  * Auth not required.
  */
-export const AUTH_ROUTES: string[] = ['/auth', '/auth/error']
+export const AUTH_ROUTES: string[] = [
+	'/auth',
+	'/auth/error',
+	'/auth/forgot-password',
+	'/auth/reset-password',
+]
 
 /**
  * Routes that require authentication.
