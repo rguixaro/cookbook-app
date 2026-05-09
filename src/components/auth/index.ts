@@ -1,2 +1,4 @@
 export * from './icon'
-export * from './social-login'
+export * from './credentials-login'
+export * from './forgot-password-form'
+export * from './reset-password-form'

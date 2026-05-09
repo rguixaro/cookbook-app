@@ -6,6 +6,7 @@ import * as Sentry from '@sentry/nextjs'
 import { auth, signOut, unstable_update } from '@/auth'
 import { db } from '@/server/db'
 import { UpdateProfileSchema } from '@/server/schemas'
+import { sendAccountDeletedEmail } from '@/lib/email'
 import { deleteRecipeImages } from '@/lib/s3'
 
 /**
@@ -53,6 +54,12 @@ export const deleteProfile = async (): Promise<null | true> => {
 	if (!currentUser) return null
 
 	try {
+		const user = await db.user.findUnique({
+			where: { id: currentUser.user.id },
+			select: { email: true, name: true },
+		})
+		if (!user) return null
+
 		const recipes = await db.recipe.findMany({
 			where: { authorId: currentUser.user.id },
 			select: { id: true, images: true },
@@ -107,6 +114,15 @@ export const deleteProfile = async (): Promise<null | true> => {
 		}
 
 		await db.user.delete({ where: { id: currentUser.user.id } })
+		await sendAccountDeletedEmail({
+			recipientEmail: user.email,
+			recipientName: user.name || user.email,
+		}).catch((error) =>
+			Sentry.captureException(error, {
+				level: 'warning',
+				tags: { action: 'deleteProfile', step: 'account-deleted-email' },
+			}),
+		)
 		await signOut()
 		return true
 	} catch (error) {

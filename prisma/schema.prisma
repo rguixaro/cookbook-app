@@ -45,7 +45,7 @@ type RecipeComplement {
 }
 
 model Recipe {
-  id           String     @id @default(auto()) @map("_id") @db.ObjectId
+  id           String             @id @default(auto()) @map("_id") @db.ObjectId
   slug         String
   name         String
   time         Int?
@@ -54,12 +54,12 @@ model Recipe {
   complements  RecipeComplement[]
   images       String[]
   sourceUrls   String[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  createdAt    DateTime           @default(now())
+  updatedAt    DateTime           @updatedAt
   course       Course
-  categories   Category[] @default([])
-  author       User?      @relation(references: [id], fields: [authorId], onDelete: Cascade)
-  authorId     String     @db.ObjectId
+  categories   Category[]         @default([])
+  author       User?              @relation(references: [id], fields: [authorId], onDelete: Cascade)
+  authorId     String             @db.ObjectId
 
   @@unique([slug, authorId])
   @@index([authorId])
@@ -96,20 +96,67 @@ model Session {
 }
 
 model User {
-  id               String    @id @default(auto()) @map("_id") @db.ObjectId
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  image            String?
-  name             String?
-  username         String    @unique
-  email            String    @unique
-  emailVerified    DateTime?
-  isPrivate        Boolean   @default(true)
-  savedRecipes     String[]
-  favouriteRecipes String[]
-  accounts         Account[]
-  sessions         Session[]
-  recipes          Recipe[]
+  id                      String                   @id @default(auto()) @map("_id") @db.ObjectId
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
+  image                   String?
+  name                    String?
+  username                String                   @unique
+  email                   String                   @unique
+  passwordHash            String?
+  passwordChangedAt       DateTime?
+  sessionVersion          Int                      @default(0)
+  emailVerified           DateTime?
+  isPrivate               Boolean                  @default(true)
+  savedRecipes            String[]
+  favouriteRecipes        String[]
+  accounts                Account[]
+  sessions                Session[]
+  recipes                 Recipe[]
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  emailChangeTokens       EmailChangeToken[]
 
   @@index([isPrivate])
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  tokenHash String    @unique
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model PasswordResetToken {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  tokenHash String    @unique
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model EmailChangeToken {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String    @db.ObjectId
+  newEmail  String
+  tokenHash String    @unique
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+  usedAt    DateTime?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([newEmail])
+  @@index([expiresAt])
 }
