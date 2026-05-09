@@ -416,7 +416,7 @@ describe('RecipesFeed', () => {
 		})
 	})
 
-	it('shows empty state when no recipes found', async () => {
+	it('prompts recipe creation when the dashboard has no recipes yet', async () => {
 		mockFetchRecipes.mockResolvedValue({
 			recipes: [],
 			nextCursor: null,
@@ -426,8 +426,9 @@ describe('RecipesFeed', () => {
 		renderWithProviders(<RecipesFeed />)
 
 		await waitFor(() => {
-			expect(screen.getByText('No recipes found')).toBeInTheDocument()
+			expect(screen.getByText('Create your first recipe')).toBeInTheDocument()
 		})
+		expect(screen.queryByText('No recipes found')).not.toBeInTheDocument()
 		expect(screen.getByRole('link', { name: 'New recipe' })).toHaveAttribute(
 			'href',
 			'/recipes/new',

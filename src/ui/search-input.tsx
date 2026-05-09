@@ -42,7 +42,11 @@ export function SearchInput({
 			)}
 		>
 			<input
-				type='text'
+				type='search'
+				autoComplete='off'
+				enterKeyHint='search'
+				inputMode='search'
+				name='search'
 				ref={inputRef}
 				maxLength={50}
 				placeholder={placeholder}
@@ -54,7 +58,6 @@ export function SearchInput({
 					'ps-10 pe-8 transition-all duration-500 focus:outline-none',
 					inputClassName,
 				)}
-				required
 			/>
 			<SearchButton
 				aria-label={placeholder}

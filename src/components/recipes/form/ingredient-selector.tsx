@@ -107,6 +107,10 @@ export const IngredientSelector = ({
 						values.length > 0 && 'my-3',
 					)}>
 					<input
+						type='text'
+						autoComplete='off'
+						enterKeyHint='done'
+						inputMode='text'
 						value={currIngredient}
 						aria-label={t('ingredients')}
 						className={cn(
