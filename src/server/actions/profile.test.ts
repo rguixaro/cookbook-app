@@ -11,6 +11,7 @@ vi.mock('@/server/db', () => ({
 	db: {
 		user: {
 			update: vi.fn(),
+			findUnique: vi.fn(),
 			findMany: vi.fn(),
 			delete: vi.fn(),
 		},
@@ -28,8 +29,13 @@ vi.mock('@/lib/s3', () => ({
 	deleteRecipeImages: vi.fn(),
 }))
 
+vi.mock('@/lib/email', () => ({
+	sendAccountDeletedEmail: vi.fn().mockResolvedValue(true),
+}))
+
 import { auth, signOut } from '@/auth'
 import { db } from '@/server/db'
+import { sendAccountDeletedEmail } from '@/lib/email'
 import { deleteRecipeImages } from '@/lib/s3'
 import { updateProfile, deleteProfile } from './profile'
 
@@ -88,6 +94,10 @@ describe('deleteProfile', () => {
 
 	it('deletes profile with no recipe images', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({
+			email: 'cook@example.com',
+			name: 'Cook',
+		} as any)
 		mockDb.recipe.findMany.mockResolvedValue([])
 		mockDb.user.findMany.mockResolvedValue([])
 		mockDb.user.delete.mockResolvedValue({} as any)
@@ -97,11 +107,19 @@ describe('deleteProfile', () => {
 		expect(mockDb.user.delete).toHaveBeenCalledWith({
 			where: { id: 'user-1' },
 		})
+		expect(sendAccountDeletedEmail).toHaveBeenCalledWith({
+			recipientEmail: 'cook@example.com',
+			recipientName: 'Cook',
+		})
 		expect(signOut).toHaveBeenCalled()
 	})
 
 	it('deletes profile and cleans up S3 images', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({
+			email: 'cook@example.com',
+			name: null,
+		} as any)
 		mockDb.recipe.findMany.mockResolvedValue([
 			{ id: 'recipe-1', images: ['img1.jpg'] },
 			{ id: 'recipe-2', images: ['img2.jpg', 'img3.jpg'] },
@@ -112,6 +130,10 @@ describe('deleteProfile', () => {
 
 		const result = await deleteProfile()
 		expect(result).toBe(true)
+		expect(sendAccountDeletedEmail).toHaveBeenCalledWith({
+			recipientEmail: 'cook@example.com',
+			recipientName: 'cook@example.com',
+		})
 		expect(deleteRecipeImages).toHaveBeenCalledWith([
 			'img1.jpg',
 			'img2.jpg',
@@ -121,11 +143,32 @@ describe('deleteProfile', () => {
 
 	it('returns null on database error', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({
+			email: 'cook@example.com',
+			name: 'Cook',
+		} as any)
 		mockDb.recipe.findMany.mockResolvedValue([])
 		mockDb.user.findMany.mockResolvedValue([])
 		mockDb.user.delete.mockRejectedValue(new Error('DB error'))
 
 		const result = await deleteProfile()
 		expect(result).toBeNull()
+	})
+
+	it('deletes profile when confirmation email fails', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({
+			email: 'cook@example.com',
+			name: 'Cook',
+		} as any)
+		mockDb.recipe.findMany.mockResolvedValue([])
+		mockDb.user.findMany.mockResolvedValue([])
+		mockDb.user.delete.mockResolvedValue({} as any)
+		vi.mocked(sendAccountDeletedEmail).mockRejectedValue(new Error('SES down'))
+
+		const result = await deleteProfile()
+
+		expect(result).toBe(true)
+		expect(signOut).toHaveBeenCalled()
 	})
 })

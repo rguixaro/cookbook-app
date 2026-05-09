@@ -86,6 +86,10 @@ export const SourceLinksInput = ({
 						values.length > 0 && 'my-3',
 					)}>
 					<input
+						type='url'
+						autoComplete='off'
+						enterKeyHint='done'
+						inputMode='url'
 						value={currUrl}
 						className={cn(
 							InputGlobalStyles,

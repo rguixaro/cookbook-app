@@ -275,7 +275,71 @@ export const UpdateProfileSchema = z.object({
 	isPrivate: z.boolean().optional(),
 })
 
+export const CredentialsSignInSchema = z.object({
+	email: z.string().trim().toLowerCase().email({ message: 'email-invalid' }),
+	password: z.string().min(1, { message: 'password-required' }),
+})
+
+export const CredentialsSignUpSchema = z
+	.object({
+		email: z.string().trim().toLowerCase().email({ message: 'email-invalid' }),
+		password: z
+			.string()
+			.min(8, { message: 'password-too-short' })
+			.max(128, { message: 'password-too-long' }),
+		confirmPassword: z.string().min(1, { message: 'password-required' }),
+		username: z
+			.string()
+			.trim()
+			.toLowerCase()
+			.min(3, { message: 'username-too-short' })
+			.max(30, { message: 'username-too-long' })
+			.regex(/^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/, {
+				message: 'username-invalid',
+			}),
+	})
+	.refine((data) => data.password === data.confirmPassword, {
+		message: 'passwords-do-not-match',
+		path: ['confirmPassword'],
+	})
+
+export const PasswordResetRequestSchema = z.object({
+	email: z.string().trim().toLowerCase().email({ message: 'email-invalid' }),
+})
+
+export const RequestEmailChangeSchema = z.object({
+	email: z.string().trim().toLowerCase().email({ message: 'email-invalid' }),
+	currentPassword: z.string().min(1, { message: 'password-required' }),
+})
+
+const PasswordPairSchema = z
+	.object({
+		password: z
+			.string()
+			.min(8, { message: 'password-too-short' })
+			.max(128, { message: 'password-too-long' }),
+		confirmPassword: z.string().min(1, { message: 'password-required' }),
+	})
+	.refine((data) => data.password === data.confirmPassword, {
+		message: 'passwords-do-not-match',
+		path: ['confirmPassword'],
+	})
+
+export const PasswordResetSchema = PasswordPairSchema.extend({
+	token: z.string().trim().min(32, { message: 'reset-token-invalid' }),
+})
+
+export const ChangePasswordSchema = PasswordPairSchema.extend({
+	currentPassword: z.string().min(1, { message: 'password-required' }),
+})
+
 export type UpdateProfileInput = z.TypeOf<typeof UpdateProfileSchema>
+export type CredentialsSignInInput = z.TypeOf<typeof CredentialsSignInSchema>
+export type CredentialsSignUpInput = z.TypeOf<typeof CredentialsSignUpSchema>
+export type PasswordResetRequestInput = z.TypeOf<typeof PasswordResetRequestSchema>
+export type PasswordResetInput = z.TypeOf<typeof PasswordResetSchema>
+export type RequestEmailChangeInput = z.TypeOf<typeof RequestEmailChangeSchema>
+export type ChangePasswordInput = z.TypeOf<typeof ChangePasswordSchema>
 
 export type RecipeSchema = z.TypeOf<typeof RecipeSchema>
 export type ProfileSchema = z.TypeOf<typeof ProfileSchema>

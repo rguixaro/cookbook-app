@@ -1,7 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import {
 	CreateRecipeSchema,
+	ChangePasswordSchema,
+	CredentialsSignUpSchema,
+	PasswordResetRequestSchema,
+	PasswordResetSchema,
 	RecipeCategories,
+	RequestEmailChangeSchema,
 	UpdateProfileSchema,
 	createEditRecipeSchema,
 	normalizeRecipeComplements,
@@ -447,5 +452,170 @@ describe('UpdateProfileSchema', () => {
 			isPrivate: true,
 		})
 		expect(result.success).toBe(true)
+	})
+})
+
+describe('CredentialsSignUpSchema', () => {
+	const validSignUp = {
+		email: 'Cook@Example.com',
+		password: 'password123456',
+		confirmPassword: 'password123456',
+		username: 'Chef-Ana',
+	}
+
+	it('normalizes email and username', () => {
+		const result = CredentialsSignUpSchema.safeParse(validSignUp)
+
+		expect(result.success).toBe(true)
+		if (!result.success) return
+		expect(result.data.email).toBe('cook@example.com')
+		expect(result.data.username).toBe('chef-ana')
+	})
+
+	it('rejects mismatched passwords', () => {
+		const result = CredentialsSignUpSchema.safeParse({
+			...validSignUp,
+			confirmPassword: 'password654321',
+		})
+
+		expect(result.success).toBe(false)
+	})
+
+	it('rejects usernames that are not URL safe', () => {
+		const result = CredentialsSignUpSchema.safeParse({
+			...validSignUp,
+			username: 'chef ana',
+		})
+
+		expect(result.success).toBe(false)
+	})
+})
+
+describe('PasswordResetRequestSchema', () => {
+	it('normalizes email addresses', () => {
+		const result = PasswordResetRequestSchema.safeParse({
+			email: 'Cook@Example.com',
+		})
+
+		expect(result.success).toBe(true)
+		if (!result.success) return
+		expect(result.data.email).toBe('cook@example.com')
+	})
+
+	it('rejects invalid email addresses', () => {
+		const result = PasswordResetRequestSchema.safeParse({ email: 'invalid' })
+
+		expect(result.success).toBe(false)
+	})
+})
+
+describe('RequestEmailChangeSchema', () => {
+	it('normalizes email addresses', () => {
+		const result = RequestEmailChangeSchema.safeParse({
+			email: 'New@Example.com',
+			currentPassword: 'current-password',
+		})
+
+		expect(result.success).toBe(true)
+		if (!result.success) return
+		expect(result.data.email).toBe('new@example.com')
+	})
+
+	it('rejects invalid email addresses and missing current password', () => {
+		expect(
+			RequestEmailChangeSchema.safeParse({
+				email: 'invalid',
+				currentPassword: 'current-password',
+			}).success,
+		).toBe(false)
+		expect(
+			RequestEmailChangeSchema.safeParse({
+				email: 'new@example.com',
+				currentPassword: '',
+			}).success,
+		).toBe(false)
+	})
+})
+
+describe('PasswordResetSchema', () => {
+	const validReset = {
+		token: 'a'.repeat(43),
+		password: 'password123456',
+		confirmPassword: 'password123456',
+	}
+
+	it('accepts a valid reset payload', () => {
+		const result = PasswordResetSchema.safeParse(validReset)
+
+		expect(result.success).toBe(true)
+	})
+
+	it('accepts an 8 character reset password', () => {
+		const result = PasswordResetSchema.safeParse({
+			...validReset,
+			password: 'abcd1234',
+			confirmPassword: 'abcd1234',
+		})
+
+		expect(result.success).toBe(true)
+	})
+
+	it('rejects mismatched passwords', () => {
+		const result = PasswordResetSchema.safeParse({
+			...validReset,
+			confirmPassword: 'password654321',
+		})
+
+		expect(result.success).toBe(false)
+	})
+
+	it('rejects short reset tokens', () => {
+		const result = PasswordResetSchema.safeParse({
+			...validReset,
+			token: 'short',
+		})
+
+		expect(result.success).toBe(false)
+	})
+})
+
+describe('ChangePasswordSchema', () => {
+	const validChange = {
+		currentPassword: 'current-password',
+		password: 'password123456',
+		confirmPassword: 'password123456',
+	}
+
+	it('accepts a valid password change payload', () => {
+		const result = ChangePasswordSchema.safeParse(validChange)
+		expect(result.success).toBe(true)
+	})
+
+	it('rejects missing current password', () => {
+		const result = ChangePasswordSchema.safeParse({
+			...validChange,
+			currentPassword: '',
+		})
+
+		expect(result.success).toBe(false)
+	})
+
+	it('rejects short new passwords', () => {
+		const result = ChangePasswordSchema.safeParse({
+			...validChange,
+			password: 'short',
+			confirmPassword: 'short',
+		})
+
+		expect(result.success).toBe(false)
+	})
+
+	it('rejects mismatched new passwords', () => {
+		const result = ChangePasswordSchema.safeParse({
+			...validChange,
+			confirmPassword: 'password654321',
+		})
+
+		expect(result.success).toBe(false)
 	})
 })

@@ -1,21 +1,34 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { auth } from '@/auth'
+import { GoBack } from '@/components/layout'
+import {
+	AccountVerificationBanner,
+	ExportAccount,
+	UpdateAccount,
+} from '@/components/profile'
+import { db } from '@/server/db'
 
 export const metadata: Metadata = {
 	title: 'My Profile - CookBook',
 }
-import { GoBack } from '@/components/layout'
-import { ExportAccount, UpdateAccount } from '@/components/profile'
-import { db } from '@/server/db'
 
 export default async function ProfilePage() {
 	const session = await auth()
 	if (!session) redirect('/auth')
+	const userId = session.user.id
+	if (!userId) redirect('/auth')
 
 	const user = await db.user.findUnique({
-		where: { id: session.user.id },
-		select: { username: true },
+		where: { id: userId },
+		select: {
+			username: true,
+			name: true,
+			email: true,
+			emailVerified: true,
+			isPrivate: true,
+			passwordHash: true,
+		},
 	})
 	if (!user) return null
 
@@ -25,11 +38,13 @@ export default async function ProfilePage() {
 				<GoBack />
 			</div>
 			<div className='w-10/12 sm:w-2/4 lg:w-2/6'>
+				{!user.emailVerified && <AccountVerificationBanner />}
 				<UpdateAccount
 					username={user.username}
-					name={session.user.name ?? ''}
-					email={session.user.email!}
-					isPrivate={session.user.isPrivate!}
+					name={user.name ?? ''}
+					email={user.email}
+					isPrivate={user.isPrivate}
+					isCredentialsAccount={Boolean(user.passwordHash)}
 				/>
 				<ExportAccount />
 			</div>

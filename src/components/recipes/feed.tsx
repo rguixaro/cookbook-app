@@ -260,7 +260,7 @@ export const RecipesFeed = ({
 							<div className='mt-10 flex min-h-32 flex-col items-center justify-center text-forest-200 text-center'>
 								<Utensils size={48} />
 								<TypographyH4 className='mt-2 mb-5'>
-									{t('no-recipes')}
+									{tRecipes('empty-create-prompt')}
 								</TypographyH4>
 								<AddRecipe className='rounded-xl px-8 py-2 shadow-center-sm' />
 							</div>
