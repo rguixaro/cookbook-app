@@ -11,9 +11,9 @@ manner.
 [Prisma](https://prisma.io) | [MongoDB](https://www.mongodb.com/) |
 [TypeScript](https://www.typescriptlang.org/) |
 [Tailwind CSS](https://tailwindcss.com) | [Radix UI](https://radix-ui.com) |
-[AWS S3](https://aws.amazon.com/s3/) &
-[CloudFront](https://aws.amazon.com/cloudfront/) | [Sentry](https://sentry.io) |
-[Lucide Icons](https://lucide.dev)
+[AWS S3](https://aws.amazon.com/s3/),
+[CloudFront](https://aws.amazon.com/cloudfront/) & [SES](https://aws.amazon.com/ses/)
+| [Sentry](https://sentry.io) | [Lucide Icons](https://lucide.dev)
 
 ## Features
 
@@ -27,8 +27,10 @@ manner.
   profiles
 - **Sharing**: share recipe links or download them as a styled PNG image
 - **Privacy controls**: toggle profile visibility to restrict access to your recipes
+- **Transactional emails**: automated system emails for account verification,
+  password resets, and security notifications
 - **i18n**: English, Spanish, and Catalan
-- **Auth**: Google OAuth via Auth.js
+- **Auth**: Google OAuth and email/password via Auth.js
 
 ## Getting Started
 
@@ -39,7 +41,7 @@ manner.
 
 - Node.js 20+
 - MongoDB instance
-- AWS account (S3, CloudFront, Secrets Manager)
+- AWS account (S3, CloudFront, SES, Secrets Manager)
 - Google OAuth 2.0 credentials
 
 ### Setup
@@ -81,11 +83,11 @@ Unit and component tests run automatically on every push and PR to `main`/`devel
 via [GitHub Actions](.github/workflows/test.yml).
 
 ```bash
-pnpm test              # unit & component tests (Vitest)
-pnpm test:coverage     # tests + coverage report (HTML in coverage/)
-pnpm test:watch        # watch mode
-pnpm test:e2e          # e2e tests
-pnpm test:e2e:ui       # e2e with interactive UI
+pnpm test
+pnpm test:coverage
+pnpm test:watch
+pnpm test:e2e
+pnpm test:e2e:ui
 ```
 
 ## License
