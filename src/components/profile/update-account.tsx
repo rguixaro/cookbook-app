@@ -4,12 +4,8 @@ import { useState } from 'react'
 import { signOut } from 'next-auth/react'
 import { useForm } from 'react-hook-form'
 import { useTranslations } from 'next-intl'
-import {
-	AlertTriangleIcon,
-	KeyRoundIcon,
-	LoaderIcon,
-	MailCheckIcon,
-} from 'lucide-react'
+import Link from 'next/link'
+import { KeyRoundIcon, LoaderIcon, MailCheckIcon } from 'lucide-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
 import type { z } from 'zod'
@@ -69,6 +65,7 @@ const passwordChangeErrorKey = {
 export const UpdateAccount = (props: UpdateAccountProps) => {
 	const t = useTranslations('ProfilePage')
 	const t_toasts = useTranslations('toasts')
+	const t_legal = useTranslations('LoginPage')
 
 	const { copy } = useCopyToClipboard()
 
@@ -290,7 +287,6 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 						</div>
 					</form>
 				</Form>
-
 				{props.isCredentialsAccount ? (
 					<div className='space-y-5 border-t-2 border-forest-150 pt-5'>
 						<Form {...emailForm}>
@@ -484,7 +480,6 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 							{t('email')}
 						</label>
 						<p className='flex items-center space-x-2 my-2 text-sm text-forest-300'>
-							<AlertTriangleIcon size={18} />
 							<span>{t('email-provider-managed-hint')}</span>
 						</p>
 						<Input
@@ -506,6 +501,19 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 						</Button>
 					}
 				/>
+				<div className='flex items-center justify-center space-x-2 text-center text-xs font-semibold leading-5 text-forest-200'>
+					<Link
+						className='text-forest-300 underline underline-offset-4'
+						href='/terms'>
+						{t_legal('terms')}
+					</Link>
+					<div className='bg-forest-200/40 h-0.5 w-1 rounded-2xl' />
+					<Link
+						className='text-forest-300 underline underline-offset-4'
+						href='/privacy'>
+						{t_legal('privacy')}
+					</Link>
+				</div>
 			</div>
 		</ProfileCard>
 	)
