@@ -1,7 +1,6 @@
-# <img src="public/images/logo.svg" alt="CookBook" height="28"> CookBook
+# <img src="public/images/logo.svg" alt="CookBook" height="64"> <img src="public/images/email-wordmark_dark.png" alt="CookBook" height="48">
 
-A web application to write down, organize, and share recipes in a simple and easy
-manner.
+An open-source web application to organize, manage, and share recipes.
 
 **[cookbook.rguixaro.dev](https://cookbook.rguixaro.dev)**
 
@@ -10,27 +9,36 @@ manner.
 [Next.js 16](https://nextjs.org) | [Auth.js v5](https://authjs.dev/) |
 [Prisma](https://prisma.io) | [MongoDB](https://www.mongodb.com/) |
 [TypeScript](https://www.typescriptlang.org/) |
-[Tailwind CSS](https://tailwindcss.com) | [Radix UI](https://radix-ui.com) |
-[AWS S3](https://aws.amazon.com/s3/),
-[CloudFront](https://aws.amazon.com/cloudfront/) & [SES](https://aws.amazon.com/ses/)
-| [Sentry](https://sentry.io) | [Lucide Icons](https://lucide.dev)
+[Tailwind CSS](https://tailwindcss.com) | [AWS S3](https://aws.amazon.com/s3/) |
+[AWS CloudFront](https://aws.amazon.com/cloudfront/) |
+[AWS SES](https://aws.amazon.com/ses/) | [Sentry](https://sentry.io)
 
 ## Features
 
 - **Recipe management**: create, edit, and delete recipes with ingredients,
   instructions, cooking time, categories, and source URLs
-- **Image gallery**: upload up to 3 images per recipe, stored on S3 and served via
+- **Media uploads**: upload up to 3 images per recipe, stored on S3 and served via
   CloudFront CDN
-- **Search & filter**: search recipes by name, filter by category (8 types) or
-  favourites
-- **Social**: favourite and save recipes from other users, browse public chef
-  profiles
+- **Multi-environment deployment**: isolated production and staging environments with
+  separate infrastructure and databases
 - **Sharing**: share recipe links or download them as a styled PNG image
-- **Privacy controls**: toggle profile visibility to restrict access to your recipes
+- **Authentication**: Google OAuth and email/password authentication via Auth.js
 - **Transactional emails**: automated system emails for account verification,
   password resets, and security notifications
+- **Social**: favourite and save recipes from other users, browse public user
+  profiles
+- **Search & filter**: search recipes by name, filter by category or favourites
+- **Privacy controls**: toggle profile visibility to restrict access to your recipes
 - **i18n**: English, Spanish, and Catalan
-- **Auth**: Google OAuth and email/password via Auth.js
+
+## Infrastructure
+
+- Production and staging deployments
+- AWS S3 + CloudFront for media storage and delivery
+- AWS SES for transactional emails
+- MongoDB database with Prisma ORM
+- Error monitoring with Sentry
+- CI/CD pipelines with GitHub Actions
 
 ## Getting Started
 
@@ -79,8 +87,8 @@ manner.
 
 ## Testing
 
-Unit and component tests run automatically on every push and PR to `main`/`develop`
-via [GitHub Actions](.github/workflows/test.yml).
+Unit and component tests run automatically on every push and PR to `main`/`stage` via
+[GitHub Actions](.github/workflows/test.yml).
 
 ```bash
 pnpm test

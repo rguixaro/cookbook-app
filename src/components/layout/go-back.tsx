@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useTranslations } from 'next-intl'
 
 import { cn } from '@/utils'
@@ -11,13 +12,17 @@ interface GoBackProps {
 	children?: React.ReactNode
 }
 
-export const GoBack = ({ to = '/', text = 'return', children }: GoBackProps) => {
+export const GoBack = ({ to, text = 'return', children }: GoBackProps) => {
 	const t = useTranslations('common')
+	const searchParams = useSearchParams()
+
+	const from = searchParams.get('from')
+	const resolvedTo = to ?? (from === 'profile' ? '/profile' : '/')
 
 	return (
 		<div className='w-full flex justify-between items-center'>
 			<Link
-				href={to}
+				href={resolvedTo}
 				className={cn(
 					'flex w-fit p-2 px-3 rounded-xl items-center text-forest-200 font-bold text-sm md:text-base',
 					'transition-all duration-300 hover:bg-forest-150 group bg-forest-100',
