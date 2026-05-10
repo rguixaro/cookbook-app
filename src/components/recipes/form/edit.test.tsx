@@ -15,6 +15,10 @@ const routerMocks = vi.hoisted(() => ({
 
 vi.mock('next/navigation', () => ({
 	useRouter: () => routerMocks,
+	useSearchParams: () =>
+		new URLSearchParams({
+			from: 'profile',
+		}),
 }))
 
 vi.mock('@/server/actions', () => ({
