@@ -2,9 +2,9 @@ name: Tests
 
 on:
     pull_request:
-        branches: [main, develop]
+        branches: [main, stage]
     push:
-        branches: [main, develop]
+        branches: [main, stage]
 
 jobs:
     unit-and-component:
