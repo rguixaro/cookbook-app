@@ -23,6 +23,10 @@ export async function uploadRecipeImage(
 	file: File,
 	recipeId: string,
 ): Promise<string> {
+	if (!env.MEDIA_MANAGEMENT_ENABLED) {
+		throw new Error('Media management is disabled')
+	}
+
 	const MAX_SIZE = 50 * 1024 * 1024
 	if (file.size > MAX_SIZE) throw new Error('File too large (max 50 MB)')
 
@@ -58,6 +62,7 @@ export async function uploadRecipeImage(
  * Delete recipe images from S3.
  */
 export async function deleteRecipeImages(fileKeys: string[]): Promise<void> {
+	if (!env.MEDIA_MANAGEMENT_ENABLED) return
 	if (!fileKeys.length) return
 
 	await s3.send(

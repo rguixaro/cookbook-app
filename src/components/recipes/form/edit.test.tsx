@@ -13,6 +13,10 @@ const routerMocks = vi.hoisted(() => ({
 	refresh: vi.fn(),
 }))
 
+const mediaConfigMocks = vi.hoisted(() => ({
+	isMediaManagementEnabled: vi.fn(() => true),
+}))
+
 vi.mock('next/navigation', () => ({
 	useRouter: () => routerMocks,
 	useSearchParams: () =>
@@ -20,6 +24,8 @@ vi.mock('next/navigation', () => ({
 			from: 'profile',
 		}),
 }))
+
+vi.mock('@/config/media', () => mediaConfigMocks)
 
 vi.mock('@/server/actions', () => ({
 	updateRecipe: vi.fn(),
@@ -63,6 +69,7 @@ const recipe: Recipe = {
 
 beforeEach(() => {
 	vi.clearAllMocks()
+	mediaConfigMocks.isMediaManagementEnabled.mockReturnValue(true)
 })
 
 function renderEditRecipe(overrides: Partial<Recipe> = {}) {
@@ -139,6 +146,29 @@ describe('EditRecipe delete flow', () => {
 			await screen.findByText('Use 35 characters or fewer'),
 		).toBeInTheDocument()
 		expect(screen.queryByText('error.undefined')).not.toBeInTheDocument()
+	})
+
+	it('renders existing images read-only when media management is disabled', () => {
+		mediaConfigMocks.isMediaManagementEnabled.mockReturnValue(false)
+
+		const { container } = renderEditRecipe({
+			images: ['https://cdn.example.com/images/paella.jpg'],
+		})
+
+		expect(screen.getByAltText('Recipe image')).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: 'Set as cover image' }),
+		).toBeInTheDocument()
+		expect(
+			screen.queryByRole('button', { name: 'Remove image' }),
+		).not.toBeInTheDocument()
+		expect(container.querySelector('input[type="file"]')).toBeNull()
+
+		const uploadSlots = screen.getAllByRole('button', {
+			name: 'Add recipe image',
+		})
+		expect(uploadSlots).toHaveLength(2)
+		uploadSlots.forEach((slot) => expect(slot).toBeDisabled())
 	})
 
 	it('submits when unchanged legacy overlong ingredients are present', async () => {

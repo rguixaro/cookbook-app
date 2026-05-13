@@ -30,6 +30,12 @@ vi.mock('next/cache', () => ({
 	revalidatePath: vi.fn(),
 }))
 
+vi.mock('@/env.mjs', () => ({
+	env: {
+		MEDIA_MANAGEMENT_ENABLED: true,
+	},
+}))
+
 vi.mock('@/lib/s3', () => ({
 	deleteRecipeImages: vi.fn(),
 	uploadRecipeImage: vi.fn(),
@@ -42,6 +48,7 @@ vi.mock('@/server/queries', () => ({
 }))
 
 import { auth } from '@/auth'
+import { env } from '@/env.mjs'
 import { db } from '@/server/db'
 import { revalidatePath } from 'next/cache'
 import {
@@ -58,6 +65,7 @@ import {
 const mockAuth = vi.mocked(auth)
 const mockDb = vi.mocked(db, true)
 const mockRevalidatePath = vi.mocked(revalidatePath)
+const mockEnv = env as { MEDIA_MANAGEMENT_ENABLED: boolean }
 
 const mockSession = { user: { id: 'user-1' } }
 
@@ -73,6 +81,7 @@ const validRecipeInput = {
 
 beforeEach(() => {
 	vi.clearAllMocks()
+	mockEnv.MEDIA_MANAGEMENT_ENABLED = true
 	mockDb.recipe.count.mockResolvedValue(1)
 })
 
@@ -131,9 +140,7 @@ describe('fetchRecipes', () => {
 	it('returns recipes for public user', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.user.findUnique.mockResolvedValue({ isPrivate: false } as any)
-		mockDb.recipe.findMany.mockResolvedValue([
-			makeRecipe('r1', 'user-2'),
-		] as any)
+		mockDb.recipe.findMany.mockResolvedValue([makeRecipe('r1', 'user-2')] as any)
 
 		const result = await fetchRecipes({ userId: 'user-2' })
 		expect(result.recipes).toHaveLength(1)
@@ -756,6 +763,23 @@ describe('deleteRecipe', () => {
 		expect(deleteRecipeImages).toHaveBeenCalledWith(['img1.jpg', 'img2.jpg'])
 	})
 
+	it('deletes recipe without S3 cleanup when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: ['img1.jpg', 'img2.jpg'],
+		} as any)
+		mockDb.recipe.delete.mockResolvedValue({} as any)
+		mockDb.user.findMany.mockResolvedValue([])
+
+		const { deleteRecipeImages } = await import('@/lib/s3')
+
+		const result = await deleteRecipe('recipe-1')
+		expect(result).toEqual({ error: false })
+		expect(deleteRecipeImages).not.toHaveBeenCalled()
+		expect(mockDb.recipe.delete).toHaveBeenCalled()
+	})
+
 	it('cleans up dangling references in other users', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.recipe.findFirst.mockResolvedValue({ images: [] } as any)
@@ -799,6 +823,24 @@ describe('uploadRecipeImages', () => {
 			makeFormData(makeFile('a.jpg')),
 		)
 		expect(result).toEqual({ error: true })
+	})
+
+	it('returns disabled error when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+
+		const { uploadRecipeImage } = await import('@/lib/s3')
+
+		const result = await uploadRecipeImages(
+			'recipe-1',
+			makeFormData(makeFile('a.jpg')),
+		)
+		expect(result).toEqual({
+			error: true,
+			message: 'error-media-management-disabled',
+		})
+		expect(uploadRecipeImage).not.toHaveBeenCalled()
+		expect(mockDb.recipe.findFirst).not.toHaveBeenCalled()
 	})
 
 	it('returns error when recipe not found or not owned', async () => {
@@ -930,15 +972,67 @@ describe('updateRecipeImages', () => {
 		} as any)
 		mockDb.recipe.update.mockResolvedValue({} as any)
 
-		const result = await updateRecipeImages('recipe-1', [
-			'img2.jpg',
-			'img1.jpg',
-		])
+		const result = await updateRecipeImages('recipe-1', ['img2.jpg', 'img1.jpg'])
 		expect(result).toEqual({ error: false })
 		expect(mockDb.recipe.update).toHaveBeenCalledWith({
 			where: { id: 'recipe-1', authorId: 'user-1' },
 			data: { images: ['img2.jpg', 'img1.jpg'] },
 		})
+	})
+
+	it('reorders images when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: ['img1.jpg', 'img2.jpg'],
+		} as any)
+		mockDb.recipe.update.mockResolvedValue({} as any)
+
+		const result = await updateRecipeImages('recipe-1', ['img2.jpg', 'img1.jpg'])
+		expect(result).toEqual({ error: false })
+		expect(mockDb.recipe.update).toHaveBeenCalledWith({
+			where: { id: 'recipe-1', authorId: 'user-1' },
+			data: { images: ['img2.jpg', 'img1.jpg'] },
+		})
+	})
+
+	it('rejects image removal when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: ['img1.jpg', 'img2.jpg', 'img3.jpg'],
+		} as any)
+
+		const { deleteRecipeImages } = await import('@/lib/s3')
+
+		const result = await updateRecipeImages('recipe-1', ['img1.jpg'])
+		expect(result).toEqual({
+			error: true,
+			message: 'error-media-management-disabled',
+		})
+		expect(deleteRecipeImages).not.toHaveBeenCalled()
+		expect(mockDb.recipe.update).not.toHaveBeenCalled()
+	})
+
+	it('rejects image replacement when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: ['img1.jpg', 'img2.jpg'],
+		} as any)
+
+		const { deleteRecipeImages } = await import('@/lib/s3')
+
+		const result = await updateRecipeImages('recipe-1', [
+			'img1.jpg',
+			'foreign-key.jpg',
+		])
+		expect(result).toEqual({
+			error: true,
+			message: 'error-media-management-disabled',
+		})
+		expect(deleteRecipeImages).not.toHaveBeenCalled()
+		expect(mockDb.recipe.update).not.toHaveBeenCalled()
 	})
 
 	it('deletes removed images from S3', async () => {

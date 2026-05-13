@@ -15,6 +15,7 @@ export const env = createEnv({
 		NODE_ENV: z
 			.enum(['development', 'test', 'production'])
 			.default('development'),
+		MEDIA_MANAGEMENT_ENABLED: booleanString,
 		EMAILS_ENABLED: booleanString,
 		AUTH_SECRET: z.string().min(32),
 		GOOGLE_ID: z.string(),
@@ -31,12 +32,14 @@ export const env = createEnv({
 	},
 	client: {
 		NEXT_PUBLIC_SITE_URL: z.string().url(),
+		NEXT_PUBLIC_MEDIA_MANAGEMENT_ENABLED: booleanString,
 		NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN: z.string().url(),
 		NEXT_PUBLIC_SENTRY_DSN: z.string().url().optional(),
 	},
 	runtimeEnv: {
 		DATABASE_URL: process.env.DATABASE_URL,
 		NODE_ENV: process.env.NODE_ENV,
+		MEDIA_MANAGEMENT_ENABLED: process.env.MEDIA_MANAGEMENT_ENABLED,
 		EMAILS_ENABLED: process.env.EMAILS_ENABLED,
 		AUTH_SECRET: process.env.AUTH_SECRET,
 		GOOGLE_ID: process.env.GOOGLE_CLIENT_ID,
@@ -52,6 +55,8 @@ export const env = createEnv({
 		SENTRY_ORG: process.env.SENTRY_ORG,
 		SENTRY_PROJECT: process.env.SENTRY_PROJECT,
 		NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
+		NEXT_PUBLIC_MEDIA_MANAGEMENT_ENABLED:
+			process.env.NEXT_PUBLIC_MEDIA_MANAGEMENT_ENABLED,
 		NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN:
 			process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN,
 		NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
@@ -72,6 +77,12 @@ if (!process.env.SKIP_ENV_VALIDATION) {
 	if (env.EMAILS_ENABLED && missingEmailVars.length > 0) {
 		throw new Error(
 			`Email support is enabled, but these environment variables are missing: ${missingEmailVars.join(', ')}`,
+		)
+	}
+
+	if (env.NEXT_PUBLIC_MEDIA_MANAGEMENT_ENABLED && !env.MEDIA_MANAGEMENT_ENABLED) {
+		throw new Error(
+			'NEXT_PUBLIC_MEDIA_MANAGEMENT_ENABLED cannot be true when MEDIA_MANAGEMENT_ENABLED is false',
 		)
 	}
 }

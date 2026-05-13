@@ -102,6 +102,7 @@ interface RecipeImageInputProps {
 	coverIndex: number
 	onCoverChange: (index: number) => void
 	disabled?: boolean
+	mediaManagementEnabled?: boolean
 }
 
 /**
@@ -123,6 +124,7 @@ export function RecipeImageInput({
 	coverIndex,
 	onCoverChange,
 	disabled,
+	mediaManagementEnabled = true,
 }: RecipeImageInputProps) {
 	const t = useTranslations('toasts')
 	const inputRef = useRef<HTMLInputElement>(null)
@@ -174,13 +176,13 @@ export function RecipeImageInput({
 	}
 
 	const triggerUpload = (slot: number) => {
-		if (disabled) return
+		if (disabled || !mediaManagementEnabled) return
 		targetSlot.current = slot
 		inputRef.current?.click()
 	}
 
 	const removeImage = (index: number) => {
-		if (disabled) return
+		if (disabled || !mediaManagementEnabled) return
 		const nextImages = images.filter((_, i) => i !== index)
 		const nextFiles = files.filter((_, i) => i !== index)
 		onChange(nextImages)
@@ -196,13 +198,15 @@ export function RecipeImageInput({
 
 	return (
 		<div className='w-full'>
-			<input
-				ref={inputRef}
-				type='file'
-				accept='image/*'
-				className='hidden'
-				onChange={handleFileSelect}
-			/>
+			{mediaManagementEnabled && (
+				<input
+					ref={inputRef}
+					type='file'
+					accept='image/*'
+					className='hidden'
+					onChange={handleFileSelect}
+				/>
+			)}
 			<div className='flex flex-col gap-4'>
 				{filled(0) ? (
 					<FilledSlot
@@ -212,12 +216,13 @@ export function RecipeImageInput({
 						onCover={() => onCoverChange(0)}
 						onRemove={() => removeImage(0)}
 						disabled={disabled}
+						canRemove={mediaManagementEnabled}
 					/>
 				) : (
 					<EmptySlot
 						aspect='aspect-4/3'
 						onClick={() => triggerUpload(0)}
-						disabled={disabled}
+						disabled={disabled || !mediaManagementEnabled}
 					/>
 				)}
 				<div className='grid grid-cols-2 gap-4'>
@@ -231,13 +236,14 @@ export function RecipeImageInput({
 								onCover={() => onCoverChange(slot)}
 								onRemove={() => removeImage(slot)}
 								disabled={disabled}
+								canRemove={mediaManagementEnabled}
 							/>
 						) : (
 							<EmptySlot
 								key={slot}
 								aspect='aspect-square'
 								onClick={() => triggerUpload(slot)}
-								disabled={disabled}
+								disabled={disabled || !mediaManagementEnabled}
 							/>
 						),
 					)}
@@ -254,6 +260,7 @@ function FilledSlot({
 	onCover,
 	onRemove,
 	disabled,
+	canRemove,
 }: {
 	src: string
 	aspect: string
@@ -261,6 +268,7 @@ function FilledSlot({
 	onCover: () => void
 	onRemove: () => void
 	disabled?: boolean
+	canRemove: boolean
 }) {
 	return (
 		<div className={cn('relative w-full overflow-hidden rounded-xl', aspect)}>
@@ -276,16 +284,20 @@ function FilledSlot({
 				<>
 					<button
 						type='button'
+						aria-label='Set as cover image'
 						onClick={onCover}
 						className='absolute top-2 left-2 p-1 rounded-lg transition-colors duration-200 bg-forest-200 hover:bg-forest-300 text-white'>
 						<Star size={14} className={isCover ? 'fill-white' : ''} />
 					</button>
-					<button
-						type='button'
-						onClick={onRemove}
-						className='absolute top-2 right-2 bg-forest-200 hover:bg-forest-300 text-white p-1 rounded-lg transition-colors duration-200'>
-						<X size={14} />
-					</button>
+					{canRemove && (
+						<button
+							type='button'
+							aria-label='Remove image'
+							onClick={onRemove}
+							className='absolute top-2 right-2 bg-forest-200 hover:bg-forest-300 text-white p-1 rounded-lg transition-colors duration-200'>
+							<X size={14} />
+						</button>
+					)}
 				</>
 			)}
 		</div>
@@ -304,6 +316,7 @@ function EmptySlot({
 	return (
 		<button
 			type='button'
+			aria-label='Add recipe image'
 			onClick={onClick}
 			disabled={disabled}
 			className={cn(
