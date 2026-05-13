@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
+import { env } from '@/env.mjs'
 import { db } from '@/server/db'
 import {
 	CreateRecipeSchema,
@@ -20,6 +21,7 @@ import { formatLongSentence, slugify } from '@/server/utils'
 import { toImageUrls } from '@/server/queries'
 
 const PAGE_SIZE = 10
+const MEDIA_MANAGEMENT_DISABLED_MESSAGE = 'error-media-management-disabled'
 
 const getRecipePath = (username?: string | null, slug?: string | null) =>
 	username && slug ? `/recipes/${username}/${slug}` : null
@@ -543,7 +545,7 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 		const recipePath = getRecipePath(username, recipe.slug)
 		const profilePath = username ? `/profiles/${username}` : null
 
-		if (recipe.images.length > 0) {
+		if (env.MEDIA_MANAGEMENT_ENABLED && recipe.images.length > 0) {
 			const { deleteRecipeImages } = await import('@/lib/s3')
 			await deleteRecipeImages(recipe.images).catch((error) =>
 				Sentry.captureException(error, {
@@ -610,9 +612,13 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 export const uploadRecipeImages = async (
 	recipeId: string,
 	formData: FormData,
-): Promise<{ error: boolean; images?: string[] }> => {
+): Promise<{ error: boolean; images?: string[]; message?: string }> => {
 	const currentUser = await auth()
 	if (!currentUser) return { error: true }
+
+	if (!env.MEDIA_MANAGEMENT_ENABLED) {
+		return { error: true, message: MEDIA_MANAGEMENT_DISABLED_MESSAGE }
+	}
 
 	try {
 		const recipe = await db.recipe.findFirst({
@@ -716,7 +722,7 @@ export const uploadRecipeImages = async (
 export const updateRecipeImages = async (
 	recipeId: string,
 	images: string[],
-): Promise<{ error: boolean }> => {
+): Promise<{ error: boolean; message?: string }> => {
 	const currentUser = await auth()
 	if (!currentUser) return { error: true }
 
@@ -740,6 +746,17 @@ export const updateRecipeImages = async (
 		}
 
 		const invalidKeys = images.filter((key) => !recipe.images.includes(key))
+		const removedKeys = recipe.images.filter((key) => !images.includes(key))
+
+		if (
+			!env.MEDIA_MANAGEMENT_ENABLED &&
+			(images.length !== recipe.images.length ||
+				invalidKeys.length > 0 ||
+				removedKeys.length > 0)
+		) {
+			return { error: true, message: MEDIA_MANAGEMENT_DISABLED_MESSAGE }
+		}
+
 		if (invalidKeys.length > 0) {
 			Sentry.captureMessage('updateRecipeImages: invalid keys provided', {
 				level: 'warning',
@@ -749,7 +766,6 @@ export const updateRecipeImages = async (
 			return { error: true }
 		}
 
-		const removedKeys = recipe.images.filter((key) => !images.includes(key))
 		if (removedKeys.length > 0) {
 			const { deleteRecipeImages } = await import('@/lib/s3')
 			await deleteRecipeImages(removedKeys).catch((error) =>

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import * as Sentry from '@sentry/nextjs'
 
 import { auth, signOut, unstable_update } from '@/auth'
+import { env } from '@/env.mjs'
 import { db } from '@/server/db'
 import { UpdateProfileSchema } from '@/server/schemas'
 import { sendAccountDeletedEmail } from '@/lib/email'
@@ -67,7 +68,7 @@ export const deleteProfile = async (): Promise<null | true> => {
 		const recipeIds = recipes.map((r) => r.id)
 		const allImageKeys = recipes.flatMap((r) => r.images)
 
-		if (allImageKeys.length > 0) {
+		if (env.MEDIA_MANAGEMENT_ENABLED && allImageKeys.length > 0) {
 			await deleteRecipeImages(allImageKeys).catch((error) =>
 				Sentry.captureException(error, {
 					level: 'warning',

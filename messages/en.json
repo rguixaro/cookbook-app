@@ -24,7 +24,8 @@
 		"error-recipe-exists": "A recipe with this name already exists",
 		"profile-updated": "Profile updated successfully",
 		"error-recipe-name-invalid": "Recipe name must contain letters, numbers, or emojis",
-		"error-file-too-large": "File is too large. Maximum size is 50 MB"
+		"error-file-too-large": "File is too large. Maximum size is 50 MB",
+		"error-media-management-disabled": "Media management is disabled in this environment"
 	},
 	"errors": {
 		"recipe-name-too-short": "Name is too short",

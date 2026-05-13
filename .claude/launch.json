@@ -1,0 +1,15 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dev",
+      "runtimeExecutable": "/opt/homebrew/opt/node@24/bin/npx",
+      "runtimeArgs": ["next", "dev", "--turbopack"],
+      "port": 3000,
+      "autoPort": true,
+      "env": {
+        "PATH": "/opt/homebrew/opt/node@24/bin:/usr/local/bin:/usr/bin:/bin"
+      }
+    }
+  ]
+}

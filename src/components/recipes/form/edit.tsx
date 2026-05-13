@@ -62,6 +62,7 @@ import {
 	Input,
 	Textarea,
 } from '@/ui'
+import { isMediaManagementEnabled } from '@/config/media'
 import { Recipe } from '@/types'
 import { cn } from '@/utils'
 
@@ -88,6 +89,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 	const t = useTranslations('RecipesPage')
 	const t_toasts = useTranslations('toasts')
 	const router = useRouter()
+	const mediaManagementEnabled = isMediaManagementEnabled()
 
 	const [loading, setLoading] = useState<boolean>(false)
 	const [deleting, setDeleting] = useState<boolean>(false)
@@ -192,7 +194,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 				newFiles.forEach(({ file }) => formData.append('images', file))
 				const result = await uploadRecipeImages(props.recipe.id, formData)
 				if (result.error) {
-					toast.error(t_toasts('error'))
+					toast.error(t_toasts(result.message || 'error'))
 					return
 				}
 				uploadedKeys = result.images?.slice(-newFiles.length) ?? []
@@ -211,7 +213,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 
 			const imgResult = await updateRecipeImages(props.recipe.id, finalKeys)
 			if (imgResult.error) {
-				toast.error(t_toasts('error'))
+				toast.error(t_toasts(imgResult.message || 'error'))
 				return
 			}
 
@@ -376,6 +378,7 @@ export const EditRecipe = (props: EditRecipeProps) => {
 									coverIndex={coverIndex}
 									onCoverChange={setCoverIndex}
 									disabled={loading || deleting}
+									mediaManagementEnabled={mediaManagementEnabled}
 								/>
 							</div>
 							<FormField

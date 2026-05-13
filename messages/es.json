@@ -24,7 +24,8 @@
 		"error-recipe-exists": "Ya existe una receta con este nombre",
 		"profile-updated": "Perfil actualizado con éxito",
 		"error-recipe-name-invalid": "El nombre de la receta debe contener letras, números o emojis",
-		"error-file-too-large": "El archivo es demasiado grande. El tamaño máximo es 50 MB"
+		"error-file-too-large": "El archivo es demasiado grande. El tamaño máximo es 50 MB",
+		"error-media-management-disabled": "La gestión de multimedia está desactivada en este entorno"
 	},
 	"errors": {
 		"recipe-name-too-short": "El nombre es demasiado corto",

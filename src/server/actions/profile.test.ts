@@ -25,6 +25,12 @@ vi.mock('next/cache', () => ({
 	revalidatePath: vi.fn(),
 }))
 
+vi.mock('@/env.mjs', () => ({
+	env: {
+		MEDIA_MANAGEMENT_ENABLED: true,
+	},
+}))
+
 vi.mock('@/lib/s3', () => ({
 	deleteRecipeImages: vi.fn(),
 }))
@@ -34,6 +40,7 @@ vi.mock('@/lib/email', () => ({
 }))
 
 import { auth, signOut } from '@/auth'
+import { env } from '@/env.mjs'
 import { db } from '@/server/db'
 import { sendAccountDeletedEmail } from '@/lib/email'
 import { deleteRecipeImages } from '@/lib/s3'
@@ -41,11 +48,13 @@ import { updateProfile, deleteProfile } from './profile'
 
 const mockAuth = vi.mocked(auth)
 const mockDb = vi.mocked(db, true)
+const mockEnv = env as { MEDIA_MANAGEMENT_ENABLED: boolean }
 
 const mockSession = { user: { id: 'user-1' } }
 
 beforeEach(() => {
 	vi.clearAllMocks()
+	mockEnv.MEDIA_MANAGEMENT_ENABLED = true
 })
 
 describe('updateProfile', () => {
@@ -139,6 +148,28 @@ describe('deleteProfile', () => {
 			'img2.jpg',
 			'img3.jpg',
 		])
+	})
+
+	it('deletes profile without S3 cleanup when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({
+			email: 'cook@example.com',
+			name: null,
+		} as any)
+		mockDb.recipe.findMany.mockResolvedValue([
+			{ id: 'recipe-1', images: ['img1.jpg'] },
+			{ id: 'recipe-2', images: ['img2.jpg', 'img3.jpg'] },
+		] as any)
+		mockDb.user.findMany.mockResolvedValue([])
+		mockDb.user.delete.mockResolvedValue({} as any)
+
+		const result = await deleteProfile()
+		expect(result).toBe(true)
+		expect(deleteRecipeImages).not.toHaveBeenCalled()
+		expect(mockDb.user.delete).toHaveBeenCalledWith({
+			where: { id: 'user-1' },
+		})
 	})
 
 	it('returns null on database error', async () => {
