@@ -88,6 +88,8 @@
 	},
 	"RecipesPage": {
 		"title": "Receptes",
+		"showcase-title": "Receptes suggerides",
+		"showcase-see-all": "Veure'n més",
 		"add": "Nova recepta",
 		"empty-create-prompt": "Crea la teva primera recepta",
 		"search": "Cerca",

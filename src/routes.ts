@@ -15,6 +15,7 @@ export const AUTH_ROUTES: string[] = [
  */
 export const PROTECTED_ROUTES: string[] = [
 	'/',
+	'/discover',
 	'/profile',
 	'/profiles',
 	'/recipes',
@@ -32,6 +33,12 @@ export const RECIPES_ROUTE_PREFIX: string = '/recipes/'
  * Auth required.
  */
 export const PROFILES_ROUTE_PREFIX: string = '/profiles/'
+
+/**
+ * Discover routes prefix.
+ * Auth required.
+ */
+export const DISCOVER_ROUTE_PREFIX: string = '/discover/'
 
 /**
  * API Authentication routes prefix.

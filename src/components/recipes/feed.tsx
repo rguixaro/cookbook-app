@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { useTranslations } from 'next-intl'
 import { AnimatePresence, motion } from 'motion/react'
 import { Loader, LoaderIcon, Utensils } from 'lucide-react'
@@ -20,21 +20,21 @@ import type { RecipeSchema } from '@/server/schemas'
 
 type RecipesFeedState = 'loading-empty' | 'results' | 'search-empty' | 'empty'
 
-const recipesFeedMotionProps = {
+export const recipesFeedMotionProps = {
 	initial: { opacity: 0, y: 12 },
 	animate: { opacity: 1, y: 0 },
 	exit: { opacity: 0, y: -12 },
 	transition: { type: 'spring', stiffness: 380, damping: 30 },
 } as const
 
-const recipesSkeletonMotionProps = {
+export const recipesSkeletonMotionProps = {
 	initial: false,
 	animate: { opacity: 1, y: 0 },
 	exit: { opacity: 0, y: 0 },
 	transition: { duration: 0 },
 } as const
 
-function RecipeSkeleton() {
+export function RecipeSkeleton() {
 	return (
 		<div className='w-full my-2 flex shadow-center-sm bg-forest-100 border-8 border-forest-150 rounded-2xl overflow-hidden animate-pulse'>
 			<div className='flex flex-col flex-1 min-w-0'>
@@ -66,6 +66,8 @@ export const RecipesFeed = ({
 	referred = false,
 	searchParamName = 'search',
 	profileSearchParam,
+	emptyStateFooter,
+	endOfFeedFooter,
 }: {
 	searchParam?: string
 	courseParam?: string
@@ -77,6 +79,8 @@ export const RecipesFeed = ({
 	referred?: boolean
 	searchParamName?: string
 	profileSearchParam?: string
+	emptyStateFooter?: ReactNode
+	endOfFeedFooter?: ReactNode
 }) => {
 	const t = useTranslations('common')
 	const tRecipes = useTranslations('RecipesPage')
@@ -85,6 +89,7 @@ export const RecipesFeed = ({
 	const [totalCount, setTotalCount] = useState(0)
 	const [isLoading, setIsLoading] = useState(true)
 	const fetchIdRef = useRef(0)
+	const isFetchingMoreRef = useRef(false)
 	const search = searchParam?.trim() ?? ''
 	const hasSearch = search.length > 0
 	const hasActiveListQuery =
@@ -99,34 +104,42 @@ export const RecipesFeed = ({
 
 	const loadPage = useCallback(
 		async (cursor?: string) => {
+			const isCursorPage = Boolean(cursor)
+			if (isCursorPage && isFetchingMoreRef.current) return
+			if (isCursorPage) isFetchingMoreRef.current = true
+
 			const id = ++fetchIdRef.current
-			if (!cursor) setIsLoading(true)
+			setIsLoading(true)
 
-			const result = await fetchRecipes({
-				cursor: cursor ?? undefined,
-				search: searchParam,
-				course: courseParam,
-				categories: categoriesParam,
-				favourites: favouritesParam,
-				saved: savedParam,
-				sort: sortParam,
-				userId,
-			})
+			try {
+				const result = await fetchRecipes({
+					cursor: cursor ?? undefined,
+					search: searchParam,
+					course: courseParam,
+					categories: categoriesParam,
+					favourites: favouritesParam,
+					saved: savedParam,
+					sort: sortParam,
+					userId,
+				})
 
-			if (fetchIdRef.current !== id) return
+				if (fetchIdRef.current !== id) return
 
-			setRecipes((prev) => {
-				const combined = cursor
-					? [...prev, ...result.recipes]
-					: result.recipes
-				const seen = new Set<string>()
-				return combined.filter((r) =>
-					seen.has(r.id) ? false : seen.add(r.id) && true,
-				)
-			})
-			setNextCursor(result.nextCursor)
-			setTotalCount(result.totalCount)
-			setIsLoading(false)
+				setRecipes((prev) => {
+					const combined = cursor
+						? [...prev, ...result.recipes]
+						: result.recipes
+					const seen = new Set<string>()
+					return combined.filter((r) =>
+						seen.has(r.id) ? false : seen.add(r.id) && true,
+					)
+				})
+				setNextCursor(result.nextCursor)
+				setTotalCount(result.totalCount)
+			} finally {
+				if (isCursorPage) isFetchingMoreRef.current = false
+				if (fetchIdRef.current === id) setIsLoading(false)
+			}
 		},
 		[
 			searchParam,
@@ -147,7 +160,7 @@ export const RecipesFeed = ({
 	}, [loadPage])
 
 	const loadMore = useCallback(() => {
-		if (!hasMore || isLoading) return
+		if (!hasMore || isLoading || isFetchingMoreRef.current) return
 		loadPage(nextCursor!)
 	}, [hasMore, isLoading, nextCursor, loadPage])
 
@@ -203,7 +216,7 @@ export const RecipesFeed = ({
 								? false
 								: recipesFeedMotionProps.initial
 						}
-						className='w-full flex flex-col items-center'>
+						className='w-full flex flex-col items-center pb-4'>
 						{recipes.map((recipe) => (
 							<ItemRecipe
 								key={recipe.id}
@@ -219,14 +232,15 @@ export const RecipesFeed = ({
 								sort={sortParam}
 							/>
 						))}
-						{isLoading && (
-							<div className='flex flex-col mt-3 justify-center items-center text-forest-200'>
-								<Loader size={18} className='animate-spin' />
-							</div>
-						)}
-						<div ref={sentinelRef} />
-					</motion.div>
-				)}
+							{isLoading && (
+								<div className='flex flex-col mt-3 justify-center items-center text-forest-200'>
+									<Loader size={18} className='animate-spin' />
+								</div>
+							)}
+							<div ref={sentinelRef} />
+							{!hasMore && !isLoading && endOfFeedFooter}
+						</motion.div>
+					)}
 				{feedState === 'search-empty' && (
 					<motion.div
 						key='recipes-search-empty'
@@ -265,6 +279,7 @@ export const RecipesFeed = ({
 								<AddRecipe className='rounded-xl px-8 py-2 shadow-center-sm' />
 							</div>
 						)}
+						{!referred && emptyStateFooter}
 					</motion.div>
 				)}
 			</AnimatePresence>
