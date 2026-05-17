@@ -67,6 +67,7 @@ export type ProfileImagesExportResult =
 
 const toExportId = (prefix: string, index: number) =>
 	`${prefix}_${String(index + 1).padStart(4, '0')}`
+const isExternalImageUrl = (value: string) => /^https?:\/\//i.test(value)
 
 function createIdMap<T>(
 	items: T[],
@@ -141,7 +142,11 @@ function createExportIds(user: ExportUser, recipes: ExportRecipe[]): ExportIds {
 	}
 
 	const imageKeys = Array.from(
-		new Set(recipes.flatMap((recipe) => recipe.images)),
+		new Set(
+			recipes.flatMap((recipe) =>
+				recipe.images.filter((image) => !isExternalImageUrl(image)),
+			),
+		),
 	)
 	const imageIds = new Map(
 		imageKeys.map((fileKey, index) => [fileKey, toExportId('image', index)]),
@@ -163,6 +168,11 @@ function createExportIds(user: ExportUser, recipes: ExportRecipe[]): ExportIds {
 		images: imageIds,
 		imageFiles,
 	}
+}
+
+function publicImageReference(image: string, ids: ExportIds) {
+	if (isExternalImageUrl(image)) return image
+	return mapRequired(ids.imageFiles, image)
 }
 
 function mergeRecipes(authored: ExportRecipe[], related: ExportRecipe[]) {
@@ -224,8 +234,14 @@ async function collectProfileExportContext(userId: string) {
 			? db.recipe.findMany({
 					where: {
 						id: { in: relatedIds },
-						authorId: { not: user.id },
-						author: { isPrivate: false },
+						OR: [
+							{ visibility: 'showcase' },
+							{
+								visibility: 'public',
+								authorId: { not: user.id },
+								author: { isPrivate: false },
+							},
+						],
 					},
 					include: recipeInclude,
 					orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
@@ -287,9 +303,7 @@ export function buildProfileJsonPayload(context: ExportContext) {
 				categories: normalized.categories,
 				authorId: mapOptional(ids.users, recipe.authorId),
 				author: publicAuthor(recipe.author, ids),
-				images: recipe.images.map((image) =>
-					mapRequired(ids.imageFiles, image),
-				),
+				images: recipe.images.map((image) => publicImageReference(image, ids)),
 				sourceUrls: recipe.sourceUrls,
 				visibility: recipe.visibility ?? 'public',
 				locale: translation.locale,

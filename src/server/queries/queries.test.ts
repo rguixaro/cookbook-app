@@ -15,6 +15,7 @@ vi.mock('@/server/db', () => ({
 		recipe: {
 			findMany: vi.fn(),
 			findFirst: vi.fn(),
+			count: vi.fn(),
 		},
 	},
 }))
@@ -45,6 +46,7 @@ const mockSession = { user: { id: 'user-1' } }
 
 beforeEach(() => {
 	vi.clearAllMocks()
+	mockDb.recipe.count.mockResolvedValue(3)
 })
 
 describe('toImageUrls', () => {
@@ -414,6 +416,7 @@ describe('getProfilesByName', () => {
 
 	it('returns mapped profiles when found', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.count.mockResolvedValue(4)
 		mockDb.user.findMany.mockResolvedValue([
 			{
 				id: 'user-2',
@@ -443,7 +446,7 @@ describe('getProfilesByName', () => {
 					name: 'John Doe',
 					username: 'johndoe',
 					image: 'img.jpg',
-					recipesCount: 5,
+					recipesCount: 4,
 					latestRecipe: {
 						name: 'Fresh Pasta',
 						slug: 'fresh-pasta',
@@ -454,6 +457,9 @@ describe('getProfilesByName', () => {
 					},
 				},
 			],
+		})
+		expect(mockDb.recipe.count).toHaveBeenCalledWith({
+			where: { authorId: 'user-2', visibility: 'public' },
 		})
 	})
 })

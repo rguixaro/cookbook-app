@@ -13,6 +13,16 @@ import { Icon } from '@/components/recipes/icon'
 import { cn, SITE_URL } from '@/utils'
 import { RecipeComplementTypes, type RecipeComplement } from '@/types'
 
+const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN ?? ''
+
+function getDownloadImageSrc(src: string, width = 640) {
+	if (CLOUDFRONT_DOMAIN && src.startsWith(CLOUDFRONT_DOMAIN)) {
+		return `/api/proxy?url=${encodeURIComponent(src)}&w=${width}`
+	}
+
+	return src
+}
+
 type DownloadableRecipe = {
 	slug: string
 	name: string
@@ -101,6 +111,7 @@ export const RecipeDownload = ({
 	)
 	const getComplementLabel = (complement: (typeof complements)[number]) =>
 		complement.name?.trim() || t(`complement-${complement.type.toLowerCase()}`)
+	const imageSrc = (src: string) => getDownloadImageSrc(src)
 
 	return (
 		<button
@@ -147,7 +158,7 @@ export const RecipeDownload = ({
 										{recipe.images.length === 1 ? (
 											<div className='w-full p-4'>
 												<img
-													src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
+													src={imageSrc(recipe.images[0])}
 													alt='Recipe photo'
 													className='w-full aspect-4/3 object-cover rounded-xl shadow-center-sm'
 												/>
@@ -160,7 +171,7 @@ export const RecipeDownload = ({
 														.map((img, i) => (
 															<img
 																key={i}
-																src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
+																src={imageSrc(img)}
 																alt={`Recipe photo ${i + 1}`}
 																className='w-full aspect-square object-cover rounded-xl shadow-center-sm'
 															/>
@@ -171,7 +182,7 @@ export const RecipeDownload = ({
 											<div className='w-full p-4'>
 												<div className='flex flex-col gap-4'>
 													<img
-														src={`/api/proxy?url=${encodeURIComponent(recipe.images[0])}&w=640`}
+														src={imageSrc(recipe.images[0])}
 														alt='Recipe photo 1'
 														className='w-full aspect-4/3 object-cover rounded-xl shadow-center-sm'
 													/>
@@ -181,7 +192,7 @@ export const RecipeDownload = ({
 															.map((img, i) => (
 																<img
 																	key={i}
-																	src={`/api/proxy?url=${encodeURIComponent(img)}&w=640`}
+																	src={imageSrc(img)}
 																	alt={`Recipe photo ${i + 2}`}
 																	className='w-full aspect-square object-cover rounded-xl shadow-center-sm'
 																/>

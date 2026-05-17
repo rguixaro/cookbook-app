@@ -157,11 +157,13 @@ export function ItemRecipe({
 	if (saved) params.set('saved', 'true')
 	if (sort) params.set('sort', sort)
 	const queryParams = params.toString() ? `?${params.toString()}` : ''
+	const recipeHref =
+		recipe.visibility === 'showcase'
+			? `/discover/${recipe.slug}${queryParams}`
+			: `/recipes/${recipe.authorUsername}/${recipe.slug}${queryParams}`
 
 	return (
-		<Link
-			href={`/recipes/${recipe.authorUsername}/${recipe.slug}${queryParams}`}
-			className='w-full'>
+		<Link href={recipeHref} className='w-full'>
 			<motion.div
 				initial='offscreen'
 				whileInView='onscreen'

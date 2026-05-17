@@ -170,6 +170,27 @@ describe('ItemRecipe image loading', () => {
 		)
 	})
 
+	it('links showcase recipes to discover and still waits for signed cookies', () => {
+		renderWithProviders(
+			<ItemRecipe
+				recipe={makeRecipe({
+					visibility: 'showcase',
+					authorId: null,
+					authorUsername: '',
+				})}
+			/>,
+		)
+
+		expect(screen.getByRole('link')).toHaveAttribute(
+			'href',
+			'/discover/pasta-carbonara',
+		)
+		expect(
+			screen.getByRole('status', { name: 'Loading recipe image' }),
+		).toBeInTheDocument()
+		expect(screen.queryByTestId('recipe-image')).not.toBeInTheDocument()
+	})
+
 	it('preserves profile and recipe search params for referred recipe links', () => {
 		renderWithProviders(
 			<ItemRecipe

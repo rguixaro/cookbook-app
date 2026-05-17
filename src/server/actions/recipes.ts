@@ -16,7 +16,7 @@ import {
 	type RecipeSchema,
 } from '@/server/schemas'
 import { formatLongSentence, slugify } from '@/server/utils'
-import { toImageUrls } from '@/server/queries'
+import { getShowcaseRecipes, toImageUrls } from '@/server/queries'
 import {
 	getCurrentRecipeLocale,
 	normalizeRecipeLocale,
@@ -77,6 +77,23 @@ function buildRecipeSearchWhere(search?: string): Prisma.RecipeWhereInput {
 				},
 			},
 		},
+	}
+}
+
+function buildVisibleListActionRecipeWhere(
+	id: string,
+	userId: string,
+): Prisma.RecipeWhereInput {
+	return {
+		id,
+		OR: [
+			{ authorId: userId },
+			{ visibility: 'showcase' },
+			{
+				visibility: 'public',
+				author: { isPrivate: false },
+			},
+		],
 	}
 }
 
@@ -142,6 +159,11 @@ export async function fetchRecipes(params: {
 						{ authorId: currentUserId },
 						{
 							id: { in: savedIds },
+							visibility: 'showcase',
+						},
+						{
+							id: { in: savedIds },
+							visibility: 'public',
 							author: { isPrivate: false },
 						},
 					]
@@ -178,6 +200,9 @@ export async function fetchRecipes(params: {
 
 		const where: Prisma.RecipeWhereInput = {
 			...(authorFilter && { authorId: authorFilter.authorId }),
+			...(authorFilter && authorFilter.authorId !== currentUserId
+				? { visibility: 'public' as const }
+				: {}),
 			...(ownFeedOr && { OR: ownFeedOr }),
 			...buildRecipeSearchWhere(search),
 			...(courseFilter && { course: courseFilter }),
@@ -239,6 +264,24 @@ export async function fetchRecipes(params: {
 		Sentry.captureException(error, { tags: { action: 'fetchRecipes' } })
 		return empty
 	}
+}
+
+export async function fetchShowcaseRecipes(params: {
+	cursor?: string
+	take?: number
+	search?: string
+	course?: string
+	categories?: string
+	sort?: string
+}): Promise<{
+	recipes: RecipeSchema[]
+	nextCursor: string | null
+	totalCount: number
+}> {
+	const currentUser = await auth()
+	if (!currentUser) return { recipes: [], nextCursor: null, totalCount: 0 }
+
+	return getShowcaseRecipes(params)
 }
 
 interface createRecipeResult {
@@ -442,11 +485,17 @@ export const saveRecipe = async (
 	if (!currentUser) return { error: true }
 
 	try {
-		/** Validate that the recipe exists */
-		const recipe = await db.recipe.findUnique({ where: { id } })
-		if (!recipe) return { error: true }
-
 		const userId = currentUser.user.id
+		if (!userId) return { error: true }
+
+		/** Validate that the recipe exists */
+		const recipe = await db.recipe.findFirst({
+			where: isSaved
+				? { id }
+				: buildVisibleListActionRecipeWhere(id, userId),
+			select: { id: true },
+		})
+		if (!recipe) return { error: true }
 
 		if (isSaved) {
 			const user = await db.user.findUnique({
@@ -507,11 +556,17 @@ export const favouriteRecipe = async (
 	if (!currentUser) return { error: true }
 
 	try {
-		/** Validate that the recipe exists */
-		const recipe = await db.recipe.findUnique({ where: { id } })
-		if (!recipe) return { error: true }
-
 		const userId = currentUser.user.id
+		if (!userId) return { error: true }
+
+		/** Validate that the recipe exists */
+		const recipe = await db.recipe.findFirst({
+			where: isFavourited
+				? { id }
+				: buildVisibleListActionRecipeWhere(id, userId),
+			select: { id: true },
+		})
+		if (!recipe) return { error: true }
 
 		if (isFavourited) {
 			const user = await db.user.findUnique({

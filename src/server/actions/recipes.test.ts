@@ -46,6 +46,7 @@ vi.mock('@/lib/s3', () => ({
 }))
 
 vi.mock('@/server/queries', () => ({
+	getShowcaseRecipes: vi.fn(),
 	toImageUrls: vi.fn((keys: string[]) =>
 		keys.map((k) => `https://cdn.example.com/${k}`),
 	),
@@ -54,9 +55,11 @@ vi.mock('@/server/queries', () => ({
 import { auth } from '@/auth'
 import { env } from '@/env.mjs'
 import { db } from '@/server/db'
+import { getShowcaseRecipes } from '@/server/queries'
 import { revalidatePath } from 'next/cache'
 import {
 	fetchRecipes,
+	fetchShowcaseRecipes,
 	createRecipe,
 	updateRecipe,
 	saveRecipe,
@@ -68,6 +71,7 @@ import {
 
 const mockAuth = vi.mocked(auth)
 const mockDb = vi.mocked(db, true)
+const mockGetShowcaseRecipes = vi.mocked(getShowcaseRecipes)
 const mockRevalidatePath = vi.mocked(revalidatePath)
 const mockEnv = env as { MEDIA_MANAGEMENT_ENABLED: boolean }
 
@@ -87,8 +91,48 @@ beforeEach(() => {
 	vi.clearAllMocks()
 	mockEnv.MEDIA_MANAGEMENT_ENABLED = true
 	mockDb.recipe.count.mockResolvedValue(1)
+	mockGetShowcaseRecipes.mockResolvedValue({
+		recipes: [],
+		nextCursor: null,
+		totalCount: 0,
+	})
 	mockDb.recipeTranslation.upsert.mockResolvedValue({} as any)
 	mockDb.recipeTranslation.deleteMany.mockResolvedValue({ count: 0 } as any)
+})
+
+describe('fetchShowcaseRecipes', () => {
+	it('returns empty when not authenticated', async () => {
+		mockAuth.mockResolvedValue(null as any)
+
+		const result = await fetchShowcaseRecipes({})
+
+		expect(result).toEqual({ recipes: [], nextCursor: null, totalCount: 0 })
+		expect(mockGetShowcaseRecipes).not.toHaveBeenCalled()
+	})
+
+	it('delegates showcase fetches for authenticated users', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockGetShowcaseRecipes.mockResolvedValueOnce({
+			recipes: [],
+			nextCursor: 'recipe-1',
+			totalCount: 12,
+		})
+
+		const result = await fetchShowcaseRecipes({
+			search: 'pasta',
+			take: 10,
+		})
+
+		expect(result).toEqual({
+			recipes: [],
+			nextCursor: 'recipe-1',
+			totalCount: 12,
+		})
+		expect(mockGetShowcaseRecipes).toHaveBeenCalledWith({
+			search: 'pasta',
+			take: 10,
+		})
+	})
 })
 
 describe('fetchRecipes', () => {
@@ -698,21 +742,36 @@ describe('saveRecipe', () => {
 		expect(result).toEqual({ error: true })
 	})
 
-	it('returns error when recipe does not exist', async () => {
+	it('returns error when recipe does not exist or is not visible', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findUnique.mockResolvedValue(null)
+		mockDb.recipe.findFirst.mockResolvedValue(null)
 
 		const result = await saveRecipe('nonexistent', false)
 		expect(result).toEqual({ error: true })
+		expect(mockDb.user.updateMany).not.toHaveBeenCalled()
 	})
 
 	it('saves a recipe atomically via updateMany', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findUnique.mockResolvedValue({ id: 'recipe-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue({ id: 'recipe-1' } as any)
 		mockDb.user.updateMany.mockResolvedValue({ count: 1 } as any)
 
 		const result = await saveRecipe('recipe-1', false)
 		expect(result).toEqual({ error: false })
+		expect(mockDb.recipe.findFirst).toHaveBeenCalledWith({
+			where: {
+				id: 'recipe-1',
+				OR: [
+					{ authorId: 'user-1' },
+					{ visibility: 'showcase' },
+					{
+						visibility: 'public',
+						author: { isPrivate: false },
+					},
+				],
+			},
+			select: { id: true },
+		})
 		expect(mockDb.user.updateMany).toHaveBeenCalledWith({
 			where: {
 				id: 'user-1',
@@ -724,7 +783,7 @@ describe('saveRecipe', () => {
 
 	it('unsaves a recipe (removes from saved and favourites)', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findUnique.mockResolvedValue({ id: 'recipe-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue({ id: 'recipe-1' } as any)
 		mockDb.user.findUnique.mockResolvedValue({
 			savedRecipes: ['recipe-1', 'recipe-2'],
 			favouriteRecipes: ['recipe-1'],
@@ -751,9 +810,18 @@ describe('favouriteRecipe', () => {
 		expect(result).toEqual({ error: true })
 	})
 
+	it('returns error when recipe does not exist or is not visible', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue(null)
+
+		const result = await favouriteRecipe('private-recipe', false)
+		expect(result).toEqual({ error: true })
+		expect(mockDb.user.updateMany).not.toHaveBeenCalled()
+	})
+
 	it('favourites a recipe atomically via updateMany', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findUnique.mockResolvedValue({ id: 'recipe-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue({ id: 'recipe-1' } as any)
 		mockDb.user.updateMany.mockResolvedValue({ count: 1 } as any)
 
 		const result = await favouriteRecipe('recipe-1', false)
@@ -769,7 +837,7 @@ describe('favouriteRecipe', () => {
 
 	it('unfavourites a recipe', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findUnique.mockResolvedValue({ id: 'recipe-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue({ id: 'recipe-1' } as any)
 		mockDb.user.findUnique.mockResolvedValue({
 			favouriteRecipes: ['recipe-1', 'recipe-2'],
 		} as any)
