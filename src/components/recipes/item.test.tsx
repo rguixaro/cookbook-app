@@ -42,12 +42,12 @@ vi.mock('next/image', () => ({
 }))
 
 function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
-	return {
+	const base: RecipeSchema = {
 		id: 'recipe-1',
 		name: 'Pasta Carbonara',
 		slug: 'pasta-carbonara',
-		course: 'FirstCourse',
-		categories: ['Pasta'],
+		course: 'first_course',
+		categories: ['pasta'],
 		time: 30,
 		ingredients: ['pasta', 'egg', 'bacon'],
 		complements: [],
@@ -58,7 +58,14 @@ function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
 		authorUsername: 'chef',
 		createdAt: new Date('2025-01-01'),
 		updatedAt: new Date('2025-01-01'),
+		visibility: 'public',
+		locale: 'en',
+	}
+	return {
+		...base,
 		...overrides,
+		visibility: overrides.visibility ?? base.visibility,
+		locale: overrides.locale ?? base.locale,
 	}
 }
 
@@ -117,7 +124,7 @@ describe('ItemRecipe image loading', () => {
 		renderWithProviders(
 			<ItemRecipe
 				recipe={makeRecipe({
-					categories: ['Pasta'],
+					categories: ['pasta'],
 					ingredients: [
 						'apple',
 						'banana',
@@ -151,7 +158,7 @@ describe('ItemRecipe image loading', () => {
 			'Very long preserved lemon ingredient name',
 		)
 		expect(chipText).toHaveClass('truncate')
-		expect(chipText.parentElement).toHaveClass('max-w-[9rem]', 'min-w-0')
+		expect(chipText.parentElement).toHaveClass('max-w-36', 'min-w-0')
 	})
 
 	it('uses the feed search param name in recipe detail links', () => {
@@ -161,6 +168,27 @@ describe('ItemRecipe image loading', () => {
 			'href',
 			'/recipes/chef/pasta-carbonara?search=pasta',
 		)
+	})
+
+	it('links showcase recipes to discover and still waits for signed cookies', () => {
+		renderWithProviders(
+			<ItemRecipe
+				recipe={makeRecipe({
+					visibility: 'showcase',
+					authorId: null,
+					authorUsername: '',
+				})}
+			/>,
+		)
+
+		expect(screen.getByRole('link')).toHaveAttribute(
+			'href',
+			'/discover/pasta-carbonara',
+		)
+		expect(
+			screen.getByRole('status', { name: 'Loading recipe image' }),
+		).toBeInTheDocument()
+		expect(screen.queryByTestId('recipe-image')).not.toBeInTheDocument()
 	})
 
 	it('preserves profile and recipe search params for referred recipe links', () => {

@@ -50,6 +50,7 @@ export function RecipeGallery({ images }: { images: string[] }) {
 		<RecipeImageFullscreen
 			image={expandedImage}
 			imageIndex={expandedIndex ?? 0}
+			useProxy
 			onClose={() => setExpandedIndex(null)}
 		/>
 	) : null
@@ -67,6 +68,7 @@ export function RecipeGallery({ images }: { images: string[] }) {
 			alt={alt}
 			sizes={sizes}
 			cookiesReady={cookiesReady}
+			useProxy
 			className={className}
 			isTapped={tappedIndex === index}
 			onTap={() => onTapImage(index)}
@@ -154,6 +156,7 @@ function GalleryImage({
 	alt,
 	sizes,
 	cookiesReady,
+	useProxy,
 	className,
 	isTapped,
 	onTap,
@@ -163,12 +166,14 @@ function GalleryImage({
 	alt: string
 	sizes: string
 	cookiesReady: boolean
+	useProxy: boolean
 	className?: string
 	isTapped: boolean
 	onTap: () => void
 	onFullscreen: () => void
 }) {
 	const [loaded, setLoaded] = useState(false)
+	const canRenderImage = !useProxy || cookiesReady
 
 	useEffect(() => {
 		setLoaded(false)
@@ -178,27 +183,27 @@ function GalleryImage({
 		<div
 			className={cn(
 				'group relative cursor-pointer overflow-hidden rounded-xl bg-forest-150 shadow-center-sm',
-				!cookiesReady && 'cursor-wait',
+				!canRenderImage && 'cursor-wait',
 				className,
 			)}
 			onClick={onTap}>
-			{(!loaded || !cookiesReady) && (
+			{(!loaded || !canRenderImage) && (
 				<div className='absolute inset-0 flex items-center justify-center'>
 					<LoaderIcon size={32} className='animate-spin text-forest-200' />
 				</div>
 			)}
-			{cookiesReady && (
+			{canRenderImage && (
 				<Image
 					src={src}
 					alt={alt}
 					fill
 					sizes={sizes}
-					loader={proxyLoader}
+					loader={useProxy ? proxyLoader : undefined}
 					className='object-cover'
 					onLoad={() => setLoaded(true)}
 				/>
 			)}
-			{cookiesReady && (
+			{canRenderImage && (
 				<>
 					<div
 						className={cn(
@@ -231,10 +236,12 @@ function GalleryImage({
 function RecipeImageFullscreen({
 	image,
 	imageIndex,
+	useProxy,
 	onClose,
 }: {
 	image: string
 	imageIndex: number
+	useProxy: boolean
 	onClose: () => void
 }) {
 	const [isTapped, setIsTapped] = useState(false)
@@ -265,7 +272,7 @@ function RecipeImageFullscreen({
 					alt={`Recipe photo ${imageIndex + 1}`}
 					fill
 					sizes='100vw'
-					loader={proxyLoader}
+					loader={useProxy ? proxyLoader : undefined}
 					className='object-contain'
 					priority
 					onLoad={() => setLoaded(true)}

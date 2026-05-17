@@ -5,6 +5,7 @@ import {
 	normalizeRecipeComplements,
 	normalizeRecipeCourseAndCategories,
 } from '@/server/schemas'
+import { resolveRecipeTranslation } from '@/server/recipes/translation'
 
 type ExportUser = {
 	id: string
@@ -22,18 +23,23 @@ type ExportUser = {
 type ExportRecipe = {
 	id: string
 	slug: string
-	name: string
+	defaultLocale?: string | null
+	visibility?: string | null
 	time: number | null
-	instructions: string
-	ingredients: string[]
-	complements?: unknown
+	translations?: {
+		locale: string
+		name: string
+		ingredients: string[]
+		instructions: string
+		complements?: unknown
+	}[]
 	images: string[]
 	sourceUrls: string[]
 	createdAt: Date
 	updatedAt: Date
 	course: string
 	categories?: string[]
-	authorId: string
+	authorId: string | null
 	author: ExportUser | null
 }
 
@@ -61,6 +67,7 @@ export type ProfileImagesExportResult =
 
 const toExportId = (prefix: string, index: number) =>
 	`${prefix}_${String(index + 1).padStart(4, '0')}`
+const isExternalImageUrl = (value: string) => /^https?:\/\//i.test(value)
 
 function createIdMap<T>(
 	items: T[],
@@ -135,7 +142,11 @@ function createExportIds(user: ExportUser, recipes: ExportRecipe[]): ExportIds {
 	}
 
 	const imageKeys = Array.from(
-		new Set(recipes.flatMap((recipe) => recipe.images)),
+		new Set(
+			recipes.flatMap((recipe) =>
+				recipe.images.filter((image) => !isExternalImageUrl(image)),
+			),
+		),
 	)
 	const imageIds = new Map(
 		imageKeys.map((fileKey, index) => [fileKey, toExportId('image', index)]),
@@ -157,6 +168,11 @@ function createExportIds(user: ExportUser, recipes: ExportRecipe[]): ExportIds {
 		images: imageIds,
 		imageFiles,
 	}
+}
+
+function publicImageReference(image: string, ids: ExportIds) {
+	if (isExternalImageUrl(image)) return image
+	return mapRequired(ids.imageFiles, image)
 }
 
 function mergeRecipes(authored: ExportRecipe[], related: ExportRecipe[]) {
@@ -201,6 +217,7 @@ async function collectProfileExportContext(userId: string) {
 				isPrivate: true,
 			},
 		},
+		translations: true,
 	} as const
 
 	const relatedIds = Array.from(
@@ -217,8 +234,14 @@ async function collectProfileExportContext(userId: string) {
 			? db.recipe.findMany({
 					where: {
 						id: { in: relatedIds },
-						authorId: { not: user.id },
-						author: { isPrivate: false },
+						OR: [
+							{ visibility: 'showcase' },
+							{
+								visibility: 'public',
+								authorId: { not: user.id },
+								author: { isPrivate: false },
+							},
+						],
 					},
 					include: recipeInclude,
 					orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
@@ -262,6 +285,7 @@ export function buildProfileJsonPayload(context: ExportContext) {
 			updatedAt: user.updatedAt,
 		},
 		recipes: recipes.map((recipe) => {
+			const translation = resolveRecipeTranslation(recipe, recipe.defaultLocale)
 			const normalized = normalizeRecipeCourseAndCategories(
 				recipe.course,
 				recipe.categories,
@@ -270,19 +294,19 @@ export function buildProfileJsonPayload(context: ExportContext) {
 			return {
 				id: mapRequired(ids.recipes, recipe.id),
 				slug: recipe.slug,
-				name: recipe.name,
+				name: translation.name,
 				time: recipe.time,
-				instructions: recipe.instructions,
-				ingredients: recipe.ingredients,
-				complements: normalizeRecipeComplements(recipe.complements),
+				instructions: translation.instructions,
+				ingredients: translation.ingredients,
+				complements: normalizeRecipeComplements(translation.complements),
 				course: normalized.course,
 				categories: normalized.categories,
-				authorId: mapRequired(ids.users, recipe.authorId),
+				authorId: mapOptional(ids.users, recipe.authorId),
 				author: publicAuthor(recipe.author, ids),
-				images: recipe.images.map((image) =>
-					mapRequired(ids.imageFiles, image),
-				),
+				images: recipe.images.map((image) => publicImageReference(image, ids)),
 				sourceUrls: recipe.sourceUrls,
+				visibility: recipe.visibility ?? 'public',
+				locale: translation.locale,
 				createdAt: recipe.createdAt,
 				updatedAt: recipe.updatedAt,
 				relations: {

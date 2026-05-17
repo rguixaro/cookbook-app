@@ -19,6 +19,7 @@ import {
 import { hashPassword, verifyPassword } from '@/lib/password'
 import { env } from '@/env.mjs'
 import { db } from '@/server/db'
+import { DEFAULT_SIGN_OUT_REDIRECT_URL } from '@/routes'
 import {
 	ChangePasswordSchema,
 	CredentialsSignUpSchema,
@@ -103,7 +104,7 @@ type ChangePasswordResult =
  * @returns Promise<void>
  */
 export const handleSignOut = async () => {
-	await signOut()
+	await signOut({ redirectTo: DEFAULT_SIGN_OUT_REDIRECT_URL })
 }
 
 export const signUpWithCredentials = async (

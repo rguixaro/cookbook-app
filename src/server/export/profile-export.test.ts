@@ -37,7 +37,7 @@ const makeRecipe = (overrides: Record<string, unknown>) => ({
 	ingredients: ['salt'],
 	complements: [
 		{
-			type: 'Sauce',
+			type: 'sauce',
 			name: 'Romesco',
 			ingredients: ['almonds'],
 			instructions: 'Blend until smooth.',
@@ -47,8 +47,8 @@ const makeRecipe = (overrides: Record<string, unknown>) => ({
 	sourceUrls: ['https://example.com/owned'],
 	createdAt: date('2024-01-01T00:00:00.000Z'),
 	updatedAt: date('2024-01-02T00:00:00.000Z'),
-	course: 'FirstCourse',
-	categories: ['Pasta'],
+	course: 'first_course',
+	categories: ['pasta'],
 	authorId: 'user-real',
 	author: {
 		id: 'user-real',
@@ -98,7 +98,10 @@ describe('buildProfileJsonPayload', () => {
 					id: 'recipe-real-saved',
 					slug: 'saved-slug',
 					name: 'Saved recipe',
-					images: ['images/recipe_real/saved.jpg'],
+					images: [
+						'images/recipe_real/saved.jpg',
+						'https://commons.wikimedia.org/wiki/Special:FilePath/Focaccia.jpg',
+					],
 					authorId: 'public-user-real',
 					author: {
 						id: 'public-user-real',
@@ -139,13 +142,16 @@ describe('buildProfileJsonPayload', () => {
 		expect(payload.recipes[0].images).toEqual(['photos/0001-image_0001.jpg'])
 		expect(payload.recipes[0].complements).toEqual([
 			{
-				type: 'Sauce',
+				type: 'sauce',
 				name: 'Romesco',
 				ingredients: ['almonds'],
 				instructions: 'Blend until smooth.',
 			},
 		])
-		expect(payload.recipes[1].images).toEqual(['photos/0002-image_0002.jpg'])
+		expect(payload.recipes[1].images).toEqual([
+			'photos/0002-image_0002.jpg',
+			'https://commons.wikimedia.org/wiki/Special:FilePath/Focaccia.jpg',
+		])
 		expect(payload.lists.favourites).toEqual(['recipe_0001'])
 	})
 })
@@ -225,7 +231,15 @@ describe('collectProfileJsonExport', () => {
 			2,
 			expect.objectContaining({
 				where: expect.objectContaining({
-					author: { isPrivate: false },
+					OR: expect.arrayContaining([
+						expect.objectContaining({
+							author: { isPrivate: false },
+							visibility: 'public',
+						}),
+						expect.objectContaining({
+							visibility: 'showcase',
+						}),
+					]),
 				}),
 			}),
 		)

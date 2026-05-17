@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { renderWithProviders, userEvent } from '@/test/render'
 import { SearchRecipes } from './search'
 
@@ -32,14 +32,35 @@ vi.mock('motion/react-client', () => ({
 	},
 }))
 
-vi.mock('use-debounce', () => ({
-	useDebouncedCallback: (fn: Function) => fn,
-}))
-
 beforeEach(() => {
 	vi.clearAllMocks()
 	navigationState.query = ''
 })
+
+afterEach(() => {
+	vi.clearAllTimers()
+	vi.useRealTimers()
+})
+
+const advanceSearchDebounce = (ms = 450) => {
+	act(() => {
+		vi.advanceTimersByTime(ms)
+	})
+}
+
+const getClearButton = (input: HTMLElement) =>
+	input.parentElement?.querySelector('button:last-of-type') as HTMLButtonElement
+
+const expectLastReplaceParams = (expected: Record<string, string>) => {
+	const lastCall = mockReplace.mock.calls[mockReplace.mock.calls.length - 1]
+	const url = lastCall[0] as string
+	const query = url.includes('?') ? url.split('?')[1] : ''
+	const params = new URLSearchParams(query)
+
+	for (const [key, value] of Object.entries(expected)) {
+		expect(params.get(key)).toBe(value)
+	}
+}
 
 describe('SearchRecipes', () => {
 	it('renders the search input and filters/favourites buttons', () => {
@@ -50,41 +71,132 @@ describe('SearchRecipes', () => {
 		expect(screen.getByText('Favourites')).toBeInTheDocument()
 	})
 
-	it('updates URL when typing in search', async () => {
-		const user = userEvent.setup()
+	it('updates URL only after typing pauses', async () => {
+		vi.useFakeTimers()
 		renderWithProviders(<SearchRecipes withAvatar={false} />)
 
 		const input = screen.getByPlaceholderText('Search')
-		await user.type(input, 'pasta')
+		fireEvent.change(input, { target: { value: 'pas' } })
+		expect(input).toHaveValue('pas')
+		expect(mockReplace).not.toHaveBeenCalled()
 
-		await waitFor(() => {
-			expect(mockReplace).toHaveBeenCalled()
-			const lastCall =
-				mockReplace.mock.calls[mockReplace.mock.calls.length - 1][0]
-			expect(lastCall).toContain('search=')
+		advanceSearchDebounce(300)
+		fireEvent.change(input, { target: { value: 'pasta' } })
+		advanceSearchDebounce(449)
+		expect(mockReplace).not.toHaveBeenCalled()
+
+		advanceSearchDebounce(1)
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+		expect(mockReplace).toHaveBeenLastCalledWith('/?search=pasta', {
+			scroll: false,
 		})
 	})
 
 	it('can use a separate URL param for profile recipe search', async () => {
-		const user = userEvent.setup()
+		vi.useFakeTimers()
 		navigationState.query = 'search=olg'
 		renderWithProviders(
-			<SearchRecipes
-				withAvatar={false}
-				searchParamName='recipeSearch'
-			/>,
+			<SearchRecipes withAvatar={false} searchParamName='recipeSearch' />,
 		)
 
 		const input = screen.getByPlaceholderText('Search')
-		await user.type(input, 'pasta')
+		fireEvent.change(input, { target: { value: 'pasta' } })
+		advanceSearchDebounce()
 
-		await waitFor(() => {
-			expect(mockReplace).toHaveBeenCalled()
-			const lastCall =
-				mockReplace.mock.calls[mockReplace.mock.calls.length - 1][0]
-			expect(lastCall).toContain('search=olg')
-			expect(lastCall).toContain('recipeSearch=')
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+		const lastCall = mockReplace.mock.calls[mockReplace.mock.calls.length - 1]
+		expect(lastCall[0]).toContain('search=olg')
+		expect(lastCall[0]).toContain('recipeSearch=pasta')
+		expect(lastCall[1]).toEqual({ scroll: false })
+	})
+
+	it('clears search immediately and cancels the pending typed value', async () => {
+		vi.useFakeTimers()
+		renderWithProviders(<SearchRecipes withAvatar={false} />)
+
+		const input = screen.getByPlaceholderText('Search')
+		fireEvent.change(input, { target: { value: 'pasta' } })
+		fireEvent.click(getClearButton(input))
+
+		expect(input).toHaveValue('')
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+		expect(mockReplace).toHaveBeenLastCalledWith('/', { scroll: false })
+
+		advanceSearchDebounce()
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+	})
+
+	it('commits search immediately on Enter', async () => {
+		vi.useFakeTimers()
+		renderWithProviders(<SearchRecipes withAvatar={false} />)
+
+		const input = screen.getByPlaceholderText('Search')
+		fireEvent.change(input, { target: { value: 'pasta' } })
+		fireEvent.keyDown(input, { key: 'Enter' })
+
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+		expect(mockReplace).toHaveBeenLastCalledWith('/?search=pasta', {
+			scroll: false,
 		})
+
+		advanceSearchDebounce()
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+	})
+
+	it('commits search immediately on blur', async () => {
+		vi.useFakeTimers()
+		renderWithProviders(<SearchRecipes withAvatar={false} />)
+
+		const input = screen.getByPlaceholderText('Search')
+		fireEvent.change(input, { target: { value: 'pasta' } })
+		fireEvent.blur(input)
+
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+		expect(mockReplace).toHaveBeenLastCalledWith('/?search=pasta', {
+			scroll: false,
+		})
+
+		advanceSearchDebounce()
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+	})
+
+	it('preserves pending search when toggling favourites before debounce fires', async () => {
+		vi.useFakeTimers()
+		renderWithProviders(<SearchRecipes withAvatar={false} />)
+
+		const input = screen.getByPlaceholderText('Search')
+		input.focus()
+		fireEvent.change(input, { target: { value: 'pasta' } })
+		fireEvent.blur(input)
+		fireEvent.click(screen.getByText('Favourites'))
+
+		expectLastReplaceParams({
+			search: 'pasta',
+			favourites: 'true',
+		})
+
+		advanceSearchDebounce()
+		expect(mockReplace).toHaveBeenCalledTimes(2)
+		expectLastReplaceParams({
+			search: 'pasta',
+			favourites: 'true',
+		})
+	})
+
+	it('keeps the local draft when an older search param arrives while focused', async () => {
+		vi.useFakeTimers()
+		const { rerender } = renderWithProviders(
+			<SearchRecipes withAvatar={false} />,
+		)
+
+		const input = screen.getByPlaceholderText('Search')
+		input.focus()
+		fireEvent.change(input, { target: { value: 'pasta' } })
+
+		navigationState.query = 'search=pa'
+		rerender(<SearchRecipes withAvatar={false} />)
+
+		expect(input).toHaveValue('pasta')
 	})
 
 	it('clears the input when the search param is removed by navigation', async () => {
@@ -107,7 +219,7 @@ describe('SearchRecipes', () => {
 	it('clears selected recipe filters when filter params are removed by navigation', async () => {
 		const user = userEvent.setup()
 		navigationState.query =
-			'course=FirstCourse&categories=Pasta&sort=timeAsc&favourites=true'
+			'course=first_course&categories=pasta&sort=timeAsc&favourites=true'
 		const { rerender } = renderWithProviders(
 			<SearchRecipes withAvatar={false} />,
 		)
@@ -220,10 +332,10 @@ describe('SearchRecipes', () => {
 			expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 		})
 		expect(mockReplace).toHaveBeenCalledWith(
-			expect.stringContaining('course=FirstCourse'),
+			expect.stringContaining('course=first_course'),
 		)
 		expect(mockReplace).toHaveBeenCalledWith(
-			expect.stringContaining('categories=Pasta'),
+			expect.stringContaining('categories=pasta'),
 		)
 		expect(mockReplace).toHaveBeenCalledWith(
 			expect.stringContaining('sort=timeAsc'),
@@ -231,6 +343,40 @@ describe('SearchRecipes', () => {
 		expect(screen.getByText('Quickest')).toBeInTheDocument()
 		expect(screen.getByText('First course')).toBeInTheDocument()
 		expect(screen.getByText('Pasta')).toBeInTheDocument()
+	})
+
+	it('preserves pending search when applying filters before debounce fires', async () => {
+		vi.useFakeTimers()
+		renderWithProviders(<SearchRecipes withAvatar={false} />)
+
+		const input = screen.getByPlaceholderText('Search')
+		input.focus()
+		fireEvent.change(input, { target: { value: 'pasta' } })
+		fireEvent.blur(input)
+		fireEvent.click(screen.getByText('Filters'))
+
+		expect(screen.getByRole('dialog')).toBeInTheDocument()
+		fireEvent.click(screen.getByText('Newest'))
+		fireEvent.click(screen.getByText('Quickest'))
+		fireEvent.click(screen.getByText('First course'))
+		fireEvent.click(screen.getByText('Pasta'))
+		fireEvent.click(screen.getByRole('button', { name: 'Filter' }))
+
+		expectLastReplaceParams({
+			search: 'pasta',
+			course: 'first_course',
+			categories: 'pasta',
+			sort: 'timeAsc',
+		})
+
+		advanceSearchDebounce()
+		expect(mockReplace).toHaveBeenCalledTimes(2)
+		expectLastReplaceParams({
+			search: 'pasta',
+			course: 'first_course',
+			categories: 'pasta',
+			sort: 'timeAsc',
+		})
 	})
 
 	it('toggles saved filter when configured', async () => {

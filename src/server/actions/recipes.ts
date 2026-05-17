@@ -5,6 +5,7 @@ import { revalidatePath } from 'next/cache'
 import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
+import { env } from '@/env.mjs'
 import { db } from '@/server/db'
 import {
 	CreateRecipeSchema,
@@ -12,40 +13,36 @@ import {
 	isRecipeCourse,
 	isRecipeCategory,
 	normalizeRecipeSort,
-	normalizeRecipeCourseAndCategories,
-	normalizeRecipeComplements,
 	type RecipeSchema,
 } from '@/server/schemas'
 import { formatLongSentence, slugify } from '@/server/utils'
-import { toImageUrls } from '@/server/queries'
+import { getShowcaseRecipes, toImageUrls } from '@/server/queries'
+import {
+	getCurrentRecipeLocale,
+	normalizeRecipeLocale,
+} from '@/server/recipes/locale'
+import {
+	mapRecipeToSchema,
+	recipeSchemaInclude,
+	resolveRecipeTranslation,
+	type RecipeWithTranslationsAndAuthor,
+} from '@/server/recipes/translation'
 
 const PAGE_SIZE = 10
+const MEDIA_MANAGEMENT_DISABLED_MESSAGE = 'error-media-management-disabled'
 
 const getRecipePath = (username?: string | null, slug?: string | null) =>
 	username && slug ? `/recipes/${username}/${slug}` : null
 
-type RecipeWithAuthor = Prisma.RecipeGetPayload<{
-	include: { author: { select: { username: true } } }
-}>
-
-const mapRecipe = (recipe: RecipeWithAuthor): RecipeSchema => {
-	const { author, ...data } = recipe
-
-	return {
-		...data,
-		...normalizeRecipeCourseAndCategories(recipe.course, recipe.categories),
-		complements: normalizeRecipeComplements(
-			'complements' in recipe ? recipe.complements : undefined,
-		),
-		authorUsername: author?.username ?? '',
-		images: toImageUrls(recipe.images),
-	}
-}
+const mapRecipe = (
+	recipe: RecipeWithTranslationsAndAuthor,
+	locale: string,
+): RecipeSchema => mapRecipeToSchema(recipe, locale, toImageUrls(recipe.images))
 
 function sortRecipesByTime(
-	recipes: RecipeWithAuthor[],
+	recipes: RecipeWithTranslationsAndAuthor[],
 	direction: 'asc' | 'desc',
-): RecipeWithAuthor[] {
+): RecipeWithTranslationsAndAuthor[] {
 	return [...recipes].sort((a, b) => {
 		const aTime = a.time
 		const bTime = b.time
@@ -64,6 +61,40 @@ function sortRecipesByTime(
 
 		return b.id.localeCompare(a.id)
 	})
+}
+
+function buildRecipeSearchWhere(search?: string): Prisma.RecipeWhereInput {
+	if (!search?.trim()) return {}
+
+	return {
+		translations: {
+			some: {
+				name: {
+					contains: search
+						.slice(0, 50)
+						.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+					mode: 'insensitive',
+				},
+			},
+		},
+	}
+}
+
+function buildVisibleListActionRecipeWhere(
+	id: string,
+	userId: string,
+): Prisma.RecipeWhereInput {
+	return {
+		id,
+		OR: [
+			{ authorId: userId },
+			{ visibility: 'showcase' },
+			{
+				visibility: 'public',
+				author: { isPrivate: false },
+			},
+		],
+	}
 }
 
 /**
@@ -103,6 +134,7 @@ export async function fetchRecipes(params: {
 	const safeTake = Math.min(take, 50)
 	const currentUserId = currentUser.user.id
 	const recipeSort = normalizeRecipeSort(sort)
+	const locale = await getCurrentRecipeLocale()
 
 	if (userId && userId !== currentUserId) {
 		const targetUser = await db.user.findUnique({
@@ -127,6 +159,11 @@ export async function fetchRecipes(params: {
 						{ authorId: currentUserId },
 						{
 							id: { in: savedIds },
+							visibility: 'showcase',
+						},
+						{
+							id: { in: savedIds },
+							visibility: 'public',
 							author: { isPrivate: false },
 						},
 					]
@@ -163,15 +200,11 @@ export async function fetchRecipes(params: {
 
 		const where: Prisma.RecipeWhereInput = {
 			...(authorFilter && { authorId: authorFilter.authorId }),
+			...(authorFilter && authorFilter.authorId !== currentUserId
+				? { visibility: 'public' as const }
+				: {}),
 			...(ownFeedOr && { OR: ownFeedOr }),
-			...(search && {
-				name: {
-					contains: search
-						.slice(0, 50)
-						.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-					mode: 'insensitive' as const,
-				},
-			}),
+			...buildRecipeSearchWhere(search),
 			...(courseFilter && { course: courseFilter }),
 			...(categoryFilters.length && {
 				categories: { hasSome: categoryFilters },
@@ -182,7 +215,7 @@ export async function fetchRecipes(params: {
 		if (recipeSort === 'timeAsc' || recipeSort === 'timeDesc') {
 			const candidates = await db.recipe.findMany({
 				where,
-				include: { author: { select: { username: true } } },
+				include: recipeSchemaInclude,
 				orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
 			})
 			const sorted = sortRecipesByTime(
@@ -197,7 +230,7 @@ export async function fetchRecipes(params: {
 			if (hasMore) results.pop()
 
 			return {
-				recipes: results.map(mapRecipe),
+				recipes: results.map((recipe) => mapRecipe(recipe, locale)),
 				nextCursor: hasMore
 					? (results[results.length - 1]?.id ?? null)
 					: null,
@@ -208,7 +241,7 @@ export async function fetchRecipes(params: {
 		const [results, totalCount] = await Promise.all([
 			db.recipe.findMany({
 				where,
-				include: { author: { select: { username: true } } },
+				include: recipeSchemaInclude,
 				orderBy:
 					recipeSort === 'createdAtAsc'
 						? [{ createdAt: 'asc' }, { id: 'asc' }]
@@ -223,7 +256,7 @@ export async function fetchRecipes(params: {
 		if (hasMore) results.pop()
 
 		return {
-			recipes: results.map(mapRecipe),
+			recipes: results.map((recipe) => mapRecipe(recipe, locale)),
 			nextCursor: hasMore ? (results[results.length - 1]?.id ?? null) : null,
 			totalCount,
 		}
@@ -231,6 +264,24 @@ export async function fetchRecipes(params: {
 		Sentry.captureException(error, { tags: { action: 'fetchRecipes' } })
 		return empty
 	}
+}
+
+export async function fetchShowcaseRecipes(params: {
+	cursor?: string
+	take?: number
+	search?: string
+	course?: string
+	categories?: string
+	sort?: string
+}): Promise<{
+	recipes: RecipeSchema[]
+	nextCursor: string | null
+	totalCount: number
+}> {
+	const currentUser = await auth()
+	if (!currentUser) return { recipes: [], nextCursor: null, totalCount: 0 }
+
+	return getShowcaseRecipes(params)
 }
 
 interface createRecipeResult {
@@ -268,22 +319,31 @@ export const createRecipe = async (values: unknown): Promise<createRecipeResult>
 
 	const slug = slugify(name)
 	if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
+	const locale = await getCurrentRecipeLocale()
 
 	try {
 		const recipe = await db.recipe.create({
 			data: {
-				name,
 				course,
 				categories,
 				time,
-				ingredients,
-				instructions: formatLongSentence(instructions),
-				complements,
+				defaultLocale: locale,
+				visibility: 'public',
+				images: [],
 				sourceUrls: sourceUrls ?? [],
 				authorId: currentUser.user.id,
 				slug,
+				translations: {
+					create: {
+						locale,
+						name,
+						ingredients,
+						instructions: formatLongSentence(instructions),
+						complements,
+					},
+				},
 			},
-			include: { author: { select: { username: true } } },
+			include: recipeSchemaInclude,
 		})
 
 		const recipePath = getRecipePath(recipe.author?.username, recipe.slug)
@@ -326,14 +386,16 @@ export const updateRecipe = async (
 	try {
 		const recipe = await db.recipe.findFirst({
 			where: { id, authorId: currentUser.user.id },
-			include: { author: { select: { username: true } } },
+			include: recipeSchemaInclude,
 		})
 
 		if (!recipe) return { error: true, message: 'error' }
+		const translationLocale = normalizeRecipeLocale(recipe.defaultLocale)
+		const currentTranslation = resolveRecipeTranslation(recipe, translationLocale)
 
-		const parsed = createEditRecipeSchema(recipe.ingredients ?? []).safeParse(
-			values,
-		)
+		const parsed = createEditRecipeSchema(
+			currentTranslation.ingredients ?? [],
+		).safeParse(values)
 		if (!parsed.success) return { error: true, message: 'error' }
 
 		const {
@@ -349,19 +411,36 @@ export const updateRecipe = async (
 
 		const slug = slugify(name)
 		if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
+		const translationData = {
+			name,
+			ingredients,
+			instructions: formatLongSentence(instructions),
+			complements,
+		}
 
 		await db.recipe.update({
 			where: { id, authorId: currentUser.user.id },
 			data: {
-				name,
 				course,
 				categories,
 				time,
-				ingredients,
-				instructions: formatLongSentence(instructions),
-				complements,
 				sourceUrls: sourceUrls ?? [],
 				slug,
+				translations: {
+					upsert: {
+						where: {
+							recipeId_locale: {
+								recipeId: id,
+								locale: translationLocale,
+							},
+						},
+						update: translationData,
+						create: {
+							locale: translationLocale,
+							...translationData,
+						},
+					},
+				},
 			},
 		})
 
@@ -406,11 +485,17 @@ export const saveRecipe = async (
 	if (!currentUser) return { error: true }
 
 	try {
-		/** Validate that the recipe exists */
-		const recipe = await db.recipe.findUnique({ where: { id } })
-		if (!recipe) return { error: true }
-
 		const userId = currentUser.user.id
+		if (!userId) return { error: true }
+
+		/** Validate that the recipe exists */
+		const recipe = await db.recipe.findFirst({
+			where: isSaved
+				? { id }
+				: buildVisibleListActionRecipeWhere(id, userId),
+			select: { id: true },
+		})
+		if (!recipe) return { error: true }
 
 		if (isSaved) {
 			const user = await db.user.findUnique({
@@ -471,11 +556,17 @@ export const favouriteRecipe = async (
 	if (!currentUser) return { error: true }
 
 	try {
-		/** Validate that the recipe exists */
-		const recipe = await db.recipe.findUnique({ where: { id } })
-		if (!recipe) return { error: true }
-
 		const userId = currentUser.user.id
+		if (!userId) return { error: true }
+
+		/** Validate that the recipe exists */
+		const recipe = await db.recipe.findFirst({
+			where: isFavourited
+				? { id }
+				: buildVisibleListActionRecipeWhere(id, userId),
+			select: { id: true },
+		})
+		if (!recipe) return { error: true }
 
 		if (isFavourited) {
 			const user = await db.user.findUnique({
@@ -543,7 +634,7 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 		const recipePath = getRecipePath(username, recipe.slug)
 		const profilePath = username ? `/profiles/${username}` : null
 
-		if (recipe.images.length > 0) {
+		if (env.MEDIA_MANAGEMENT_ENABLED && recipe.images.length > 0) {
 			const { deleteRecipeImages } = await import('@/lib/s3')
 			await deleteRecipeImages(recipe.images).catch((error) =>
 				Sentry.captureException(error, {
@@ -556,6 +647,19 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 		await db.recipe.delete({
 			where: { id, authorId: currentUser.user.id },
 		})
+		await db.recipeTranslation
+			.deleteMany({
+				where: { recipeId: id },
+			})
+			.catch((error) =>
+				Sentry.captureException(error, {
+					level: 'warning',
+					tags: {
+						action: 'deleteRecipe',
+						step: 'translation-cleanup',
+					},
+				}),
+			)
 
 		const affectedUsers = await db.user.findMany({
 			where: {
@@ -610,9 +714,13 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 export const uploadRecipeImages = async (
 	recipeId: string,
 	formData: FormData,
-): Promise<{ error: boolean; images?: string[] }> => {
+): Promise<{ error: boolean; images?: string[]; message?: string }> => {
 	const currentUser = await auth()
 	if (!currentUser) return { error: true }
+
+	if (!env.MEDIA_MANAGEMENT_ENABLED) {
+		return { error: true, message: MEDIA_MANAGEMENT_DISABLED_MESSAGE }
+	}
 
 	try {
 		const recipe = await db.recipe.findFirst({
@@ -716,7 +824,7 @@ export const uploadRecipeImages = async (
 export const updateRecipeImages = async (
 	recipeId: string,
 	images: string[],
-): Promise<{ error: boolean }> => {
+): Promise<{ error: boolean; message?: string }> => {
 	const currentUser = await auth()
 	if (!currentUser) return { error: true }
 
@@ -740,6 +848,17 @@ export const updateRecipeImages = async (
 		}
 
 		const invalidKeys = images.filter((key) => !recipe.images.includes(key))
+		const removedKeys = recipe.images.filter((key) => !images.includes(key))
+
+		if (
+			!env.MEDIA_MANAGEMENT_ENABLED &&
+			(images.length !== recipe.images.length ||
+				invalidKeys.length > 0 ||
+				removedKeys.length > 0)
+		) {
+			return { error: true, message: MEDIA_MANAGEMENT_DISABLED_MESSAGE }
+		}
+
 		if (invalidKeys.length > 0) {
 			Sentry.captureMessage('updateRecipeImages: invalid keys provided', {
 				level: 'warning',
@@ -749,7 +868,6 @@ export const updateRecipeImages = async (
 			return { error: true }
 		}
 
-		const removedKeys = recipe.images.filter((key) => !images.includes(key))
 		if (removedKeys.length > 0) {
 			const { deleteRecipeImages } = await import('@/lib/s3')
 			await deleteRecipeImages(removedKeys).catch((error) =>

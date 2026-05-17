@@ -4,6 +4,8 @@ import { revalidatePath } from 'next/cache'
 import * as Sentry from '@sentry/nextjs'
 
 import { auth, signOut, unstable_update } from '@/auth'
+import { env } from '@/env.mjs'
+import { DEFAULT_SIGN_OUT_REDIRECT_URL } from '@/routes'
 import { db } from '@/server/db'
 import { UpdateProfileSchema } from '@/server/schemas'
 import { sendAccountDeletedEmail } from '@/lib/email'
@@ -67,7 +69,7 @@ export const deleteProfile = async (): Promise<null | true> => {
 		const recipeIds = recipes.map((r) => r.id)
 		const allImageKeys = recipes.flatMap((r) => r.images)
 
-		if (allImageKeys.length > 0) {
+		if (env.MEDIA_MANAGEMENT_ENABLED && allImageKeys.length > 0) {
 			await deleteRecipeImages(allImageKeys).catch((error) =>
 				Sentry.captureException(error, {
 					level: 'warning',
@@ -114,6 +116,22 @@ export const deleteProfile = async (): Promise<null | true> => {
 		}
 
 		await db.user.delete({ where: { id: currentUser.user.id } })
+		if (recipeIds.length > 0) {
+			await db.recipeTranslation
+				.deleteMany({
+					where: { recipeId: { in: recipeIds } },
+				})
+				.catch((error) =>
+					Sentry.captureException(error, {
+						level: 'warning',
+						tags: {
+							action: 'deleteProfile',
+							step: 'translation-cleanup',
+						},
+					}),
+				)
+		}
+
 		await sendAccountDeletedEmail({
 			recipientEmail: user.email,
 			recipientName: user.name || user.email,
@@ -123,7 +141,7 @@ export const deleteProfile = async (): Promise<null | true> => {
 				tags: { action: 'deleteProfile', step: 'account-deleted-email' },
 			}),
 		)
-		await signOut()
+		await signOut({ redirectTo: DEFAULT_SIGN_OUT_REDIRECT_URL })
 		return true
 	} catch (error) {
 		Sentry.captureException(error, { tags: { action: 'deleteProfile' } })

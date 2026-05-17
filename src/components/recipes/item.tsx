@@ -14,7 +14,7 @@ import { useCookiesReady } from '@/providers/cookie-provider'
 const proxyLoader: ImageLoader = ({ src, width, quality }) => {
 	return `/api/proxy?url=${encodeURIComponent(src)}&w=${width}${quality ? `&q=${quality}` : ''}`
 }
-import { IconProps, cn } from '@/utils'
+import { IconProps, cn, formatIngredientLabel } from '@/utils'
 import { Icon } from './icon'
 
 const motions: Variants = {
@@ -39,17 +39,19 @@ function cleanIngredient(raw: string) {
 		.replace(/^[-–—]\s*/, '')
 		.trim()
 	if (!cleaned) return raw.trim()
-	return cleaned.charAt(0).toUpperCase() + cleaned.slice(1)
+	return formatIngredientLabel(cleaned)
 }
 
 function RecipeListImage({
 	src,
 	alt,
 	cookiesReady,
+	useProxy,
 }: {
 	src: string
 	alt: string
 	cookiesReady: boolean
+	useProxy: boolean
 }) {
 	const [status, setStatus] = useState<'loading' | 'loaded' | 'error'>('loading')
 
@@ -61,8 +63,9 @@ function RecipeListImage({
 		if (!cookiesReady) setStatus('loading')
 	}, [cookiesReady])
 
-	const showSpinner = !cookiesReady || status === 'loading'
-	const showFallback = cookiesReady && status === 'error'
+	const canRenderImage = !useProxy || cookiesReady
+	const showSpinner = !canRenderImage || status === 'loading'
+	const showFallback = canRenderImage && status === 'error'
 
 	return (
 		<div
@@ -84,13 +87,13 @@ function RecipeListImage({
 					<ImageIcon size={24} className='text-forest-200' />
 				</div>
 			)}
-			{cookiesReady && !showFallback && (
+			{canRenderImage && !showFallback && (
 				<Image
 					src={src}
 					alt={alt}
 					fill
 					sizes='96px'
-					loader={proxyLoader}
+					loader={useProxy ? proxyLoader : undefined}
 					className='object-cover rounded-xl'
 					onLoad={() => setStatus('loaded')}
 					onError={() => setStatus('error')}
@@ -157,11 +160,13 @@ export function ItemRecipe({
 	if (saved) params.set('saved', 'true')
 	if (sort) params.set('sort', sort)
 	const queryParams = params.toString() ? `?${params.toString()}` : ''
+	const recipeHref =
+		recipe.visibility === 'showcase'
+			? `/discover/${recipe.slug}${queryParams}`
+			: `/recipes/${recipe.authorUsername}/${recipe.slug}${queryParams}`
 
 	return (
-		<Link
-			href={`/recipes/${recipe.authorUsername}/${recipe.slug}${queryParams}`}
-			className='w-full'>
+		<Link href={recipeHref} className='w-full'>
 			<motion.div
 				initial='offscreen'
 				whileInView='onscreen'
@@ -203,14 +208,14 @@ export function ItemRecipe({
 								{recipe.categories.map((category) => (
 									<span
 										key={category}
-										className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2 py-0.5 rounded-lg'>
+										className='inline-flex items-center text-xs font-bold text-forest-200 bg-forest-50 px-2 py-0.5 rounded-lg'>
 										{t_categories(category.toLowerCase())}
 									</span>
 								))}
 								{chipsToRender.map((name, i) => (
 									<span
 										key={i}
-										className='inline-flex max-w-[9rem] min-w-0 items-center rounded-lg bg-forest-150 px-2 py-0.5 text-xs font-semibold text-forest-300'>
+										className='inline-flex max-w-36 min-w-0 items-center rounded-lg bg-forest-150 px-2 py-0.5 text-xs font-semibold text-forest-200'>
 										<span className='min-w-0 truncate'>
 											{name}
 										</span>
@@ -234,6 +239,7 @@ export function ItemRecipe({
 							src={recipe.images[0]}
 							alt={recipe.name}
 							cookiesReady={cookiesReady}
+							useProxy
 						/>
 					)}
 				</div>

@@ -16,6 +16,7 @@ import {
 	RequestEmailChangeSchema,
 	UpdateProfileSchema,
 } from '@/server/schemas'
+import { DEFAULT_SIGN_OUT_REDIRECT_URL } from '@/routes'
 import { useCopyToClipboard } from '@/hooks'
 import {
 	Button,
@@ -151,7 +152,7 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 
 			toast.success(t('password-changed'))
 			passwordForm.reset()
-			await signOut({ callbackUrl: '/auth' })
+			await signOut({ redirectTo: DEFAULT_SIGN_OUT_REDIRECT_URL })
 		} catch {
 			toast.error(t('credential-update-error'))
 			setLoading(null)
@@ -504,13 +505,13 @@ export const UpdateAccount = (props: UpdateAccountProps) => {
 				<div className='flex items-center justify-center space-x-2 text-center text-xs font-semibold leading-5 text-forest-200'>
 					<Link
 						className='text-forest-300 underline underline-offset-4'
-						href='/terms'>
+						href='/terms?from=profile'>
 						{t_legal('terms')}
 					</Link>
 					<div className='bg-forest-200/40 h-0.5 w-1 rounded-2xl' />
 					<Link
 						className='text-forest-300 underline underline-offset-4'
-						href='/privacy'>
+						href='/privacy?from=profile'>
 						{t_legal('privacy')}
 					</Link>
 				</div>

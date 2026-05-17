@@ -1,9 +1,13 @@
 // @vitest-environment jsdom
 import type { ReactNode } from 'react'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { act, screen, waitFor } from '@testing-library/react'
 import { renderWithProviders } from '@/test/render'
 import { RecipesFeed } from './feed'
+
+type IntersectionCallback = (
+	entries: Partial<IntersectionObserverEntry>[],
+) => void
 
 const navigationState = vi.hoisted(() => ({ pathname: '/', query: '' }))
 const animatePresenceProps = vi.hoisted(
@@ -16,12 +20,12 @@ const infoProps = vi.hoisted(
 	() => [] as Array<{ enabled: boolean; mode: string; search?: string }>,
 )
 
+let intersectionCallbacks: IntersectionCallback[] = []
+let observeMock: ReturnType<typeof vi.fn>
+let disconnectMock: ReturnType<typeof vi.fn>
+
 vi.mock('@/server/actions', () => ({
 	fetchRecipes: vi.fn(),
-}))
-
-vi.mock('@/hooks', () => ({
-	useInfiniteScroll: () => ({ current: null }),
 }))
 
 vi.mock('@/components/recipes/item', () => ({
@@ -90,6 +94,20 @@ const mockFetchRecipes = vi.mocked(fetchRecipes)
 
 beforeEach(() => {
 	vi.clearAllMocks()
+	intersectionCallbacks = []
+	observeMock = vi.fn()
+	disconnectMock = vi.fn()
+	vi.stubGlobal(
+		'IntersectionObserver',
+		class {
+			constructor(callback: IntersectionCallback) {
+				intersectionCallbacks.push(callback)
+			}
+			observe = observeMock
+			disconnect = disconnectMock
+			unobserve = vi.fn()
+		},
+	)
 	animatePresenceProps.length = 0
 	motionDivProps.length = 0
 	infoProps.length = 0
@@ -97,13 +115,17 @@ beforeEach(() => {
 	navigationState.query = ''
 })
 
+afterEach(() => {
+	vi.unstubAllGlobals()
+})
+
 function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
-	return {
+	const base: RecipeSchema = {
 		id: '1',
 		name: 'Pasta Carbonara',
 		slug: 'pasta-carbonara',
-		course: 'FirstCourse',
-		categories: ['Pasta'],
+		course: 'first_course',
+		categories: ['pasta'],
 		time: 30,
 		ingredients: ['pasta', 'egg', 'bacon'],
 		complements: [],
@@ -114,8 +136,21 @@ function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
 		authorUsername: 'chef',
 		createdAt: new Date('2025-01-01'),
 		updatedAt: new Date('2025-01-01'),
-		...overrides,
+		visibility: 'public',
+		locale: 'en',
 	}
+	return {
+		...base,
+		...overrides,
+		visibility: overrides.visibility ?? base.visibility,
+		locale: overrides.locale ?? base.locale,
+	}
+}
+
+function getLatestIntersectionCallback() {
+	const callback = intersectionCallbacks[intersectionCallbacks.length - 1]
+	expect(callback).toBeDefined()
+	return callback!
 }
 
 describe('RecipesFeed', () => {
@@ -197,6 +232,99 @@ describe('RecipesFeed', () => {
 		})
 	})
 
+	it('loads the next page when the infinite-scroll sentinel is reached', async () => {
+		mockFetchRecipes
+			.mockResolvedValueOnce({
+				recipes: Array.from({ length: 10 }, (_, i) =>
+					makeRecipe({ id: `recipe-${i}`, name: `Recipe ${i}` }),
+				),
+				nextCursor: 'recipe-9',
+				totalCount: 12,
+			})
+			.mockResolvedValueOnce({
+				recipes: [makeRecipe({ id: 'recipe-10', name: 'Recipe 10' })],
+				nextCursor: null,
+				totalCount: 12,
+			})
+
+		renderWithProviders(<RecipesFeed />)
+
+		await waitFor(() => {
+			expect(screen.getByText('Recipe 9')).toBeInTheDocument()
+		})
+		await waitFor(() => {
+			expect(observeMock).toHaveBeenCalled()
+		})
+
+		act(() => {
+			getLatestIntersectionCallback()([{ isIntersecting: true }])
+		})
+
+		await waitFor(() => {
+			expect(screen.getByText('Recipe 10')).toBeInTheDocument()
+		})
+		expect(mockFetchRecipes).toHaveBeenLastCalledWith(
+			expect.objectContaining({ cursor: 'recipe-9' }),
+		)
+	})
+
+	it('does not start duplicate next-page fetches while one is in flight', async () => {
+		let resolveNextPage: (
+			value: Awaited<ReturnType<typeof fetchRecipes>>,
+		) => void = () => {}
+		const nextPage = new Promise<Awaited<ReturnType<typeof fetchRecipes>>>(
+			(resolve) => {
+				resolveNextPage = resolve
+			},
+		)
+
+		mockFetchRecipes
+			.mockResolvedValueOnce({
+				recipes: Array.from({ length: 10 }, (_, i) =>
+					makeRecipe({ id: `recipe-${i}`, name: `Recipe ${i}` }),
+				),
+				nextCursor: 'recipe-9',
+				totalCount: 12,
+			})
+			.mockReturnValueOnce(nextPage)
+
+		renderWithProviders(<RecipesFeed />)
+
+		await waitFor(() => {
+			expect(screen.getByText('Recipe 9')).toBeInTheDocument()
+		})
+		await waitFor(() => {
+			expect(observeMock).toHaveBeenCalled()
+		})
+
+		act(() => {
+			const callback = getLatestIntersectionCallback()
+			callback([{ isIntersecting: true }])
+			callback([{ isIntersecting: true }])
+		})
+
+		await waitFor(() => {
+			expect(mockFetchRecipes).toHaveBeenCalledTimes(2)
+		})
+		expect(mockFetchRecipes).toHaveBeenLastCalledWith(
+			expect.objectContaining({ cursor: 'recipe-9' }),
+		)
+
+		await act(async () => {
+			resolveNextPage({
+				recipes: [makeRecipe({ id: 'recipe-10', name: 'Recipe 10' })],
+				nextCursor: null,
+				totalCount: 12,
+			})
+			await nextPage
+		})
+
+		await waitFor(() => {
+			expect(screen.getByText('Recipe 10')).toBeInTheDocument()
+		})
+		expect(mockFetchRecipes).toHaveBeenCalledTimes(2)
+	})
+
 	it('renders the result count when filtering recipes', async () => {
 		mockFetchRecipes.mockResolvedValue({
 			recipes: [makeRecipe()],
@@ -204,7 +332,7 @@ describe('RecipesFeed', () => {
 			totalCount: 5,
 		})
 
-		renderWithProviders(<RecipesFeed courseParam='FirstCourse' />)
+		renderWithProviders(<RecipesFeed courseParam='first_course' />)
 
 		await waitFor(() => {
 			expect(screen.getByText('5 recipes')).toBeInTheDocument()
@@ -242,14 +370,14 @@ describe('RecipesFeed', () => {
 	})
 
 	it('uses the no-results component when filters have no results', async () => {
-		navigationState.query = 'course=FirstCourse'
+		navigationState.query = 'course=first_course'
 		mockFetchRecipes.mockResolvedValue({
 			recipes: [],
 			nextCursor: null,
 			totalCount: 0,
 		})
 
-		renderWithProviders(<RecipesFeed courseParam='FirstCourse' />)
+		renderWithProviders(<RecipesFeed courseParam='first_course' />)
 
 		await waitFor(() => {
 			expect(screen.getByText('No recipes found')).toBeInTheDocument()
@@ -276,7 +404,7 @@ describe('RecipesFeed', () => {
 	})
 
 	it('uses a clear-all action when search and filters have no results', async () => {
-		navigationState.query = 'search=missing&course=FirstCourse'
+		navigationState.query = 'search=missing&course=first_course'
 		mockFetchRecipes.mockResolvedValue({
 			recipes: [],
 			nextCursor: null,
@@ -284,7 +412,7 @@ describe('RecipesFeed', () => {
 		})
 
 		renderWithProviders(
-			<RecipesFeed searchParam='missing' courseParam='FirstCourse' />,
+			<RecipesFeed searchParam='missing' courseParam='first_course' />,
 		)
 
 		await waitFor(() => {
@@ -438,6 +566,82 @@ describe('RecipesFeed', () => {
 				(props) => props.enabled === false && props.mode === 'recipes',
 			),
 		).toBe(false)
+	})
+
+	it('renders the empty-state footer below the dashboard creation prompt', async () => {
+		mockFetchRecipes.mockResolvedValue({
+			recipes: [],
+			nextCursor: null,
+			totalCount: 0,
+		})
+
+		renderWithProviders(
+			<RecipesFeed emptyStateFooter={<div>Suggested recipes</div>} />,
+		)
+
+		await waitFor(() => {
+			expect(screen.getByText('Create your first recipe')).toBeInTheDocument()
+		})
+		expect(screen.getByText('Suggested recipes')).toBeInTheDocument()
+		expect(
+			screen
+				.getByText('Create your first recipe')
+				.compareDocumentPosition(screen.getByText('Suggested recipes')) &
+			Node.DOCUMENT_POSITION_FOLLOWING,
+		).toBeTruthy()
+	})
+
+	it('renders the end-of-feed footer only after all pages are loaded', async () => {
+		let resolveNextPage: (
+			value: Awaited<ReturnType<typeof fetchRecipes>>,
+		) => void = () => {}
+		const nextPage = new Promise<Awaited<ReturnType<typeof fetchRecipes>>>(
+			(resolve) => {
+				resolveNextPage = resolve
+			},
+		)
+
+		mockFetchRecipes
+			.mockResolvedValueOnce({
+				recipes: Array.from({ length: 10 }, (_, i) =>
+					makeRecipe({ id: `recipe-${i}`, name: `Recipe ${i}` }),
+				),
+				nextCursor: 'recipe-9',
+				totalCount: 11,
+			})
+			.mockReturnValueOnce(nextPage)
+
+		renderWithProviders(
+			<RecipesFeed endOfFeedFooter={<div>Suggested recipes</div>} />,
+		)
+
+		await waitFor(() => {
+			expect(screen.getByText('Recipe 9')).toBeInTheDocument()
+		})
+		expect(screen.queryByText('Suggested recipes')).not.toBeInTheDocument()
+
+		act(() => {
+			getLatestIntersectionCallback()([{ isIntersecting: true }])
+		})
+
+		await waitFor(() => {
+			expect(mockFetchRecipes).toHaveBeenCalledTimes(2)
+		})
+		expect(screen.queryByText('Suggested recipes')).not.toBeInTheDocument()
+
+		await act(async () => {
+			resolveNextPage({
+				recipes: [makeRecipe({ id: 'recipe-10', name: 'Recipe 10' })],
+				nextCursor: null,
+				totalCount: 11,
+			})
+			await nextPage
+		})
+
+		await waitFor(() => {
+			expect(screen.getByText('Recipe 10')).toBeInTheDocument()
+		})
+		expect(screen.getByText('Suggested recipes')).toBeInTheDocument()
 	})
 
 	it('deduplicates recipes across pages', async () => {

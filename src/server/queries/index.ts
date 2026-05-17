@@ -1,20 +1,39 @@
 import { cache } from 'react'
+import { Prisma } from '@prisma/client'
 import * as Sentry from '@sentry/nextjs'
 
 import { auth } from '@/auth'
 import { db } from '@/server/db'
 import {
-	RecipeSchema,
-	normalizeRecipeComplements,
+	isRecipeCategory,
+	isRecipeCourse,
+	normalizeRecipeSort,
 	normalizeRecipeCourseAndCategories,
+	type RecipeSchema,
 } from '../schemas'
+import {
+	getCurrentRecipeLocale,
+	type RecipeLocale,
+} from '@/server/recipes/locale'
+import {
+	mapRecipeToSchema,
+	recipeSchemaInclude,
+	resolveRecipeTranslation,
+	type RecipeWithTranslationsAndAuthor,
+} from '@/server/recipes/translation'
 
 const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN
+const PAGE_SIZE = 10
+
+const isAbsoluteHttpUrl = (value: string) => /^https?:\/\//i.test(value)
 
 /** Convert S3 file keys to full CloudFront URLs */
 export function toImageUrls(keys: string[]): string[] {
-	if (!CLOUDFRONT_DOMAIN) return []
-	return keys.map((key) => `${CLOUDFRONT_DOMAIN}/${key}`)
+	return keys.flatMap((key) => {
+		if (isAbsoluteHttpUrl(key)) return [key]
+		if (!CLOUDFRONT_DOMAIN) return []
+		return [`${CLOUDFRONT_DOMAIN}/${key}`]
+	})
 }
 
 /**
@@ -23,19 +42,70 @@ export function toImageUrls(keys: string[]): string[] {
  * @returns RecipeSchema
  */
 function toRecipeSchema(
-	recipe: Awaited<ReturnType<typeof db.recipe.findMany>>[number] & {
-		author?: { username: string | null } | null
-	},
+	recipe: RecipeWithTranslationsAndAuthor,
+	locale: RecipeLocale,
 ): RecipeSchema {
+	return mapRecipeToSchema(recipe, locale, toImageUrls(recipe.images))
+}
+
+function buildRecipeSearchWhere(search?: string): Prisma.RecipeWhereInput {
+	if (!search?.trim()) return {}
+
 	return {
-		...recipe,
-		...normalizeRecipeCourseAndCategories(recipe.course, recipe.categories),
-		complements: normalizeRecipeComplements(
-			'complements' in recipe ? recipe.complements : undefined,
-		),
-		authorUsername: recipe.author?.username ?? '',
-		images: toImageUrls(recipe.images),
+		translations: {
+			some: {
+				name: {
+					contains: search
+						.slice(0, 50)
+						.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+					mode: 'insensitive',
+				},
+			},
+		},
 	}
+}
+
+function buildRecipeFilterWhere(params: {
+	search?: string
+	course?: string
+	categories?: string
+}): Prisma.RecipeWhereInput {
+	const categoryFilters = (params.categories ?? '')
+		.split(',')
+		.map((category) => category.trim())
+		.filter(isRecipeCategory)
+	const courseFilter =
+		params.course && isRecipeCourse(params.course) ? params.course : undefined
+
+	return {
+		...buildRecipeSearchWhere(params.search),
+		...(courseFilter && { course: courseFilter }),
+		...(categoryFilters.length && { categories: { hasSome: categoryFilters } }),
+	}
+}
+
+function sortRecipesByTime(
+	recipes: RecipeWithTranslationsAndAuthor[],
+	direction: 'asc' | 'desc',
+): RecipeWithTranslationsAndAuthor[] {
+	return [...recipes].sort((a, b) => {
+		const aTime = a.time
+		const bTime = b.time
+		const aHasTime = typeof aTime === 'number'
+		const bHasTime = typeof bTime === 'number'
+
+		if (aHasTime && !bHasTime) return -1
+		if (!aHasTime && bHasTime) return 1
+
+		if (aHasTime && bHasTime && aTime !== bTime) {
+			return direction === 'asc' ? aTime - bTime : bTime - aTime
+		}
+
+		const createdDiff = b.createdAt.getTime() - a.createdAt.getTime()
+		if (createdDiff !== 0) return createdDiff
+
+		return b.id.localeCompare(a.id)
+	})
 }
 
 /**
@@ -142,21 +212,39 @@ export const getRecipesByUserId = cache(async (userId?: string) => {
 	}
 
 	try {
+		const locale = await getCurrentRecipeLocale()
 		let savedRecipes: RecipeSchema[] = []
 		const rawRecipes = await db.recipe.findMany({
-			where: { authorId },
-			include: { author: { select: { username: true } } },
+			where: {
+				authorId,
+				...(userId && userId !== currentUser.user.id
+					? { visibility: 'public' as const }
+					: {}),
+			},
+			include: recipeSchemaInclude,
 		})
-		const recipes = rawRecipes.map(toRecipeSchema)
+		const recipes = rawRecipes.map((recipe) => toRecipeSchema(recipe, locale))
 
 		if (!userId) {
 			const savedIds = await getSavedRecipeIds()
 			if (savedIds.length) {
 				const rawSaved = await db.recipe.findMany({
-					where: { id: { in: savedIds } },
-					include: { author: { select: { username: true } } },
+					where: {
+						id: { in: savedIds },
+						OR: [
+							{ authorId: currentUser.user.id },
+							{ visibility: 'showcase' },
+							{
+								visibility: 'public',
+								author: { isPrivate: false },
+							},
+						],
+					},
+					include: recipeSchemaInclude,
 				})
-				savedRecipes = rawSaved.map(toRecipeSchema)
+				savedRecipes = rawSaved.map((recipe) =>
+					toRecipeSchema(recipe, locale),
+				)
 			}
 		}
 
@@ -190,11 +278,17 @@ export const getRecipeByAuthAndSlug = cache(
 
 		try {
 			const recipe = await db.recipe.findFirst({
-				where: { authorId, slug },
-				include: { author: { select: { username: true } } },
+				where: {
+					authorId,
+					slug,
+					...(authorId !== currentUser.user?.id
+						? { visibility: 'public' as const }
+						: {}),
+				},
+				include: recipeSchemaInclude,
 			})
 			if (!recipe) return null
-			return toRecipeSchema(recipe)
+			return toRecipeSchema(recipe, await getCurrentRecipeLocale())
 		} catch (error) {
 			throw error
 		}
@@ -215,16 +309,137 @@ export const getPublicRecipeByUsernameAndSlug = cache(
 			if (!author) return null
 
 			const recipe = await db.recipe.findFirst({
-				where: { authorId: author.id, slug },
-				include: { author: { select: { username: true } } },
+				where: { authorId: author.id, slug, visibility: 'public' },
+				include: recipeSchemaInclude,
 			})
 			if (!recipe) return null
-			return toRecipeSchema(recipe)
+			return toRecipeSchema(recipe, await getCurrentRecipeLocale())
 		} catch (error) {
 			throw error
 		}
 	},
 )
+
+/**
+ * Get showcase recipes.
+ * Auth required.
+ */
+export const getShowcaseRecipes = cache(
+	async (params: {
+		cursor?: string
+		take?: number
+		search?: string
+		course?: string
+		categories?: string
+		sort?: string
+	}): Promise<{
+		recipes: RecipeSchema[]
+		nextCursor: string | null
+		totalCount: number
+	}> => {
+		const empty = { recipes: [], nextCursor: null, totalCount: 0 }
+		const currentUser = await auth()
+		if (!currentUser) return empty
+
+		const {
+			cursor,
+			take = PAGE_SIZE,
+			search,
+			course,
+			categories,
+			sort,
+		} = params
+		const safeTake = Math.min(take, 50)
+		const recipeSort = normalizeRecipeSort(sort)
+		const locale = await getCurrentRecipeLocale()
+		const where: Prisma.RecipeWhereInput = {
+			visibility: 'showcase',
+			...buildRecipeFilterWhere({ search, course, categories }),
+		}
+
+		try {
+			if (recipeSort === 'timeAsc' || recipeSort === 'timeDesc') {
+				const candidates = await db.recipe.findMany({
+					where,
+					include: recipeSchemaInclude,
+					orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+				})
+				const sorted = sortRecipesByTime(
+					candidates,
+					recipeSort === 'timeAsc' ? 'asc' : 'desc',
+				)
+				const startIndex = cursor
+					? Math.max(
+							sorted.findIndex((recipe) => recipe.id === cursor) + 1,
+							0,
+						)
+					: 0
+				const results = sorted.slice(startIndex, startIndex + safeTake + 1)
+				const hasMore = results.length > safeTake
+				if (hasMore) results.pop()
+
+				return {
+					recipes: results.map((recipe) => toRecipeSchema(recipe, locale)),
+					nextCursor: hasMore
+						? (results[results.length - 1]?.id ?? null)
+						: null,
+					totalCount: sorted.length,
+				}
+			}
+
+			const [results, totalCount] = await Promise.all([
+				db.recipe.findMany({
+					where,
+					include: recipeSchemaInclude,
+					orderBy:
+						recipeSort === 'createdAtAsc'
+							? [{ createdAt: 'asc' }, { id: 'asc' }]
+							: [{ createdAt: 'desc' }, { id: 'desc' }],
+					take: safeTake + 1,
+					...(cursor && { cursor: { id: cursor }, skip: 1 }),
+				}),
+				db.recipe.count({ where }),
+			])
+
+			const hasMore = results.length > safeTake
+			if (hasMore) results.pop()
+
+			return {
+				recipes: results.map((recipe) => toRecipeSchema(recipe, locale)),
+				nextCursor: hasMore
+					? (results[results.length - 1]?.id ?? null)
+					: null,
+				totalCount,
+			}
+		} catch (error) {
+			Sentry.captureException(error, { tags: { query: 'getShowcaseRecipes' } })
+			return empty
+		}
+	},
+)
+
+/**
+ * Get a showcase recipe by slug.
+ * Auth required.
+ */
+export const getShowcaseRecipeBySlug = cache(async (slug: string) => {
+	try {
+		const currentUser = await auth()
+		if (!currentUser) return null
+
+		const recipe = await db.recipe.findFirst({
+			where: { slug, visibility: 'showcase' },
+			include: recipeSchemaInclude,
+		})
+		if (!recipe) return null
+		return toRecipeSchema(recipe, await getCurrentRecipeLocale())
+	} catch (error) {
+		Sentry.captureException(error, {
+			tags: { query: 'getShowcaseRecipeBySlug' },
+		})
+		return null
+	}
+})
 
 /**
  * Get profile by username.
@@ -260,7 +475,13 @@ export const getProfileByUsername = cache(
 					_count: { select: { recipes: true } },
 				},
 			})
-			return { profile }
+			if (!profile) return { profile: null }
+
+			const recipeCount = await db.recipe.count({
+				where: { authorId: profile.id, visibility: 'public' },
+			})
+
+			return { profile: { ...profile, _count: { recipes: recipeCount } } }
 		} catch (error) {
 			Sentry.captureException(error, {
 				tags: { query: 'getProfileByUsername' },
@@ -286,6 +507,7 @@ export const getProfilesByName = cache(async (name: string) => {
 	if (!name.trim()) return []
 
 	try {
+		const locale = await getCurrentRecipeLocale()
 		const profiles = await db.user.findMany({
 			where: {
 				id: { not: userId },
@@ -298,12 +520,13 @@ export const getProfilesByName = cache(async (name: string) => {
 				username: true,
 				image: true,
 				isPrivate: true,
-				_count: { select: { recipes: true } },
 				recipes: {
+					where: { visibility: 'public' },
 					orderBy: { createdAt: 'desc' },
 					take: 1,
 					select: {
-						name: true,
+						defaultLocale: true,
+						translations: true,
 						slug: true,
 						time: true,
 						course: true,
@@ -314,9 +537,19 @@ export const getProfilesByName = cache(async (name: string) => {
 			},
 			take: 10,
 		})
+		const publicRecipeCounts = await Promise.all(
+			profiles.map((profile) =>
+				db.recipe.count({
+					where: { authorId: profile.id, visibility: 'public' },
+				}),
+			),
+		)
 
-		const mappedProfiles = profiles.map((profile) => {
+		const mappedProfiles = profiles.map((profile, index) => {
 			const latestRecipe = profile.recipes?.[0]
+			const latestTranslation = latestRecipe
+				? resolveRecipeTranslation(latestRecipe, locale)
+				: null
 			const normalizedLatestRecipe = latestRecipe
 				? normalizeRecipeCourseAndCategories(
 						latestRecipe.course,
@@ -329,10 +562,10 @@ export const getProfilesByName = cache(async (name: string) => {
 				name: profile.name ?? '',
 				username: profile.username!,
 				image: profile.image ?? '',
-				recipesCount: profile._count.recipes,
+				recipesCount: publicRecipeCounts[index] ?? 0,
 				latestRecipe: latestRecipe
 					? {
-							name: latestRecipe.name,
+							name: latestTranslation!.name,
 							slug: latestRecipe.slug,
 							time: latestRecipe.time,
 							course: normalizedLatestRecipe!.course,

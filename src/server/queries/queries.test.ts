@@ -15,6 +15,7 @@ vi.mock('@/server/db', () => ({
 		recipe: {
 			findMany: vi.fn(),
 			findFirst: vi.fn(),
+			count: vi.fn(),
 		},
 	},
 }))
@@ -45,6 +46,7 @@ const mockSession = { user: { id: 'user-1' } }
 
 beforeEach(() => {
 	vi.clearAllMocks()
+	mockDb.recipe.count.mockResolvedValue(3)
 })
 
 describe('toImageUrls', () => {
@@ -170,8 +172,8 @@ describe('getRecipesByUserId', () => {
 		id,
 		name: `Recipe ${id}`,
 		slug: `recipe-${id}`,
-		course: 'SecondCourse',
-		categories: ['Fish'],
+		course: 'second_course',
+		categories: ['fish'],
 		time: 30,
 		ingredients: ['a'],
 		instructions: 'Cook it.',
@@ -245,8 +247,8 @@ describe('getRecipeByAuthAndSlug', () => {
 		id: 'r1',
 		name: 'Test',
 		slug: 'test',
-		course: 'SecondCourse',
-		categories: ['Fish'],
+		course: 'second_course',
+		categories: ['fish'],
 		time: 30,
 		ingredients: ['a'],
 		instructions: 'Cook it.',
@@ -312,8 +314,8 @@ describe('getPublicRecipeByUsernameAndSlug', () => {
 		id: 'r1',
 		name: 'Test',
 		slug: 'test',
-		course: 'SecondCourse',
-		categories: ['Fish'],
+		course: 'second_course',
+		categories: ['fish'],
 		time: 30,
 		ingredients: ['a'],
 		instructions: 'Cook it.',
@@ -414,6 +416,7 @@ describe('getProfilesByName', () => {
 
 	it('returns mapped profiles when found', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.count.mockResolvedValue(4)
 		mockDb.user.findMany.mockResolvedValue([
 			{
 				id: 'user-2',
@@ -427,8 +430,8 @@ describe('getProfilesByName', () => {
 						name: 'Fresh Pasta',
 						slug: 'fresh-pasta',
 						time: 30,
-						course: 'FirstCourse',
-						categories: ['Pasta'],
+						course: 'first_course',
+						categories: ['pasta'],
 						images: [],
 					},
 				],
@@ -443,17 +446,20 @@ describe('getProfilesByName', () => {
 					name: 'John Doe',
 					username: 'johndoe',
 					image: 'img.jpg',
-					recipesCount: 5,
+					recipesCount: 4,
 					latestRecipe: {
 						name: 'Fresh Pasta',
 						slug: 'fresh-pasta',
 						time: 30,
-						course: 'FirstCourse',
-						categories: ['Pasta'],
+						course: 'first_course',
+						categories: ['pasta'],
 						image: null,
 					},
 				},
 			],
+		})
+		expect(mockDb.recipe.count).toHaveBeenCalledWith({
+			where: { authorId: 'user-2', visibility: 'public' },
 		})
 	})
 })

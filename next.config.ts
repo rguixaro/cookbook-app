@@ -29,7 +29,7 @@ const nextConfig: NextConfig = {
 				? [{ protocol: 'https' as const, hostname: cloudfrontHostname }]
 				: []),
 		],
-		localPatterns: [{ pathname: '/api/proxy' }],
+		localPatterns: [{ pathname: '/api/proxy' }, { pathname: '/images/**' }],
 	},
 	async headers() {
 		return [

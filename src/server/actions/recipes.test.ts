@@ -23,11 +23,21 @@ vi.mock('@/server/db', () => ({
 			update: vi.fn(),
 			delete: vi.fn(),
 		},
+		recipeTranslation: {
+			upsert: vi.fn(),
+			deleteMany: vi.fn(),
+		},
 	},
 }))
 
 vi.mock('next/cache', () => ({
 	revalidatePath: vi.fn(),
+}))
+
+vi.mock('@/env.mjs', () => ({
+	env: {
+		MEDIA_MANAGEMENT_ENABLED: true,
+	},
 }))
 
 vi.mock('@/lib/s3', () => ({
@@ -36,16 +46,20 @@ vi.mock('@/lib/s3', () => ({
 }))
 
 vi.mock('@/server/queries', () => ({
+	getShowcaseRecipes: vi.fn(),
 	toImageUrls: vi.fn((keys: string[]) =>
 		keys.map((k) => `https://cdn.example.com/${k}`),
 	),
 }))
 
 import { auth } from '@/auth'
+import { env } from '@/env.mjs'
 import { db } from '@/server/db'
+import { getShowcaseRecipes } from '@/server/queries'
 import { revalidatePath } from 'next/cache'
 import {
 	fetchRecipes,
+	fetchShowcaseRecipes,
 	createRecipe,
 	updateRecipe,
 	saveRecipe,
@@ -57,14 +71,16 @@ import {
 
 const mockAuth = vi.mocked(auth)
 const mockDb = vi.mocked(db, true)
+const mockGetShowcaseRecipes = vi.mocked(getShowcaseRecipes)
 const mockRevalidatePath = vi.mocked(revalidatePath)
+const mockEnv = env as { MEDIA_MANAGEMENT_ENABLED: boolean }
 
 const mockSession = { user: { id: 'user-1' } }
 
 const validRecipeInput = {
 	name: 'Paella Valenciana',
-	course: 'SecondCourse' as const,
-	categories: ['Fish', 'Rice'] as const,
+	course: 'second_course' as const,
+	categories: ['fish', 'rice'] as const,
 	time: 60,
 	ingredients: ['rice', 'shrimp', 'saffron'],
 	instructions: 'Cook the rice with the shrimp and saffron in a large pan.',
@@ -73,7 +89,50 @@ const validRecipeInput = {
 
 beforeEach(() => {
 	vi.clearAllMocks()
+	mockEnv.MEDIA_MANAGEMENT_ENABLED = true
 	mockDb.recipe.count.mockResolvedValue(1)
+	mockGetShowcaseRecipes.mockResolvedValue({
+		recipes: [],
+		nextCursor: null,
+		totalCount: 0,
+	})
+	mockDb.recipeTranslation.upsert.mockResolvedValue({} as any)
+	mockDb.recipeTranslation.deleteMany.mockResolvedValue({ count: 0 } as any)
+})
+
+describe('fetchShowcaseRecipes', () => {
+	it('returns empty when not authenticated', async () => {
+		mockAuth.mockResolvedValue(null as any)
+
+		const result = await fetchShowcaseRecipes({})
+
+		expect(result).toEqual({ recipes: [], nextCursor: null, totalCount: 0 })
+		expect(mockGetShowcaseRecipes).not.toHaveBeenCalled()
+	})
+
+	it('delegates showcase fetches for authenticated users', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockGetShowcaseRecipes.mockResolvedValueOnce({
+			recipes: [],
+			nextCursor: 'recipe-1',
+			totalCount: 12,
+		})
+
+		const result = await fetchShowcaseRecipes({
+			search: 'pasta',
+			take: 10,
+		})
+
+		expect(result).toEqual({
+			recipes: [],
+			nextCursor: 'recipe-1',
+			totalCount: 12,
+		})
+		expect(mockGetShowcaseRecipes).toHaveBeenCalledWith({
+			search: 'pasta',
+			take: 10,
+		})
+	})
 })
 
 describe('fetchRecipes', () => {
@@ -81,8 +140,8 @@ describe('fetchRecipes', () => {
 		id,
 		name: `Recipe ${id}`,
 		slug: `recipe-${id}`,
-		course: 'SecondCourse',
-		categories: ['Fish'],
+		course: 'second_course',
+		categories: ['fish'],
 		time: 30,
 		ingredients: ['a'],
 		instructions: 'Do the thing.',
@@ -131,9 +190,7 @@ describe('fetchRecipes', () => {
 	it('returns recipes for public user', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.user.findUnique.mockResolvedValue({ isPrivate: false } as any)
-		mockDb.recipe.findMany.mockResolvedValue([
-			makeRecipe('r1', 'user-2'),
-		] as any)
+		mockDb.recipe.findMany.mockResolvedValue([makeRecipe('r1', 'user-2')] as any)
 
 		const result = await fetchRecipes({ userId: 'user-2' })
 		expect(result.recipes).toHaveLength(1)
@@ -221,10 +278,10 @@ describe('fetchRecipes', () => {
 		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
 		mockDb.recipe.findMany.mockResolvedValue([makeRecipe('r1')] as any)
 
-		await fetchRecipes({ course: 'SecondCourse' })
+		await fetchRecipes({ course: 'second_course' })
 		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
 			expect.objectContaining({
-				where: expect.objectContaining({ course: 'SecondCourse' }),
+				where: expect.objectContaining({ course: 'second_course' }),
 			}),
 		)
 	})
@@ -234,11 +291,11 @@ describe('fetchRecipes', () => {
 		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
 		mockDb.recipe.findMany.mockResolvedValue([makeRecipe('r1')] as any)
 
-		await fetchRecipes({ categories: 'Fish,Wok,InvalidCategory' })
+		await fetchRecipes({ categories: 'fish,wok,InvalidCategory' })
 		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
 			expect.objectContaining({
 				where: expect.objectContaining({
-					categories: { hasSome: ['Fish', 'Wok'] },
+					categories: { hasSome: ['fish', 'wok'] },
 				}),
 			}),
 		)
@@ -405,15 +462,25 @@ describe('createRecipe', () => {
 		})
 		expect(mockDb.recipe.create).toHaveBeenCalledWith({
 			data: expect.objectContaining({
-				name: 'Paella Valenciana',
-				course: 'SecondCourse',
-				categories: ['Fish', 'Rice'],
-				ingredients: ['rice', 'shrimp', 'saffron'],
-				complements: [],
+				course: 'second_course',
+				categories: ['fish', 'rice'],
 				slug: 'paella-valenciana',
 				authorId: 'user-1',
+				defaultLocale: 'en',
+				visibility: 'public',
+				translations: {
+					create: expect.objectContaining({
+						locale: 'en',
+						name: 'Paella Valenciana',
+						ingredients: ['rice', 'shrimp', 'saffron'],
+						complements: [],
+					}),
+				},
 			}),
-			include: { author: { select: { username: true } } },
+			include: {
+				author: { select: { username: true } },
+				translations: true,
+			},
 		})
 	})
 
@@ -427,7 +494,7 @@ describe('createRecipe', () => {
 
 		const complements = [
 			{
-				type: 'Sauce' as const,
+				type: 'sauce' as const,
 				name: 'Romesco',
 				ingredients: ['tomato', 'olive oil'],
 				instructions: 'Simmer the tomato and oil until glossy.',
@@ -443,9 +510,13 @@ describe('createRecipe', () => {
 		expect(mockDb.recipe.create).toHaveBeenCalledWith(
 			expect.objectContaining({
 				data: expect.objectContaining({
-					ingredients: validRecipeInput.ingredients,
-					instructions: validRecipeInput.instructions,
-					complements,
+					translations: {
+						create: expect.objectContaining({
+							ingredients: validRecipeInput.ingredients,
+							instructions: validRecipeInput.instructions,
+							complements,
+						}),
+					},
 				}),
 			}),
 		)
@@ -518,10 +589,32 @@ describe('updateRecipe', () => {
 			recipeId: 'recipe-1',
 			recipePath: '/recipes/testuser/paella-valenciana',
 		})
-		expect(mockDb.recipe.update).toHaveBeenCalled()
+		expect(mockDb.recipe.update).toHaveBeenCalledWith(
+			expect.objectContaining({
+				data: expect.objectContaining({
+					slug: 'paella-valenciana',
+					translations: {
+						upsert: expect.objectContaining({
+							where: {
+								recipeId_locale: {
+									recipeId: 'recipe-1',
+									locale: 'en',
+								},
+							},
+							update: expect.objectContaining({
+								name: 'Paella Valenciana',
+								ingredients: validRecipeInput.ingredients,
+								instructions: validRecipeInput.instructions,
+							}),
+						}),
+					},
+				}),
+			}),
+		)
+		expect(mockDb.recipeTranslation.upsert).not.toHaveBeenCalled()
 	})
 
-	it('updates complement data separately from main recipe fields', async () => {
+	it('updates complement data in the nested translation upsert', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.recipe.findFirst.mockResolvedValue({
 			id: 'recipe-1',
@@ -533,7 +626,7 @@ describe('updateRecipe', () => {
 
 		const complements = [
 			{
-				type: 'Marinade' as const,
+				type: 'marinade' as const,
 				name: 'Lemon garlic marinade',
 				ingredients: ['lemon', 'garlic'],
 				instructions: 'Mix the lemon and garlic and rest the fish.',
@@ -549,12 +642,24 @@ describe('updateRecipe', () => {
 		expect(mockDb.recipe.update).toHaveBeenCalledWith(
 			expect.objectContaining({
 				data: expect.objectContaining({
-					ingredients: validRecipeInput.ingredients,
-					instructions: validRecipeInput.instructions,
-					complements,
+					translations: {
+						upsert: expect.objectContaining({
+							update: expect.objectContaining({
+								ingredients: validRecipeInput.ingredients,
+								instructions: validRecipeInput.instructions,
+								complements,
+							}),
+							create: expect.objectContaining({
+								ingredients: validRecipeInput.ingredients,
+								instructions: validRecipeInput.instructions,
+								complements,
+							}),
+						}),
+					},
 				}),
 			}),
 		)
+		expect(mockDb.recipeTranslation.upsert).not.toHaveBeenCalled()
 	})
 
 	it('updates recipe with unchanged legacy overlong ingredient', async () => {
@@ -581,10 +686,32 @@ describe('updateRecipe', () => {
 		expect(mockDb.recipe.update).toHaveBeenCalledWith(
 			expect.objectContaining({
 				data: expect.objectContaining({
-					ingredients: [legacyIngredient],
+					translations: {
+						upsert: expect.objectContaining({
+							update: expect.objectContaining({
+								ingredients: [legacyIngredient],
+							}),
+						}),
+					},
 				}),
 			}),
 		)
+	})
+
+	it('does not persist translation changes separately when the recipe update fails', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			id: 'recipe-1',
+			slug: 'old-paella',
+			ingredients: validRecipeInput.ingredients,
+			author: { username: 'testuser' },
+		} as any)
+		mockDb.recipe.update.mockRejectedValue(new Error('update failed'))
+
+		const result = await updateRecipe('recipe-1', validRecipeInput)
+
+		expect(result).toEqual({ error: true, message: 'error' })
+		expect(mockDb.recipeTranslation.upsert).not.toHaveBeenCalled()
 	})
 
 	it('rejects changed legacy overlong ingredient', async () => {
@@ -615,21 +742,36 @@ describe('saveRecipe', () => {
 		expect(result).toEqual({ error: true })
 	})
 
-	it('returns error when recipe does not exist', async () => {
+	it('returns error when recipe does not exist or is not visible', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findUnique.mockResolvedValue(null)
+		mockDb.recipe.findFirst.mockResolvedValue(null)
 
 		const result = await saveRecipe('nonexistent', false)
 		expect(result).toEqual({ error: true })
+		expect(mockDb.user.updateMany).not.toHaveBeenCalled()
 	})
 
 	it('saves a recipe atomically via updateMany', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findUnique.mockResolvedValue({ id: 'recipe-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue({ id: 'recipe-1' } as any)
 		mockDb.user.updateMany.mockResolvedValue({ count: 1 } as any)
 
 		const result = await saveRecipe('recipe-1', false)
 		expect(result).toEqual({ error: false })
+		expect(mockDb.recipe.findFirst).toHaveBeenCalledWith({
+			where: {
+				id: 'recipe-1',
+				OR: [
+					{ authorId: 'user-1' },
+					{ visibility: 'showcase' },
+					{
+						visibility: 'public',
+						author: { isPrivate: false },
+					},
+				],
+			},
+			select: { id: true },
+		})
 		expect(mockDb.user.updateMany).toHaveBeenCalledWith({
 			where: {
 				id: 'user-1',
@@ -641,7 +783,7 @@ describe('saveRecipe', () => {
 
 	it('unsaves a recipe (removes from saved and favourites)', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findUnique.mockResolvedValue({ id: 'recipe-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue({ id: 'recipe-1' } as any)
 		mockDb.user.findUnique.mockResolvedValue({
 			savedRecipes: ['recipe-1', 'recipe-2'],
 			favouriteRecipes: ['recipe-1'],
@@ -668,9 +810,18 @@ describe('favouriteRecipe', () => {
 		expect(result).toEqual({ error: true })
 	})
 
+	it('returns error when recipe does not exist or is not visible', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue(null)
+
+		const result = await favouriteRecipe('private-recipe', false)
+		expect(result).toEqual({ error: true })
+		expect(mockDb.user.updateMany).not.toHaveBeenCalled()
+	})
+
 	it('favourites a recipe atomically via updateMany', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findUnique.mockResolvedValue({ id: 'recipe-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue({ id: 'recipe-1' } as any)
 		mockDb.user.updateMany.mockResolvedValue({ count: 1 } as any)
 
 		const result = await favouriteRecipe('recipe-1', false)
@@ -686,7 +837,7 @@ describe('favouriteRecipe', () => {
 
 	it('unfavourites a recipe', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
-		mockDb.recipe.findUnique.mockResolvedValue({ id: 'recipe-1' } as any)
+		mockDb.recipe.findFirst.mockResolvedValue({ id: 'recipe-1' } as any)
 		mockDb.user.findUnique.mockResolvedValue({
 			favouriteRecipes: ['recipe-1', 'recipe-2'],
 		} as any)
@@ -732,6 +883,14 @@ describe('deleteRecipe', () => {
 		const result = await deleteRecipe('recipe-1')
 		expect(result).toEqual({ error: false })
 		expect(mockDb.recipe.delete).toHaveBeenCalled()
+		expect(mockDb.recipeTranslation.deleteMany).toHaveBeenCalledWith({
+			where: { recipeId: 'recipe-1' },
+		})
+		expect(
+			mockDb.recipe.delete.mock.invocationCallOrder[0],
+		).toBeLessThan(
+			mockDb.recipeTranslation.deleteMany.mock.invocationCallOrder[0],
+		)
 		expect(mockRevalidatePath).toHaveBeenCalledWith('/')
 		expect(mockRevalidatePath).toHaveBeenCalledWith('/recipes')
 		expect(mockRevalidatePath).toHaveBeenCalledWith(
@@ -754,6 +913,43 @@ describe('deleteRecipe', () => {
 		const result = await deleteRecipe('recipe-1')
 		expect(result).toEqual({ error: false })
 		expect(deleteRecipeImages).toHaveBeenCalledWith(['img1.jpg', 'img2.jpg'])
+	})
+
+	it('deletes recipe without S3 cleanup when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: ['img1.jpg', 'img2.jpg'],
+		} as any)
+		mockDb.recipe.delete.mockResolvedValue({} as any)
+		mockDb.user.findMany.mockResolvedValue([])
+
+		const { deleteRecipeImages } = await import('@/lib/s3')
+
+		const result = await deleteRecipe('recipe-1')
+		expect(result).toEqual({ error: false })
+		expect(deleteRecipeImages).not.toHaveBeenCalled()
+		expect(mockDb.recipe.delete).toHaveBeenCalled()
+	})
+
+	it('keeps delete successful when translation cleanup fails after recipe deletion', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({ images: [] } as any)
+		mockDb.recipe.delete.mockResolvedValue({} as any)
+		mockDb.recipeTranslation.deleteMany.mockRejectedValueOnce(
+			new Error('cleanup failed'),
+		)
+		mockDb.user.findMany.mockResolvedValue([])
+
+		const result = await deleteRecipe('recipe-1')
+
+		expect(result).toEqual({ error: false })
+		expect(mockDb.recipe.delete).toHaveBeenCalledWith({
+			where: { id: 'recipe-1', authorId: 'user-1' },
+		})
+		expect(mockDb.recipeTranslation.deleteMany).toHaveBeenCalledWith({
+			where: { recipeId: 'recipe-1' },
+		})
 	})
 
 	it('cleans up dangling references in other users', async () => {
@@ -799,6 +995,24 @@ describe('uploadRecipeImages', () => {
 			makeFormData(makeFile('a.jpg')),
 		)
 		expect(result).toEqual({ error: true })
+	})
+
+	it('returns disabled error when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+
+		const { uploadRecipeImage } = await import('@/lib/s3')
+
+		const result = await uploadRecipeImages(
+			'recipe-1',
+			makeFormData(makeFile('a.jpg')),
+		)
+		expect(result).toEqual({
+			error: true,
+			message: 'error-media-management-disabled',
+		})
+		expect(uploadRecipeImage).not.toHaveBeenCalled()
+		expect(mockDb.recipe.findFirst).not.toHaveBeenCalled()
 	})
 
 	it('returns error when recipe not found or not owned', async () => {
@@ -930,15 +1144,67 @@ describe('updateRecipeImages', () => {
 		} as any)
 		mockDb.recipe.update.mockResolvedValue({} as any)
 
-		const result = await updateRecipeImages('recipe-1', [
-			'img2.jpg',
-			'img1.jpg',
-		])
+		const result = await updateRecipeImages('recipe-1', ['img2.jpg', 'img1.jpg'])
 		expect(result).toEqual({ error: false })
 		expect(mockDb.recipe.update).toHaveBeenCalledWith({
 			where: { id: 'recipe-1', authorId: 'user-1' },
 			data: { images: ['img2.jpg', 'img1.jpg'] },
 		})
+	})
+
+	it('reorders images when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: ['img1.jpg', 'img2.jpg'],
+		} as any)
+		mockDb.recipe.update.mockResolvedValue({} as any)
+
+		const result = await updateRecipeImages('recipe-1', ['img2.jpg', 'img1.jpg'])
+		expect(result).toEqual({ error: false })
+		expect(mockDb.recipe.update).toHaveBeenCalledWith({
+			where: { id: 'recipe-1', authorId: 'user-1' },
+			data: { images: ['img2.jpg', 'img1.jpg'] },
+		})
+	})
+
+	it('rejects image removal when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: ['img1.jpg', 'img2.jpg', 'img3.jpg'],
+		} as any)
+
+		const { deleteRecipeImages } = await import('@/lib/s3')
+
+		const result = await updateRecipeImages('recipe-1', ['img1.jpg'])
+		expect(result).toEqual({
+			error: true,
+			message: 'error-media-management-disabled',
+		})
+		expect(deleteRecipeImages).not.toHaveBeenCalled()
+		expect(mockDb.recipe.update).not.toHaveBeenCalled()
+	})
+
+	it('rejects image replacement when media management is disabled', async () => {
+		mockEnv.MEDIA_MANAGEMENT_ENABLED = false
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			images: ['img1.jpg', 'img2.jpg'],
+		} as any)
+
+		const { deleteRecipeImages } = await import('@/lib/s3')
+
+		const result = await updateRecipeImages('recipe-1', [
+			'img1.jpg',
+			'foreign-key.jpg',
+		])
+		expect(result).toEqual({
+			error: true,
+			message: 'error-media-management-disabled',
+		})
+		expect(deleteRecipeImages).not.toHaveBeenCalled()
+		expect(mockDb.recipe.update).not.toHaveBeenCalled()
 	})
 
 	it('deletes removed images from S3', async () => {
