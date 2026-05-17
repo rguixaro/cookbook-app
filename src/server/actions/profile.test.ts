@@ -44,6 +44,7 @@ vi.mock('@/lib/email', () => ({
 
 import { auth, signOut } from '@/auth'
 import { env } from '@/env.mjs'
+import { DEFAULT_SIGN_OUT_REDIRECT_URL } from '@/routes'
 import { db } from '@/server/db'
 import { sendAccountDeletedEmail } from '@/lib/email'
 import { deleteRecipeImages } from '@/lib/s3'
@@ -124,7 +125,9 @@ describe('deleteProfile', () => {
 			recipientEmail: 'cook@example.com',
 			recipientName: 'Cook',
 		})
-		expect(signOut).toHaveBeenCalled()
+		expect(signOut).toHaveBeenCalledWith({
+			redirectTo: DEFAULT_SIGN_OUT_REDIRECT_URL,
+		})
 	})
 
 	it('deletes profile and cleans up S3 images', async () => {
@@ -198,6 +201,57 @@ describe('deleteProfile', () => {
 		expect(result).toBeNull()
 	})
 
+	it('does not delete translations when profile deletion fails', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({
+			email: 'cook@example.com',
+			name: 'Cook',
+		} as any)
+		mockDb.recipe.findMany.mockResolvedValue([
+			{ id: 'recipe-1', images: [] },
+		] as any)
+		mockDb.user.findMany.mockResolvedValue([])
+		mockDb.user.delete.mockRejectedValue(new Error('DB error'))
+
+		const result = await deleteProfile()
+
+		expect(result).toBeNull()
+		expect(mockDb.recipeTranslation.deleteMany).not.toHaveBeenCalled()
+	})
+
+	it('deletes profile when translation cleanup fails after user deletion', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.user.findUnique.mockResolvedValue({
+			email: 'cook@example.com',
+			name: 'Cook',
+		} as any)
+		mockDb.recipe.findMany.mockResolvedValue([
+			{ id: 'recipe-1', images: [] },
+		] as any)
+		mockDb.user.findMany.mockResolvedValue([])
+		mockDb.user.delete.mockResolvedValue({} as any)
+		mockDb.recipeTranslation.deleteMany.mockRejectedValueOnce(
+			new Error('cleanup failed'),
+		)
+
+		const result = await deleteProfile()
+
+		expect(result).toBe(true)
+		expect(mockDb.user.delete).toHaveBeenCalledWith({
+			where: { id: 'user-1' },
+		})
+		expect(mockDb.recipeTranslation.deleteMany).toHaveBeenCalledWith({
+			where: { recipeId: { in: ['recipe-1'] } },
+		})
+		expect(sendAccountDeletedEmail).toHaveBeenCalledWith({
+			recipientEmail: 'cook@example.com',
+			recipientName: 'Cook',
+		})
+		expect(signOut).toHaveBeenCalledWith({
+			redirectTo: DEFAULT_SIGN_OUT_REDIRECT_URL,
+		})
+	})
+
 	it('deletes profile when confirmation email fails', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.user.findUnique.mockResolvedValue({
@@ -212,6 +266,8 @@ describe('deleteProfile', () => {
 		const result = await deleteProfile()
 
 		expect(result).toBe(true)
-		expect(signOut).toHaveBeenCalled()
+		expect(signOut).toHaveBeenCalledWith({
+			redirectTo: DEFAULT_SIGN_OUT_REDIRECT_URL,
+		})
 	})
 })

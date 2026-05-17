@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { screen, waitFor } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { act, fireEvent, screen, waitFor } from '@testing-library/react'
 import { renderWithProviders, userEvent } from '@/test/render'
 import { SearchProfiles } from './search'
 
@@ -13,14 +13,24 @@ vi.mock('next/navigation', () => ({
 	useRouter: () => ({ replace: mockReplace }),
 }))
 
-vi.mock('use-debounce', () => ({
-	useDebouncedCallback: (fn: Function) => fn,
-}))
-
 beforeEach(() => {
 	vi.clearAllMocks()
 	navigationState.query = ''
 })
+
+afterEach(() => {
+	vi.clearAllTimers()
+	vi.useRealTimers()
+})
+
+const advanceSearchDebounce = (ms = 450) => {
+	act(() => {
+		vi.advanceTimersByTime(ms)
+	})
+}
+
+const getClearButton = (input: HTMLElement) =>
+	input.parentElement?.querySelector('button:last-of-type') as HTMLButtonElement
 
 describe('SearchProfiles', () => {
 	it('keeps the users search expanded', async () => {
@@ -41,18 +51,91 @@ describe('SearchProfiles', () => {
 		expect(input).toHaveClass('opacity-100')
 	})
 
-	it('updates URL when typing in users search', async () => {
-		const user = userEvent.setup()
+	it('updates URL only after typing pauses', async () => {
+		vi.useFakeTimers()
 		renderWithProviders(<SearchProfiles />)
 
-		await user.type(screen.getByPlaceholderText('Search'), 'chef')
+		const input = screen.getByPlaceholderText('Search')
+		fireEvent.change(input, { target: { value: 'che' } })
+		expect(input).toHaveValue('che')
+		expect(mockReplace).not.toHaveBeenCalled()
 
-		await waitFor(() => {
-			expect(mockReplace).toHaveBeenCalled()
-			const lastCall =
-				mockReplace.mock.calls[mockReplace.mock.calls.length - 1][0]
-			expect(lastCall).toContain('search=')
+		advanceSearchDebounce(300)
+		fireEvent.change(input, { target: { value: 'chef' } })
+		advanceSearchDebounce(449)
+		expect(mockReplace).not.toHaveBeenCalled()
+
+		advanceSearchDebounce(1)
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+		expect(mockReplace).toHaveBeenLastCalledWith('/profiles?search=chef', {
+			scroll: false,
 		})
+	})
+
+	it('clears search immediately and cancels the pending typed value', async () => {
+		vi.useFakeTimers()
+		renderWithProviders(<SearchProfiles />)
+
+		const input = screen.getByPlaceholderText('Search')
+		fireEvent.change(input, { target: { value: 'chef' } })
+		fireEvent.click(getClearButton(input))
+
+		expect(input).toHaveValue('')
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+		expect(mockReplace).toHaveBeenLastCalledWith('/profiles', {
+			scroll: false,
+		})
+
+		advanceSearchDebounce()
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+	})
+
+	it('commits search immediately on Enter', async () => {
+		vi.useFakeTimers()
+		renderWithProviders(<SearchProfiles />)
+
+		const input = screen.getByPlaceholderText('Search')
+		fireEvent.change(input, { target: { value: 'chef' } })
+		fireEvent.keyDown(input, { key: 'Enter' })
+
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+		expect(mockReplace).toHaveBeenLastCalledWith('/profiles?search=chef', {
+			scroll: false,
+		})
+
+		advanceSearchDebounce()
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+	})
+
+	it('commits search immediately on blur', async () => {
+		vi.useFakeTimers()
+		renderWithProviders(<SearchProfiles />)
+
+		const input = screen.getByPlaceholderText('Search')
+		fireEvent.change(input, { target: { value: 'chef' } })
+		fireEvent.blur(input)
+
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+		expect(mockReplace).toHaveBeenLastCalledWith('/profiles?search=chef', {
+			scroll: false,
+		})
+
+		advanceSearchDebounce()
+		expect(mockReplace).toHaveBeenCalledTimes(1)
+	})
+
+	it('keeps the local draft when an older search param arrives while focused', async () => {
+		vi.useFakeTimers()
+		const { rerender } = renderWithProviders(<SearchProfiles />)
+
+		const input = screen.getByPlaceholderText('Search')
+		input.focus()
+		fireEvent.change(input, { target: { value: 'chef' } })
+
+		navigationState.query = 'search=che'
+		rerender(<SearchProfiles />)
+
+		expect(input).toHaveValue('chef')
 	})
 
 	it('clears the input when the search param is removed by navigation', async () => {

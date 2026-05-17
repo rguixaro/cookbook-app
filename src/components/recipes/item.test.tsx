@@ -158,7 +158,7 @@ describe('ItemRecipe image loading', () => {
 			'Very long preserved lemon ingredient name',
 		)
 		expect(chipText).toHaveClass('truncate')
-		expect(chipText.parentElement).toHaveClass('max-w-[9rem]', 'min-w-0')
+		expect(chipText.parentElement).toHaveClass('max-w-36', 'min-w-0')
 	})
 
 	it('uses the feed search param name in recipe detail links', () => {

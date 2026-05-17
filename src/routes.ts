@@ -51,3 +51,11 @@ export const API_AUTH_PREFIX: string = '/api/auth'
  * Auth not required.
  */
 export const DEFAULT_AUTH_REDIRECT_URL: string = '/'
+
+/**
+ * Default explicit sign-out redirect URL.
+ * Auth not required.
+ */
+export const DEFAULT_SIGN_OUT_REDIRECT_URL: string = `/auth?callbackUrl=${encodeURIComponent(
+	DEFAULT_AUTH_REDIRECT_URL,
+)}`

@@ -26,7 +26,7 @@ import {
 	FavouriteStatus,
 	RecipeInfo,
 } from '@/components/recipes'
-import { SITE_URL, cn } from '@/utils'
+import { SITE_URL, cn, formatIngredientLabel } from '@/utils'
 import { isCrawlerUserAgent } from '@/utils/crawlers'
 import { Icon } from '@/components/recipes/icon'
 import {
@@ -310,7 +310,7 @@ export default async function RecipePage({
 												<span
 													key={index}
 													className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2.5 py-1 rounded-lg'>
-													{ingredient}
+													{formatIngredientLabel(ingredient)}
 												</span>
 											),
 										)}
@@ -326,7 +326,7 @@ export default async function RecipePage({
 														<span
 															key={`${complement.type}-${index}`}
 															className='inline-flex items-center text-xs font-semibold text-forest-200 bg-forest-150 px-2.5 py-1 rounded-lg'>
-															{ingredient}
+															{formatIngredientLabel(ingredient)}
 														</span>
 													),
 												)}
