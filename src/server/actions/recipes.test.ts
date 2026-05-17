@@ -23,6 +23,10 @@ vi.mock('@/server/db', () => ({
 			update: vi.fn(),
 			delete: vi.fn(),
 		},
+		recipeTranslation: {
+			upsert: vi.fn(),
+			deleteMany: vi.fn(),
+		},
 	},
 }))
 
@@ -83,6 +87,8 @@ beforeEach(() => {
 	vi.clearAllMocks()
 	mockEnv.MEDIA_MANAGEMENT_ENABLED = true
 	mockDb.recipe.count.mockResolvedValue(1)
+	mockDb.recipeTranslation.upsert.mockResolvedValue({} as any)
+	mockDb.recipeTranslation.deleteMany.mockResolvedValue({ count: 0 } as any)
 })
 
 describe('fetchRecipes', () => {
@@ -416,8 +422,21 @@ describe('createRecipe', () => {
 				categories: ['fish', 'rice'],
 				slug: 'paella-valenciana',
 				authorId: 'user-1',
+				defaultLocale: 'en',
+				visibility: 'public',
+				translations: {
+					create: expect.objectContaining({
+						locale: 'en',
+						name: 'Paella Valenciana',
+						ingredients: ['rice', 'shrimp', 'saffron'],
+						complements: [],
+					}),
+				},
 			}),
-			include: { author: { select: { username: true } } },
+			include: {
+				author: { select: { username: true } },
+				translations: true,
+			},
 		})
 	})
 
@@ -447,9 +466,13 @@ describe('createRecipe', () => {
 		expect(mockDb.recipe.create).toHaveBeenCalledWith(
 			expect.objectContaining({
 				data: expect.objectContaining({
-					ingredients: validRecipeInput.ingredients,
-					instructions: validRecipeInput.instructions,
-					complements,
+					translations: {
+						create: expect.objectContaining({
+							ingredients: validRecipeInput.ingredients,
+							instructions: validRecipeInput.instructions,
+							complements,
+						}),
+					},
 				}),
 			}),
 		)
@@ -522,10 +545,32 @@ describe('updateRecipe', () => {
 			recipeId: 'recipe-1',
 			recipePath: '/recipes/testuser/paella-valenciana',
 		})
-		expect(mockDb.recipe.update).toHaveBeenCalled()
+		expect(mockDb.recipe.update).toHaveBeenCalledWith(
+			expect.objectContaining({
+				data: expect.objectContaining({
+					slug: 'paella-valenciana',
+					translations: {
+						upsert: expect.objectContaining({
+							where: {
+								recipeId_locale: {
+									recipeId: 'recipe-1',
+									locale: 'en',
+								},
+							},
+							update: expect.objectContaining({
+								name: 'Paella Valenciana',
+								ingredients: validRecipeInput.ingredients,
+								instructions: validRecipeInput.instructions,
+							}),
+						}),
+					},
+				}),
+			}),
+		)
+		expect(mockDb.recipeTranslation.upsert).not.toHaveBeenCalled()
 	})
 
-	it('updates complement data separately from main recipe fields', async () => {
+	it('updates complement data in the nested translation upsert', async () => {
 		mockAuth.mockResolvedValue(mockSession as any)
 		mockDb.recipe.findFirst.mockResolvedValue({
 			id: 'recipe-1',
@@ -553,12 +598,24 @@ describe('updateRecipe', () => {
 		expect(mockDb.recipe.update).toHaveBeenCalledWith(
 			expect.objectContaining({
 				data: expect.objectContaining({
-					ingredients: validRecipeInput.ingredients,
-					instructions: validRecipeInput.instructions,
-					complements,
+					translations: {
+						upsert: expect.objectContaining({
+							update: expect.objectContaining({
+								ingredients: validRecipeInput.ingredients,
+								instructions: validRecipeInput.instructions,
+								complements,
+							}),
+							create: expect.objectContaining({
+								ingredients: validRecipeInput.ingredients,
+								instructions: validRecipeInput.instructions,
+								complements,
+							}),
+						}),
+					},
 				}),
 			}),
 		)
+		expect(mockDb.recipeTranslation.upsert).not.toHaveBeenCalled()
 	})
 
 	it('updates recipe with unchanged legacy overlong ingredient', async () => {
@@ -585,10 +642,32 @@ describe('updateRecipe', () => {
 		expect(mockDb.recipe.update).toHaveBeenCalledWith(
 			expect.objectContaining({
 				data: expect.objectContaining({
-					ingredients: [legacyIngredient],
+					translations: {
+						upsert: expect.objectContaining({
+							update: expect.objectContaining({
+								ingredients: [legacyIngredient],
+							}),
+						}),
+					},
 				}),
 			}),
 		)
+	})
+
+	it('does not persist translation changes separately when the recipe update fails', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({
+			id: 'recipe-1',
+			slug: 'old-paella',
+			ingredients: validRecipeInput.ingredients,
+			author: { username: 'testuser' },
+		} as any)
+		mockDb.recipe.update.mockRejectedValue(new Error('update failed'))
+
+		const result = await updateRecipe('recipe-1', validRecipeInput)
+
+		expect(result).toEqual({ error: true, message: 'error' })
+		expect(mockDb.recipeTranslation.upsert).not.toHaveBeenCalled()
 	})
 
 	it('rejects changed legacy overlong ingredient', async () => {
@@ -736,6 +815,14 @@ describe('deleteRecipe', () => {
 		const result = await deleteRecipe('recipe-1')
 		expect(result).toEqual({ error: false })
 		expect(mockDb.recipe.delete).toHaveBeenCalled()
+		expect(mockDb.recipeTranslation.deleteMany).toHaveBeenCalledWith({
+			where: { recipeId: 'recipe-1' },
+		})
+		expect(
+			mockDb.recipe.delete.mock.invocationCallOrder[0],
+		).toBeLessThan(
+			mockDb.recipeTranslation.deleteMany.mock.invocationCallOrder[0],
+		)
 		expect(mockRevalidatePath).toHaveBeenCalledWith('/')
 		expect(mockRevalidatePath).toHaveBeenCalledWith('/recipes')
 		expect(mockRevalidatePath).toHaveBeenCalledWith(
@@ -775,6 +862,26 @@ describe('deleteRecipe', () => {
 		expect(result).toEqual({ error: false })
 		expect(deleteRecipeImages).not.toHaveBeenCalled()
 		expect(mockDb.recipe.delete).toHaveBeenCalled()
+	})
+
+	it('keeps delete successful when translation cleanup fails after recipe deletion', async () => {
+		mockAuth.mockResolvedValue(mockSession as any)
+		mockDb.recipe.findFirst.mockResolvedValue({ images: [] } as any)
+		mockDb.recipe.delete.mockResolvedValue({} as any)
+		mockDb.recipeTranslation.deleteMany.mockRejectedValueOnce(
+			new Error('cleanup failed'),
+		)
+		mockDb.user.findMany.mockResolvedValue([])
+
+		const result = await deleteRecipe('recipe-1')
+
+		expect(result).toEqual({ error: false })
+		expect(mockDb.recipe.delete).toHaveBeenCalledWith({
+			where: { id: 'recipe-1', authorId: 'user-1' },
+		})
+		expect(mockDb.recipeTranslation.deleteMany).toHaveBeenCalledWith({
+			where: { recipeId: 'recipe-1' },
+		})
 	})
 
 	it('cleans up dangling references in other users', async () => {

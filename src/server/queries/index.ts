@@ -4,10 +4,19 @@ import * as Sentry from '@sentry/nextjs'
 import { auth } from '@/auth'
 import { db } from '@/server/db'
 import {
-	RecipeSchema,
-	normalizeRecipeComplements,
 	normalizeRecipeCourseAndCategories,
+	type RecipeSchema,
 } from '../schemas'
+import {
+	getCurrentRecipeLocale,
+	type RecipeLocale,
+} from '@/server/recipes/locale'
+import {
+	mapRecipeToSchema,
+	recipeSchemaInclude,
+	resolveRecipeTranslation,
+	type RecipeWithTranslationsAndAuthor,
+} from '@/server/recipes/translation'
 
 const CLOUDFRONT_DOMAIN = process.env.NEXT_PUBLIC_CLOUDFRONT_ASSETS_DOMAIN
 
@@ -23,19 +32,10 @@ export function toImageUrls(keys: string[]): string[] {
  * @returns RecipeSchema
  */
 function toRecipeSchema(
-	recipe: Awaited<ReturnType<typeof db.recipe.findMany>>[number] & {
-		author?: { username: string | null } | null
-	},
+	recipe: RecipeWithTranslationsAndAuthor,
+	locale: RecipeLocale,
 ): RecipeSchema {
-	return {
-		...recipe,
-		...normalizeRecipeCourseAndCategories(recipe.course, recipe.categories),
-		complements: normalizeRecipeComplements(
-			'complements' in recipe ? recipe.complements : undefined,
-		),
-		authorUsername: recipe.author?.username ?? '',
-		images: toImageUrls(recipe.images),
-	}
+	return mapRecipeToSchema(recipe, locale, toImageUrls(recipe.images))
 }
 
 /**
@@ -142,21 +142,24 @@ export const getRecipesByUserId = cache(async (userId?: string) => {
 	}
 
 	try {
+		const locale = await getCurrentRecipeLocale()
 		let savedRecipes: RecipeSchema[] = []
 		const rawRecipes = await db.recipe.findMany({
 			where: { authorId },
-			include: { author: { select: { username: true } } },
+			include: recipeSchemaInclude,
 		})
-		const recipes = rawRecipes.map(toRecipeSchema)
+		const recipes = rawRecipes.map((recipe) => toRecipeSchema(recipe, locale))
 
 		if (!userId) {
 			const savedIds = await getSavedRecipeIds()
 			if (savedIds.length) {
 				const rawSaved = await db.recipe.findMany({
 					where: { id: { in: savedIds } },
-					include: { author: { select: { username: true } } },
+					include: recipeSchemaInclude,
 				})
-				savedRecipes = rawSaved.map(toRecipeSchema)
+				savedRecipes = rawSaved.map((recipe) =>
+					toRecipeSchema(recipe, locale),
+				)
 			}
 		}
 
@@ -191,10 +194,10 @@ export const getRecipeByAuthAndSlug = cache(
 		try {
 			const recipe = await db.recipe.findFirst({
 				where: { authorId, slug },
-				include: { author: { select: { username: true } } },
+				include: recipeSchemaInclude,
 			})
 			if (!recipe) return null
-			return toRecipeSchema(recipe)
+			return toRecipeSchema(recipe, await getCurrentRecipeLocale())
 		} catch (error) {
 			throw error
 		}
@@ -216,10 +219,10 @@ export const getPublicRecipeByUsernameAndSlug = cache(
 
 			const recipe = await db.recipe.findFirst({
 				where: { authorId: author.id, slug },
-				include: { author: { select: { username: true } } },
+				include: recipeSchemaInclude,
 			})
 			if (!recipe) return null
-			return toRecipeSchema(recipe)
+			return toRecipeSchema(recipe, await getCurrentRecipeLocale())
 		} catch (error) {
 			throw error
 		}
@@ -286,6 +289,7 @@ export const getProfilesByName = cache(async (name: string) => {
 	if (!name.trim()) return []
 
 	try {
+		const locale = await getCurrentRecipeLocale()
 		const profiles = await db.user.findMany({
 			where: {
 				id: { not: userId },
@@ -303,7 +307,8 @@ export const getProfilesByName = cache(async (name: string) => {
 					orderBy: { createdAt: 'desc' },
 					take: 1,
 					select: {
-						name: true,
+						defaultLocale: true,
+						translations: true,
 						slug: true,
 						time: true,
 						course: true,
@@ -317,6 +322,9 @@ export const getProfilesByName = cache(async (name: string) => {
 
 		const mappedProfiles = profiles.map((profile) => {
 			const latestRecipe = profile.recipes?.[0]
+			const latestTranslation = latestRecipe
+				? resolveRecipeTranslation(latestRecipe, locale)
+				: null
 			const normalizedLatestRecipe = latestRecipe
 				? normalizeRecipeCourseAndCategories(
 						latestRecipe.course,
@@ -332,7 +340,7 @@ export const getProfilesByName = cache(async (name: string) => {
 				recipesCount: profile._count.recipes,
 				latestRecipe: latestRecipe
 					? {
-							name: latestRecipe.name,
+							name: latestTranslation!.name,
 							slug: latestRecipe.slug,
 							time: latestRecipe.time,
 							course: normalizedLatestRecipe!.course,

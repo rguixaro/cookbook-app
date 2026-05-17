@@ -115,6 +115,22 @@ export const deleteProfile = async (): Promise<null | true> => {
 		}
 
 		await db.user.delete({ where: { id: currentUser.user.id } })
+		if (recipeIds.length > 0) {
+			await db.recipeTranslation
+				.deleteMany({
+					where: { recipeId: { in: recipeIds } },
+				})
+				.catch((error) =>
+					Sentry.captureException(error, {
+						level: 'warning',
+						tags: {
+							action: 'deleteProfile',
+							step: 'translation-cleanup',
+						},
+					}),
+				)
+		}
+
 		await sendAccountDeletedEmail({
 			recipientEmail: user.email,
 			recipientName: user.name || user.email,

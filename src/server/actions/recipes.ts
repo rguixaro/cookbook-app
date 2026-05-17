@@ -13,12 +13,20 @@ import {
 	isRecipeCourse,
 	isRecipeCategory,
 	normalizeRecipeSort,
-	normalizeRecipeCourseAndCategories,
-	normalizeRecipeComplements,
 	type RecipeSchema,
 } from '@/server/schemas'
 import { formatLongSentence, slugify } from '@/server/utils'
 import { toImageUrls } from '@/server/queries'
+import {
+	getCurrentRecipeLocale,
+	normalizeRecipeLocale,
+} from '@/server/recipes/locale'
+import {
+	mapRecipeToSchema,
+	recipeSchemaInclude,
+	resolveRecipeTranslation,
+	type RecipeWithTranslationsAndAuthor,
+} from '@/server/recipes/translation'
 
 const PAGE_SIZE = 10
 const MEDIA_MANAGEMENT_DISABLED_MESSAGE = 'error-media-management-disabled'
@@ -26,28 +34,15 @@ const MEDIA_MANAGEMENT_DISABLED_MESSAGE = 'error-media-management-disabled'
 const getRecipePath = (username?: string | null, slug?: string | null) =>
 	username && slug ? `/recipes/${username}/${slug}` : null
 
-type RecipeWithAuthor = Prisma.RecipeGetPayload<{
-	include: { author: { select: { username: true } } }
-}>
-
-const mapRecipe = (recipe: RecipeWithAuthor): RecipeSchema => {
-	const { author, ...data } = recipe
-
-	return {
-		...data,
-		...normalizeRecipeCourseAndCategories(recipe.course, recipe.categories),
-		complements: normalizeRecipeComplements(
-			'complements' in recipe ? recipe.complements : undefined,
-		),
-		authorUsername: author?.username ?? '',
-		images: toImageUrls(recipe.images),
-	}
-}
+const mapRecipe = (
+	recipe: RecipeWithTranslationsAndAuthor,
+	locale: string,
+): RecipeSchema => mapRecipeToSchema(recipe, locale, toImageUrls(recipe.images))
 
 function sortRecipesByTime(
-	recipes: RecipeWithAuthor[],
+	recipes: RecipeWithTranslationsAndAuthor[],
 	direction: 'asc' | 'desc',
-): RecipeWithAuthor[] {
+): RecipeWithTranslationsAndAuthor[] {
 	return [...recipes].sort((a, b) => {
 		const aTime = a.time
 		const bTime = b.time
@@ -66,6 +61,23 @@ function sortRecipesByTime(
 
 		return b.id.localeCompare(a.id)
 	})
+}
+
+function buildRecipeSearchWhere(search?: string): Prisma.RecipeWhereInput {
+	if (!search?.trim()) return {}
+
+	return {
+		translations: {
+			some: {
+				name: {
+					contains: search
+						.slice(0, 50)
+						.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+					mode: 'insensitive',
+				},
+			},
+		},
+	}
 }
 
 /**
@@ -105,6 +117,7 @@ export async function fetchRecipes(params: {
 	const safeTake = Math.min(take, 50)
 	const currentUserId = currentUser.user.id
 	const recipeSort = normalizeRecipeSort(sort)
+	const locale = await getCurrentRecipeLocale()
 
 	if (userId && userId !== currentUserId) {
 		const targetUser = await db.user.findUnique({
@@ -166,14 +179,7 @@ export async function fetchRecipes(params: {
 		const where: Prisma.RecipeWhereInput = {
 			...(authorFilter && { authorId: authorFilter.authorId }),
 			...(ownFeedOr && { OR: ownFeedOr }),
-			...(search && {
-				name: {
-					contains: search
-						.slice(0, 50)
-						.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-					mode: 'insensitive' as const,
-				},
-			}),
+			...buildRecipeSearchWhere(search),
 			...(courseFilter && { course: courseFilter }),
 			...(categoryFilters.length && {
 				categories: { hasSome: categoryFilters },
@@ -184,7 +190,7 @@ export async function fetchRecipes(params: {
 		if (recipeSort === 'timeAsc' || recipeSort === 'timeDesc') {
 			const candidates = await db.recipe.findMany({
 				where,
-				include: { author: { select: { username: true } } },
+				include: recipeSchemaInclude,
 				orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
 			})
 			const sorted = sortRecipesByTime(
@@ -199,7 +205,7 @@ export async function fetchRecipes(params: {
 			if (hasMore) results.pop()
 
 			return {
-				recipes: results.map(mapRecipe),
+				recipes: results.map((recipe) => mapRecipe(recipe, locale)),
 				nextCursor: hasMore
 					? (results[results.length - 1]?.id ?? null)
 					: null,
@@ -210,7 +216,7 @@ export async function fetchRecipes(params: {
 		const [results, totalCount] = await Promise.all([
 			db.recipe.findMany({
 				where,
-				include: { author: { select: { username: true } } },
+				include: recipeSchemaInclude,
 				orderBy:
 					recipeSort === 'createdAtAsc'
 						? [{ createdAt: 'asc' }, { id: 'asc' }]
@@ -225,7 +231,7 @@ export async function fetchRecipes(params: {
 		if (hasMore) results.pop()
 
 		return {
-			recipes: results.map(mapRecipe),
+			recipes: results.map((recipe) => mapRecipe(recipe, locale)),
 			nextCursor: hasMore ? (results[results.length - 1]?.id ?? null) : null,
 			totalCount,
 		}
@@ -270,22 +276,31 @@ export const createRecipe = async (values: unknown): Promise<createRecipeResult>
 
 	const slug = slugify(name)
 	if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
+	const locale = await getCurrentRecipeLocale()
 
 	try {
 		const recipe = await db.recipe.create({
 			data: {
-				name,
 				course,
 				categories,
 				time,
-				ingredients,
-				instructions: formatLongSentence(instructions),
-				complements,
+				defaultLocale: locale,
+				visibility: 'public',
+				images: [],
 				sourceUrls: sourceUrls ?? [],
 				authorId: currentUser.user.id,
 				slug,
+				translations: {
+					create: {
+						locale,
+						name,
+						ingredients,
+						instructions: formatLongSentence(instructions),
+						complements,
+					},
+				},
 			},
-			include: { author: { select: { username: true } } },
+			include: recipeSchemaInclude,
 		})
 
 		const recipePath = getRecipePath(recipe.author?.username, recipe.slug)
@@ -328,14 +343,16 @@ export const updateRecipe = async (
 	try {
 		const recipe = await db.recipe.findFirst({
 			where: { id, authorId: currentUser.user.id },
-			include: { author: { select: { username: true } } },
+			include: recipeSchemaInclude,
 		})
 
 		if (!recipe) return { error: true, message: 'error' }
+		const translationLocale = normalizeRecipeLocale(recipe.defaultLocale)
+		const currentTranslation = resolveRecipeTranslation(recipe, translationLocale)
 
-		const parsed = createEditRecipeSchema(recipe.ingredients ?? []).safeParse(
-			values,
-		)
+		const parsed = createEditRecipeSchema(
+			currentTranslation.ingredients ?? [],
+		).safeParse(values)
 		if (!parsed.success) return { error: true, message: 'error' }
 
 		const {
@@ -351,19 +368,36 @@ export const updateRecipe = async (
 
 		const slug = slugify(name)
 		if (!slug) return { error: true, message: 'error-recipe-name-invalid' }
+		const translationData = {
+			name,
+			ingredients,
+			instructions: formatLongSentence(instructions),
+			complements,
+		}
 
 		await db.recipe.update({
 			where: { id, authorId: currentUser.user.id },
 			data: {
-				name,
 				course,
 				categories,
 				time,
-				ingredients,
-				instructions: formatLongSentence(instructions),
-				complements,
 				sourceUrls: sourceUrls ?? [],
 				slug,
+				translations: {
+					upsert: {
+						where: {
+							recipeId_locale: {
+								recipeId: id,
+								locale: translationLocale,
+							},
+						},
+						update: translationData,
+						create: {
+							locale: translationLocale,
+							...translationData,
+						},
+					},
+				},
 			},
 		})
 
@@ -558,6 +592,19 @@ export const deleteRecipe = async (id: string): Promise<{ error: boolean }> => {
 		await db.recipe.delete({
 			where: { id, authorId: currentUser.user.id },
 		})
+		await db.recipeTranslation
+			.deleteMany({
+				where: { recipeId: id },
+			})
+			.catch((error) =>
+				Sentry.captureException(error, {
+					level: 'warning',
+					tags: {
+						action: 'deleteRecipe',
+						step: 'translation-cleanup',
+					},
+				}),
+			)
 
 		const affectedUsers = await db.user.findMany({
 			where: {
