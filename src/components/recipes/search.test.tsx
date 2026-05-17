@@ -107,7 +107,7 @@ describe('SearchRecipes', () => {
 	it('clears selected recipe filters when filter params are removed by navigation', async () => {
 		const user = userEvent.setup()
 		navigationState.query =
-			'course=FirstCourse&categories=Pasta&sort=timeAsc&favourites=true'
+			'course=first_course&categories=pasta&sort=timeAsc&favourites=true'
 		const { rerender } = renderWithProviders(
 			<SearchRecipes withAvatar={false} />,
 		)
@@ -220,10 +220,10 @@ describe('SearchRecipes', () => {
 			expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
 		})
 		expect(mockReplace).toHaveBeenCalledWith(
-			expect.stringContaining('course=FirstCourse'),
+			expect.stringContaining('course=first_course'),
 		)
 		expect(mockReplace).toHaveBeenCalledWith(
-			expect.stringContaining('categories=Pasta'),
+			expect.stringContaining('categories=pasta'),
 		)
 		expect(mockReplace).toHaveBeenCalledWith(
 			expect.stringContaining('sort=timeAsc'),

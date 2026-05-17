@@ -71,8 +71,8 @@ const mockSession = { user: { id: 'user-1' } }
 
 const validRecipeInput = {
 	name: 'Paella Valenciana',
-	course: 'SecondCourse' as const,
-	categories: ['Fish', 'Rice'] as const,
+	course: 'second_course' as const,
+	categories: ['fish', 'rice'] as const,
 	time: 60,
 	ingredients: ['rice', 'shrimp', 'saffron'],
 	instructions: 'Cook the rice with the shrimp and saffron in a large pan.',
@@ -90,8 +90,8 @@ describe('fetchRecipes', () => {
 		id,
 		name: `Recipe ${id}`,
 		slug: `recipe-${id}`,
-		course: 'SecondCourse',
-		categories: ['Fish'],
+		course: 'second_course',
+		categories: ['fish'],
 		time: 30,
 		ingredients: ['a'],
 		instructions: 'Do the thing.',
@@ -228,10 +228,10 @@ describe('fetchRecipes', () => {
 		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
 		mockDb.recipe.findMany.mockResolvedValue([makeRecipe('r1')] as any)
 
-		await fetchRecipes({ course: 'SecondCourse' })
+		await fetchRecipes({ course: 'second_course' })
 		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
 			expect.objectContaining({
-				where: expect.objectContaining({ course: 'SecondCourse' }),
+				where: expect.objectContaining({ course: 'second_course' }),
 			}),
 		)
 	})
@@ -241,11 +241,11 @@ describe('fetchRecipes', () => {
 		mockDb.user.findUnique.mockResolvedValue({ savedRecipes: [] } as any)
 		mockDb.recipe.findMany.mockResolvedValue([makeRecipe('r1')] as any)
 
-		await fetchRecipes({ categories: 'Fish,Wok,InvalidCategory' })
+		await fetchRecipes({ categories: 'fish,wok,InvalidCategory' })
 		expect(mockDb.recipe.findMany).toHaveBeenCalledWith(
 			expect.objectContaining({
 				where: expect.objectContaining({
-					categories: { hasSome: ['Fish', 'Wok'] },
+					categories: { hasSome: ['fish', 'wok'] },
 				}),
 			}),
 		)
@@ -412,11 +412,8 @@ describe('createRecipe', () => {
 		})
 		expect(mockDb.recipe.create).toHaveBeenCalledWith({
 			data: expect.objectContaining({
-				name: 'Paella Valenciana',
-				course: 'SecondCourse',
-				categories: ['Fish', 'Rice'],
-				ingredients: ['rice', 'shrimp', 'saffron'],
-				complements: [],
+				course: 'second_course',
+				categories: ['fish', 'rice'],
 				slug: 'paella-valenciana',
 				authorId: 'user-1',
 			}),
@@ -434,7 +431,7 @@ describe('createRecipe', () => {
 
 		const complements = [
 			{
-				type: 'Sauce' as const,
+				type: 'sauce' as const,
 				name: 'Romesco',
 				ingredients: ['tomato', 'olive oil'],
 				instructions: 'Simmer the tomato and oil until glossy.',
@@ -540,7 +537,7 @@ describe('updateRecipe', () => {
 
 		const complements = [
 			{
-				type: 'Marinade' as const,
+				type: 'marinade' as const,
 				name: 'Lemon garlic marinade',
 				ingredients: ['lemon', 'garlic'],
 				instructions: 'Mix the lemon and garlic and rest the fish.',

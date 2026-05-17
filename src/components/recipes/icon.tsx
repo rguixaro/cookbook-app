@@ -10,8 +10,8 @@ type IconProps = {
 
 const IconsByName = {
 	starter: 'Dessert',
-	firstcourse: 'Utensils',
-	secondcourse: 'UtensilsCrossed',
+	first_course: 'Utensils',
+	second_course: 'UtensilsCrossed',
 	dessert: 'CakeSlice',
 	pasta: 'Wheat',
 	meat: 'Beef',

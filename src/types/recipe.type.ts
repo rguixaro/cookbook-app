@@ -1,27 +1,27 @@
 export const RecipeCourses = [
-	'Starter',
-	'FirstCourse',
-	'SecondCourse',
-	'Dessert',
+	'starter',
+	'first_course',
+	'second_course',
+	'dessert',
 ] as const
 
 export type RecipeCourse = (typeof RecipeCourses)[number]
 
 export const RecipeCategories = [
-	'Pasta',
-	'Meat',
-	'Fish',
-	'Vegetable',
-	'Salad',
-	'Soup',
-	'Rice',
-	'Legume',
-	'Seafood',
-	'Fruit',
-	'Stew',
-	'Sauce',
-	'Marinade',
-	'Wok',
+	'pasta',
+	'meat',
+	'fish',
+	'vegetable',
+	'salad',
+	'soup',
+	'rice',
+	'legume',
+	'seafood',
+	'fruit',
+	'stew',
+	'sauce',
+	'marinade',
+	'wok',
 ] as const
 
 export type RecipeCategory = (typeof RecipeCategories)[number]
@@ -35,9 +35,21 @@ export const RecipeSorts = [
 
 export type RecipeSort = (typeof RecipeSorts)[number]
 
-export const RecipeComplementTypes = ['Sauce', 'Marinade', 'Garnish'] as const
+export const RecipeComplementTypes = ['sauce', 'marinade', 'garnish'] as const
 
 export type RecipeComplementType = (typeof RecipeComplementTypes)[number]
+
+export const RecipeLocales = ['ca', 'en', 'es'] as const
+
+export type RecipeLocale = (typeof RecipeLocales)[number]
+
+export const RecipeVisibilityValues = [
+	'private',
+	'public',
+	'showcase',
+] as const
+
+export type RecipeVisibility = (typeof RecipeVisibilityValues)[number]
 
 export interface RecipeComplement {
 	type: RecipeComplementType
@@ -58,8 +70,10 @@ export interface Recipe {
 	updatedAt: Date
 	course: RecipeCourse
 	categories: RecipeCategory[]
-	authorId: string
+	authorId: string | null
 	authorUsername: string
 	images?: string[]
 	sourceUrls?: string[]
+	visibility: RecipeVisibility
+	locale: RecipeLocale
 }
