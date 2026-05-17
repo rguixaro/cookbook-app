@@ -7,6 +7,8 @@ import { useTranslations } from 'next-intl'
 
 import { SearchInput } from '@/ui'
 
+const SEARCH_DEBOUNCE_MS = 450
+
 export const SearchProfiles = () => {
 	const t = useTranslations('ProfilesPage')
 
@@ -18,22 +20,52 @@ export const SearchProfiles = () => {
 
 	const searchValue = searchParams.get('search')?.toString() || ''
 	const [inputValue, setInputValue] = useState(searchValue)
+	const inputValueRef = useRef(searchValue)
 
 	useEffect(() => {
+		if (inputRef.current && document.activeElement === inputRef.current) {
+			return
+		}
+
+		inputValueRef.current = searchValue
 		setInputValue(searchValue)
 	}, [searchValue])
 
-	const handleSearch = useDebouncedCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const params = new URLSearchParams(searchParams)
-			if (e.target.value) params.set('search', e.target.value)
-			else params.delete('search')
+	const getSearchHref = (params: URLSearchParams) => {
+		const query = params.toString()
+		return query ? `${pathname}?${query}` : pathname
+	}
 
-			const query = params.toString()
-			router.replace(query ? `${pathname}?${query}` : pathname)
-		},
-		300,
+	const replaceSearch = (value: string) => {
+		const params = new URLSearchParams(searchParams)
+		const nextSearch = value.trim()
+		if (nextSearch) params.set('search', nextSearch)
+		else params.delete('search')
+
+		router.replace(getSearchHref(params), { scroll: false })
+	}
+
+	const handleSearch = useDebouncedCallback(
+		(value: string) => replaceSearch(value),
+		SEARCH_DEBOUNCE_MS,
 	)
+
+	const commitSearch = (value: string) => {
+		handleSearch.cancel()
+		replaceSearch(value)
+	}
+
+	const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key !== 'Enter') return
+		e.preventDefault()
+		commitSearch(e.currentTarget.value)
+	}
+
+	const handleBlur = () => {
+		if (handleSearch.isPending()) {
+			commitSearch(inputRef.current?.value ?? inputValueRef.current)
+		}
+	}
 
 	return (
 		<div className='w-11/12 sm:w-3/5 lg:w-3/8 flex justify-center my-5'>
@@ -41,19 +73,19 @@ export const SearchProfiles = () => {
 				placeholder={t('search')}
 				value={inputValue}
 				inputRef={inputRef}
+				onBlur={handleBlur}
+				onKeyDown={handleSearchKeyDown}
 				onSearchButtonClick={() => inputRef.current?.focus()}
 				onChange={(e) => {
-					setInputValue(e.target.value)
-					handleSearch(e)
+					const value = e.target.value
+					inputValueRef.current = value
+					setInputValue(value)
+					handleSearch(value)
 				}}
 				onClear={() => {
+					inputValueRef.current = ''
 					setInputValue('')
-					if (inputRef.current) {
-						inputRef.current.value = ''
-						handleSearch({
-							target: inputRef.current,
-						} as React.ChangeEvent<HTMLInputElement>)
-					}
+					commitSearch('')
 				}}
 				wrapperClassName='h-12 w-72 max-w-[calc(100vw-3rem)] rounded-2xl bg-forest-100 px-5 py-2 sm:w-80 sm:max-w-80'
 				inputClassName='h-8 w-full px-10 text-base opacity-100 pointer-events-auto'

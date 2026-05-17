@@ -24,6 +24,7 @@ type FilterValues = {
 }
 
 const DEFAULT_SORT: RecipeSort = 'createdAtDesc'
+const SEARCH_DEBOUNCE_MS = 450
 const parseSort = (value: string | null): RecipeSort =>
 	value === 'createdAtAsc' ||
 	value === 'createdAtDesc' ||
@@ -36,10 +37,12 @@ export const SearchRecipes = ({
 	withAvatar = true,
 	listFilter = 'favourites',
 	searchParamName = 'search',
+	showListFilter = true,
 }: {
 	withAvatar?: boolean
 	listFilter?: ListFilter
 	searchParamName?: string
+	showListFilter?: boolean
 }) => {
 	const t = useTranslations('RecipesPage')
 	const t_courses = useTranslations('RecipeCourses')
@@ -61,6 +64,7 @@ export const SearchRecipes = ({
 	const sortValue = parseSort(searchParams.get('sort'))
 	const isListFilteredValue = searchParams.get(listFilter) === 'true'
 	const [inputValue, setInputValue] = useState(searchValue)
+	const inputValueRef = useRef(searchValue)
 
 	const [course, setCourse] = useState<RecipeCourse | null>(courseValue)
 	const [categories, setCategories] = useState<string[]>(
@@ -91,23 +95,52 @@ export const SearchRecipes = ({
 		return sort.endsWith('Asc') ? t('sort-oldest') : t('sort-newest')
 	}
 
-	/**
-	 * Handle the search input
-	 * @param e
-	 */
-	const handleSearch = useDebouncedCallback(
-		(e: React.ChangeEvent<HTMLInputElement>) => {
-			const params = new URLSearchParams(searchParams)
-			if (e.target.value) params.set(searchParamName, e.target.value)
-			else params.delete(searchParamName)
+	const getSearchHref = (params: URLSearchParams) => {
+		const query = params.toString()
+		return query ? `${pathname}?${query}` : pathname
+	}
 
-			router.replace(`${pathname}?${params.toString()}`)
-		},
-		300,
+	const setSearchParam = (params: URLSearchParams, value: string) => {
+		const nextSearch = value.trim()
+		if (nextSearch) params.set(searchParamName, nextSearch)
+		else params.delete(searchParamName)
+	}
+
+	const replaceSearch = (value: string) => {
+		const params = new URLSearchParams(searchParams)
+		setSearchParam(params, value)
+
+		router.replace(getSearchHref(params), { scroll: false })
+	}
+
+	const handleSearch = useDebouncedCallback(
+		(value: string) => replaceSearch(value),
+		SEARCH_DEBOUNCE_MS,
 	)
 
-	const handleApplyFilters = ({ sort, course, categories }: FilterValues) => {
+	const getParamsWithDraftSearch = () => {
+		handleSearch.cancel()
 		const params = new URLSearchParams(searchParams)
+		setSearchParam(
+			params,
+			inputRef.current?.value ?? inputValueRef.current,
+		)
+		return params
+	}
+
+	const commitSearch = (value: string) => {
+		handleSearch.cancel()
+		replaceSearch(value)
+	}
+
+	const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key !== 'Enter') return
+		e.preventDefault()
+		commitSearch(e.currentTarget.value)
+	}
+
+	const handleApplyFilters = ({ sort, course, categories }: FilterValues) => {
+		const params = getParamsWithDraftSearch()
 
 		if (sort === DEFAULT_SORT) params.delete('sort')
 		else params.set('sort', sort)
@@ -121,19 +154,19 @@ export const SearchRecipes = ({
 		setSort(sort)
 		setCourse(course as RecipeCourse | null)
 		setCategories(categories)
-		router.replace(`${pathname}?${params.toString()}`)
+		router.replace(getSearchHref(params))
 	}
 
 	/**
 	 * Handle toggling favourites filter
 	 */
 	const handleToggleListFilter = () => {
-		const params = new URLSearchParams(searchParams)
+		const params = getParamsWithDraftSearch()
 		const next = !isListFiltered
 		if (next) params.set(listFilter, 'true')
 		else params.delete(listFilter)
 		setIsListFiltered(next)
-		router.replace(`${pathname}?${params.toString()}`)
+		router.replace(getSearchHref(params))
 	}
 
 	/**
@@ -142,29 +175,29 @@ export const SearchRecipes = ({
 	 */
 	const handleRemoveCourse = (e: React.MouseEvent<HTMLElement>) => {
 		e.preventDefault()
-		const params = new URLSearchParams(searchParams)
+		const params = getParamsWithDraftSearch()
 		params.delete('course')
 		setCourse(null)
-		router.replace(`${pathname}?${params.toString()}`)
+		router.replace(getSearchHref(params))
 	}
 
 	const handleRemoveSort = () => {
-		const params = new URLSearchParams(searchParams)
+		const params = getParamsWithDraftSearch()
 		params.delete('sort')
 		setSort(DEFAULT_SORT)
-		router.replace(`${pathname}?${params.toString()}`)
+		router.replace(getSearchHref(params))
 	}
 
 	const handleRemoveCategory = (category: string) => {
 		const nextCategories = categories.filter((value) => value !== category)
-		const params = new URLSearchParams(searchParams)
+		const params = getParamsWithDraftSearch()
 		if (nextCategories.length) {
 			params.set('categories', nextCategories.join(','))
 		} else {
 			params.delete('categories')
 		}
 		setCategories(nextCategories)
-		router.replace(`${pathname}?${params.toString()}`)
+		router.replace(getSearchHref(params))
 	}
 
 	/**
@@ -184,11 +217,18 @@ export const SearchRecipes = ({
 	 * Handle onBlur event
 	 */
 	const onBlur = () => {
-		const value = inputRef.current?.value
-		if (!value) setStatus('hidden')
+		const value = inputRef.current?.value ?? inputValueRef.current
+		if (handleSearch.isPending()) commitSearch(value)
+		if (value.trim()) setStatus('outlined')
+		else setStatus('hidden')
 	}
 
 	useEffect(() => {
+		if (inputRef.current && document.activeElement === inputRef.current) {
+			return
+		}
+
+		inputValueRef.current = searchValue
 		setInputValue(searchValue)
 		if (searchValue) {
 			setStatus('outlined')
@@ -218,19 +258,18 @@ export const SearchRecipes = ({
 					value={inputValue}
 					inputRef={inputRef}
 					onBlur={onBlur}
+					onKeyDown={handleSearchKeyDown}
 					onSearchButtonClick={onStatusChange}
 					onChange={(e) => {
-						setInputValue(e.target.value)
-						handleSearch(e)
+						const value = e.target.value
+						inputValueRef.current = value
+						setInputValue(value)
+						handleSearch(value)
 					}}
 					onClear={() => {
+						inputValueRef.current = ''
 						setInputValue('')
-						if (inputRef.current) {
-							inputRef.current.value = ''
-							handleSearch({
-								target: inputRef.current,
-							} as React.ChangeEvent<HTMLInputElement>)
-						}
+						commitSearch('')
 						onStatusChange()
 					}}
 					wrapperClassName={cn(
@@ -278,20 +317,22 @@ export const SearchRecipes = ({
 					}
 				/>
 				<div className='grow' />
-				<Button size={'sm'} onClick={handleToggleListFilter}>
-					{listFilter === 'saved' ? (
-						<BookmarkIcon
-							filled={isListFiltered}
-							size={16}
-							color='#fefff2'
-						/>
-					) : (
-						<HeartIcon filled={isListFiltered} size={16} />
-					)}
-					<span className={cn('text-base font-bold text-forest-50')}>
-						{t(listFilter)}
-					</span>
-				</Button>
+				{showListFilter && (
+					<Button size={'sm'} onClick={handleToggleListFilter}>
+						{listFilter === 'saved' ? (
+							<BookmarkIcon
+								filled={isListFiltered}
+								size={16}
+								color='#fefff2'
+							/>
+						) : (
+							<HeartIcon filled={isListFiltered} size={16} />
+						)}
+						<span className={cn('text-base font-bold text-forest-50')}>
+							{t(listFilter)}
+						</span>
+					</Button>
+				)}
 			</div>
 			{(sort !== DEFAULT_SORT || course || categories.length > 0) && (
 				<div className='mt-2 flex flex-wrap gap-2 ms-0.5'>

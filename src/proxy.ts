@@ -6,6 +6,7 @@ import {
 	DEFAULT_AUTH_REDIRECT_URL,
 	RECIPES_ROUTE_PREFIX,
 	PROFILES_ROUTE_PREFIX,
+	DISCOVER_ROUTE_PREFIX,
 	API_AUTH_PREFIX,
 	AUTH_ROUTES,
 	PROTECTED_ROUTES,
@@ -28,6 +29,7 @@ export default auth(async (req) => {
 	const isAuthRoute = AUTH_ROUTES.includes(NextURL.pathname)
 	const isRecipeRoute = NextURL.pathname.startsWith(RECIPES_ROUTE_PREFIX)
 	const isProfileRoute = NextURL.pathname.startsWith(PROFILES_ROUTE_PREFIX)
+	const isDiscoverRoute = NextURL.pathname.startsWith(DISCOVER_ROUTE_PREFIX)
 	const isCrawler = isCrawlerUserAgent(req.headers.get('user-agent'))
 	const isRecipeCrawlerPreview = isCrawler && isRecipeRoute
 
@@ -45,7 +47,7 @@ export default auth(async (req) => {
 	if (
 		!isLoggedIn &&
 		!isRecipeCrawlerPreview &&
-		(isProtectedRoute || isRecipeRoute || isProfileRoute)
+		(isProtectedRoute || isRecipeRoute || isProfileRoute || isDiscoverRoute)
 	) {
 		let callbackURL = NextURL.pathname
 		if (NextURL.search) callbackURL += NextURL.search

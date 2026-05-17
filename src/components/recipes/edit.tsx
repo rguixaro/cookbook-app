@@ -4,7 +4,9 @@ import { NotebookPen } from 'lucide-react'
 import { Recipe } from '@/types'
 
 export const RecipeEdit = ({ recipe }: { recipe: Recipe | null }) => {
-	if (!recipe) return null
+	if (!recipe || recipe.visibility === 'showcase' || !recipe.authorUsername) {
+		return null
+	}
 
 	return (
 		<Link

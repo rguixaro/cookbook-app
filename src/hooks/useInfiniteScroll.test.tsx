@@ -35,12 +35,14 @@ afterEach(() => {
 function TestComponent({
 	callback,
 	enabled,
+	showSentinel = true,
 }: {
 	callback: () => void
 	enabled: boolean
+	showSentinel?: boolean
 }) {
 	const sentinelRef = useInfiniteScroll(callback, enabled)
-	return <div ref={sentinelRef} data-testid='sentinel' />
+	return showSentinel ? <div ref={sentinelRef} data-testid='sentinel' /> : null
 }
 
 describe('useInfiniteScroll', () => {
@@ -54,6 +56,28 @@ describe('useInfiniteScroll', () => {
 		render(<TestComponent callback={vi.fn()} enabled={false} />)
 
 		expect(observeMock).not.toHaveBeenCalled()
+	})
+
+	it('observes the sentinel when it mounts after being enabled', () => {
+		const callback = vi.fn()
+		const { rerender } = render(
+			<TestComponent
+				callback={callback}
+				enabled={false}
+				showSentinel={false}
+			/>,
+		)
+
+		rerender(
+			<TestComponent callback={callback} enabled={true} showSentinel={false} />,
+		)
+		expect(observeMock).not.toHaveBeenCalled()
+
+		rerender(
+			<TestComponent callback={callback} enabled={true} showSentinel={true} />,
+		)
+
+		expect(observeMock).toHaveBeenCalledOnce()
 	})
 
 	it('fires callback when entry is intersecting', () => {
@@ -70,6 +94,20 @@ describe('useInfiniteScroll', () => {
 
 		act(() => observerCallback([{ isIntersecting: false }]))
 		expect(callback).not.toHaveBeenCalled()
+	})
+
+	it('fires the latest callback when the callback changes', () => {
+		const firstCallback = vi.fn()
+		const secondCallback = vi.fn()
+		const { rerender } = render(
+			<TestComponent callback={firstCallback} enabled={true} />,
+		)
+
+		rerender(<TestComponent callback={secondCallback} enabled={true} />)
+		act(() => observerCallback([{ isIntersecting: true }]))
+
+		expect(firstCallback).not.toHaveBeenCalled()
+		expect(secondCallback).toHaveBeenCalledOnce()
 	})
 
 	it('disconnects observer on unmount', () => {

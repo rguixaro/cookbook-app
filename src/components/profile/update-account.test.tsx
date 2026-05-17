@@ -28,6 +28,7 @@ import {
 	requestEmailChange,
 	updateProfile,
 } from '@/server/actions'
+import { DEFAULT_SIGN_OUT_REDIRECT_URL } from '@/routes'
 import { signOut } from 'next-auth/react'
 import { toast } from 'sonner'
 
@@ -158,7 +159,9 @@ describe('UpdateAccount', () => {
 				confirmPassword: 'password123456',
 			})
 		})
-		expect(mockSignOut).toHaveBeenCalledWith({ callbackUrl: '/auth' })
+		expect(mockSignOut).toHaveBeenCalledWith({
+			redirectTo: DEFAULT_SIGN_OUT_REDIRECT_URL,
+		})
 	})
 
 	it('does not submit mismatched password changes', async () => {

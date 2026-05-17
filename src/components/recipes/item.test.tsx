@@ -158,7 +158,7 @@ describe('ItemRecipe image loading', () => {
 			'Very long preserved lemon ingredient name',
 		)
 		expect(chipText).toHaveClass('truncate')
-		expect(chipText.parentElement).toHaveClass('max-w-[9rem]', 'min-w-0')
+		expect(chipText.parentElement).toHaveClass('max-w-36', 'min-w-0')
 	})
 
 	it('uses the feed search param name in recipe detail links', () => {
@@ -168,6 +168,27 @@ describe('ItemRecipe image loading', () => {
 			'href',
 			'/recipes/chef/pasta-carbonara?search=pasta',
 		)
+	})
+
+	it('links showcase recipes to discover and still waits for signed cookies', () => {
+		renderWithProviders(
+			<ItemRecipe
+				recipe={makeRecipe({
+					visibility: 'showcase',
+					authorId: null,
+					authorUsername: '',
+				})}
+			/>,
+		)
+
+		expect(screen.getByRole('link')).toHaveAttribute(
+			'href',
+			'/discover/pasta-carbonara',
+		)
+		expect(
+			screen.getByRole('status', { name: 'Loading recipe image' }),
+		).toBeInTheDocument()
+		expect(screen.queryByTestId('recipe-image')).not.toBeInTheDocument()
 	})
 
 	it('preserves profile and recipe search params for referred recipe links', () => {

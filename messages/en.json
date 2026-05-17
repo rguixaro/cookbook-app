@@ -88,6 +88,8 @@
 	},
 	"RecipesPage": {
 		"title": "Recipes",
+		"showcase-title": "Suggested recipes",
+		"showcase-see-all": "See more",
 		"add": "New recipe",
 		"empty-create-prompt": "Create your first recipe",
 		"search": "Search",

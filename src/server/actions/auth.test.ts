@@ -73,7 +73,8 @@ vi.mock('@sentry/nextjs', () => ({
 	captureMessage: vi.fn(),
 }))
 
-import { auth } from '@/auth'
+import { auth, signOut } from '@/auth'
+import { DEFAULT_SIGN_OUT_REDIRECT_URL } from '@/routes'
 import { db } from '@/server/db'
 import {
 	sendEmailChangedEmail,
@@ -101,9 +102,11 @@ import {
 	signUpWithCredentials,
 	verifyEmailChange,
 	verifyEmail,
+	handleSignOut,
 } from './auth'
 
 const mockAuth = vi.mocked(auth)
+const mockSignOut = vi.mocked(signOut)
 const mockDb = vi.mocked(db, true)
 const mockHashPassword = vi.mocked(hashPassword)
 const mockVerifyPassword = vi.mocked(verifyPassword)
@@ -145,6 +148,16 @@ beforeEach(() => {
 	mockDb.emailChangeToken.create.mockResolvedValue({ id: 'token-1' } as any)
 	mockDb.user.update.mockResolvedValue({ id: 'user-1' } as any)
 	mockRevalidatePath.mockImplementation(() => undefined)
+})
+
+describe('handleSignOut', () => {
+	it('signs out to auth with the homepage as the next login target', async () => {
+		await handleSignOut()
+
+		expect(mockSignOut).toHaveBeenCalledWith({
+			redirectTo: DEFAULT_SIGN_OUT_REDIRECT_URL,
+		})
+	})
 })
 
 describe('signUpWithCredentials', () => {

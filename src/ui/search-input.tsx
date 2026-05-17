@@ -11,7 +11,8 @@ type SearchInputProps = {
 	onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
 	onClear: () => void
 	inputRef?: React.RefObject<HTMLInputElement | null>
-	onBlur?: () => void
+	onBlur?: (e: React.FocusEvent<HTMLInputElement>) => void
+	onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void
 	onSearchButtonClick?: () => void
 	inputClassName?: string
 	searchButtonClassName?: string
@@ -27,6 +28,7 @@ export function SearchInput({
 	onClear,
 	inputRef,
 	onBlur,
+	onKeyDown,
 	onSearchButtonClick,
 	inputClassName,
 	searchButtonClassName,
@@ -51,6 +53,7 @@ export function SearchInput({
 				maxLength={50}
 				placeholder={placeholder}
 				onBlur={onBlur}
+				onKeyDown={onKeyDown}
 				value={value}
 				onChange={onChange}
 				className={cn(
@@ -71,6 +74,7 @@ export function SearchInput({
 			/>
 			<button
 				type='button'
+				onPointerDown={(e) => e.preventDefault()}
 				onClick={onClear}
 				className={cn(
 					'absolute top-1/2 right-3 -translate-y-1/2 z-30 text-forest-300 transition-all duration-200 ease-in-out',

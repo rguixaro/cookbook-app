@@ -98,7 +98,10 @@ describe('buildProfileJsonPayload', () => {
 					id: 'recipe-real-saved',
 					slug: 'saved-slug',
 					name: 'Saved recipe',
-					images: ['images/recipe_real/saved.jpg'],
+					images: [
+						'images/recipe_real/saved.jpg',
+						'https://commons.wikimedia.org/wiki/Special:FilePath/Focaccia.jpg',
+					],
 					authorId: 'public-user-real',
 					author: {
 						id: 'public-user-real',
@@ -145,7 +148,10 @@ describe('buildProfileJsonPayload', () => {
 				instructions: 'Blend until smooth.',
 			},
 		])
-		expect(payload.recipes[1].images).toEqual(['photos/0002-image_0002.jpg'])
+		expect(payload.recipes[1].images).toEqual([
+			'photos/0002-image_0002.jpg',
+			'https://commons.wikimedia.org/wiki/Special:FilePath/Focaccia.jpg',
+		])
 		expect(payload.lists.favourites).toEqual(['recipe_0001'])
 	})
 })
@@ -225,7 +231,15 @@ describe('collectProfileJsonExport', () => {
 			2,
 			expect.objectContaining({
 				where: expect.objectContaining({
-					author: { isPrivate: false },
+					OR: expect.arrayContaining([
+						expect.objectContaining({
+							author: { isPrivate: false },
+							visibility: 'public',
+						}),
+						expect.objectContaining({
+							visibility: 'showcase',
+						}),
+					]),
 				}),
 			}),
 		)

@@ -5,6 +5,7 @@ import * as Sentry from '@sentry/nextjs'
 
 import { auth, signOut, unstable_update } from '@/auth'
 import { env } from '@/env.mjs'
+import { DEFAULT_SIGN_OUT_REDIRECT_URL } from '@/routes'
 import { db } from '@/server/db'
 import { UpdateProfileSchema } from '@/server/schemas'
 import { sendAccountDeletedEmail } from '@/lib/email'
@@ -140,7 +141,7 @@ export const deleteProfile = async (): Promise<null | true> => {
 				tags: { action: 'deleteProfile', step: 'account-deleted-email' },
 			}),
 		)
-		await signOut()
+		await signOut({ redirectTo: DEFAULT_SIGN_OUT_REDIRECT_URL })
 		return true
 	} catch (error) {
 		Sentry.captureException(error, { tags: { action: 'deleteProfile' } })

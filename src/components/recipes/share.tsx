@@ -24,12 +24,14 @@ export const RecipeShare = ({ recipe }: { recipe: Recipe | null }) => {
 	}
 
 	if (!recipe) return null
+	const recipeUrl =
+		recipe.visibility === 'showcase'
+			? `${SITE_URL}/discover/${recipe.slug}`
+			: `${SITE_URL}/recipes/${recipe.authorUsername}/${recipe.slug}`
 
 	return (
 		<button
-			onClick={handleCopy(
-				`${SITE_URL}/recipes/${recipe.authorUsername}/${recipe.slug}`,
-			)}
+			onClick={handleCopy(recipeUrl)}
 			className='hover:bg-forest-150 p-1 rounded-xl transition-colors duration-300'>
 			<Share2Icon size={24} className='text-forest-200' />
 		</button>

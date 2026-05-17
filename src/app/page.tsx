@@ -1,4 +1,8 @@
-import { RecipesFeed, SearchRecipes } from '@/components/recipes'
+import {
+	RecipesFeed,
+	SearchRecipes,
+	ShowcaseRecipesFeed,
+} from '@/components/recipes'
 
 export default async function RecipesPage({
 	searchParams,
@@ -28,6 +32,12 @@ export default async function RecipesPage({
 					categoriesParam={categoriesParam}
 					favouritesParam={favouritesParam}
 					sortParam={sortParam}
+					emptyStateFooter={
+						<ShowcaseRecipesFeed take={3} className='mt-6 mb-3' />
+					}
+					endOfFeedFooter={
+						<ShowcaseRecipesFeed take={3} className='mt-6 mb-3' />
+					}
 				/>
 			</div>
 		</main>
