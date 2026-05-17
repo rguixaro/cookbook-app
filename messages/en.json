@@ -177,8 +177,8 @@
 	},
 	"RecipeCourses": {
 		"starter": "Starter",
-		"firstcourse": "First course",
-		"secondcourse": "Second course",
+		"first_course": "First course",
+		"second_course": "Second course",
 		"dessert": "Dessert"
 	},
 	"RecipeCategories": {

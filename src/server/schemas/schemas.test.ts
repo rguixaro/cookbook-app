@@ -15,8 +15,8 @@ import {
 
 const validRecipe = {
 	name: 'Paella Valenciana',
-	course: 'SecondCourse' as const,
-	categories: ['Fish'] as const,
+	course: 'second_course' as const,
+	categories: ['fish'] as const,
 	time: 60,
 	ingredients: ['rice', 'shrimp', 'saffron'],
 	instructions: 'Cook the rice with the shrimp and saffron in a large pan.',
@@ -43,13 +43,13 @@ describe('CreateRecipeSchema', () => {
 			...validRecipe,
 			complements: [
 				{
-					type: 'Sauce',
+					type: 'sauce',
 					name: '  Tomato sauce  ',
 					ingredients: ['tomato', 'olive oil'],
 					instructions: 'Simmer the tomato and oil until glossy.',
 				},
 				{
-					type: 'Garnish',
+					type: 'garnish',
 					ingredients: ['parsley'],
 					instructions: 'Chop the parsley and scatter before serving.',
 				},
@@ -70,7 +70,7 @@ describe('CreateRecipeSchema', () => {
 			...validRecipe,
 			complements: [
 				{
-					type: 'Sauce',
+					type: 'sauce',
 					ingredients: ['tomato', 'olive oil'],
 					instructions: 'Simmer the tomato and oil until glossy.',
 				},
@@ -88,7 +88,7 @@ describe('CreateRecipeSchema', () => {
 			...validRecipe,
 			complements: [
 				{
-					type: 'Sauce',
+					type: 'sauce',
 					name: 'a'.repeat(61),
 					ingredients: ['tomato'],
 					instructions: 'Simmer the tomato until it thickens.',
@@ -107,7 +107,7 @@ describe('CreateRecipeSchema', () => {
 			...validRecipe,
 			complements: [
 				{
-					type: 'Sauce',
+					type: 'sauce',
 					ingredients: [],
 					instructions: 'Simmer the sauce until it thickens.',
 				},
@@ -122,7 +122,7 @@ describe('CreateRecipeSchema', () => {
 			...validRecipe,
 			complements: [
 				{
-					type: 'Sauce',
+					type: 'sauce',
 					ingredients: ['tomato'],
 					instructions: '',
 				},
@@ -152,12 +152,12 @@ describe('CreateRecipeSchema', () => {
 			...validRecipe,
 			complements: [
 				{
-					type: 'Sauce',
+					type: 'sauce',
 					ingredients: ['tomato'],
 					instructions: 'Simmer the tomato until it thickens.',
 				},
 				{
-					type: 'Sauce',
+					type: 'sauce',
 					ingredients: ['parsley'],
 					instructions: 'Chop the parsley and mix it through.',
 				},
@@ -192,7 +192,7 @@ describe('CreateRecipeSchema', () => {
 	})
 
 	it('accepts all valid courses', () => {
-		const courses = ['Starter', 'FirstCourse', 'SecondCourse', 'Dessert']
+		const courses = ['starter', 'first_course', 'second_course', 'dessert']
 		for (const course of courses) {
 			const result = CreateRecipeSchema.safeParse({ ...validRecipe, course })
 			expect(result.success).toBe(true)
@@ -242,7 +242,7 @@ describe('CreateRecipeSchema', () => {
 	it('rejects duplicate categories', () => {
 		const result = CreateRecipeSchema.safeParse({
 			...validRecipe,
-			categories: ['Fish', 'Fish'],
+			categories: ['fish', 'fish'],
 		})
 		expect(result.success).toBe(false)
 	})
@@ -250,23 +250,23 @@ describe('CreateRecipeSchema', () => {
 	it('rejects more than 3 categories', () => {
 		const result = CreateRecipeSchema.safeParse({
 			...validRecipe,
-			categories: ['Fish', 'Seafood', 'Rice', 'Wok'],
+			categories: ['fish', 'seafood', 'rice', 'wok'],
 		})
 		expect(result.success).toBe(false)
 	})
 
 	it('normalizes recipe course and filters categories during reads', () => {
-		expect(normalizeRecipeCourseAndCategories('FirstCourse', ['Pasta'])).toEqual(
+		expect(normalizeRecipeCourseAndCategories('first_course', ['pasta'])).toEqual(
 			{
-				course: 'FirstCourse',
-				categories: ['Pasta'],
+				course: 'first_course',
+				categories: ['pasta'],
 			},
 		)
 		expect(
-			normalizeRecipeCourseAndCategories('Pizza', ['Fish', 'Pizza']),
+			normalizeRecipeCourseAndCategories('Pizza', ['fish', 'Pizza']),
 		).toEqual({
-			course: 'FirstCourse',
-			categories: ['Fish'],
+			course: 'first_course',
+			categories: ['fish'],
 		})
 	})
 
@@ -278,7 +278,7 @@ describe('CreateRecipeSchema', () => {
 		expect(
 			normalizeRecipeComplements([
 				{
-					type: 'Sauce',
+					type: 'sauce',
 					name: '  Romesco  ',
 					ingredients: ['almonds'],
 					instructions: 'Blend until smooth.',
@@ -286,7 +286,7 @@ describe('CreateRecipeSchema', () => {
 			]),
 		).toEqual([
 			{
-				type: 'Sauce',
+				type: 'sauce',
 				name: 'Romesco',
 				ingredients: ['almonds'],
 				instructions: 'Blend until smooth.',

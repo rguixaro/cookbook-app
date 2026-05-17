@@ -37,7 +37,7 @@ const makeRecipe = (overrides: Record<string, unknown>) => ({
 	ingredients: ['salt'],
 	complements: [
 		{
-			type: 'Sauce',
+			type: 'sauce',
 			name: 'Romesco',
 			ingredients: ['almonds'],
 			instructions: 'Blend until smooth.',
@@ -47,8 +47,8 @@ const makeRecipe = (overrides: Record<string, unknown>) => ({
 	sourceUrls: ['https://example.com/owned'],
 	createdAt: date('2024-01-01T00:00:00.000Z'),
 	updatedAt: date('2024-01-02T00:00:00.000Z'),
-	course: 'FirstCourse',
-	categories: ['Pasta'],
+	course: 'first_course',
+	categories: ['pasta'],
 	authorId: 'user-real',
 	author: {
 		id: 'user-real',
@@ -139,7 +139,7 @@ describe('buildProfileJsonPayload', () => {
 		expect(payload.recipes[0].images).toEqual(['photos/0001-image_0001.jpg'])
 		expect(payload.recipes[0].complements).toEqual([
 			{
-				type: 'Sauce',
+				type: 'sauce',
 				name: 'Romesco',
 				ingredients: ['almonds'],
 				instructions: 'Blend until smooth.',

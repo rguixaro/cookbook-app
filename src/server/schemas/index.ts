@@ -1,29 +1,29 @@
 import z from 'zod'
 
 export const RecipeCourses = [
-	'Starter',
-	'FirstCourse',
-	'SecondCourse',
-	'Dessert',
+	'starter',
+	'first_course',
+	'second_course',
+	'dessert',
 ] as const
 
 export type RecipeCourse = (typeof RecipeCourses)[number]
 
 export const RecipeCategories = [
-	'Pasta',
-	'Meat',
-	'Fish',
-	'Vegetable',
-	'Salad',
-	'Soup',
-	'Rice',
-	'Legume',
-	'Seafood',
-	'Fruit',
-	'Stew',
-	'Sauce',
-	'Marinade',
-	'Wok',
+	'pasta',
+	'meat',
+	'fish',
+	'vegetable',
+	'salad',
+	'soup',
+	'rice',
+	'legume',
+	'seafood',
+	'fruit',
+	'stew',
+	'sauce',
+	'marinade',
+	'wok',
 ] as const
 
 export type RecipeCategory = (typeof RecipeCategories)[number]
@@ -37,13 +37,27 @@ export const RecipeSorts = [
 
 export type RecipeSort = (typeof RecipeSorts)[number]
 
-export const RecipeComplementTypes = ['Sauce', 'Marinade', 'Garnish'] as const
+export const RecipeComplementTypes = ['sauce', 'marinade', 'garnish'] as const
 
 export type RecipeComplementType = (typeof RecipeComplementTypes)[number]
+
+export const RecipeLocales = ['ca', 'en', 'es'] as const
+
+export type RecipeLocale = (typeof RecipeLocales)[number]
+
+export const RecipeVisibilityValues = [
+	'private',
+	'public',
+	'showcase',
+] as const
+
+export type RecipeVisibility = (typeof RecipeVisibilityValues)[number]
 
 const RecipeCourseSchema = z.enum(RecipeCourses)
 const RecipeCategorySchema = z.enum(RecipeCategories)
 const RecipeComplementTypeSchema = z.enum(RecipeComplementTypes)
+const RecipeLocaleSchema = z.enum(RecipeLocales)
+const RecipeVisibilitySchema = z.enum(RecipeVisibilityValues)
 const RecipeComplementNameSchema = z.preprocess(
 	(value) => {
 		if (value == null) return undefined
@@ -84,7 +98,7 @@ export function normalizeRecipeCourseAndCategories(
 	const validCategories = (categories ?? []).filter(isRecipeCategory)
 
 	return {
-		course: isRecipeCourse(course) ? course : 'FirstCourse',
+		course: isRecipeCourse(course) ? course : 'first_course',
 		categories: validCategories,
 	}
 }
@@ -114,12 +128,14 @@ export const RecipeSchema = z.object({
 	complements: z.array(RecipeComplementValueSchema),
 	course: RecipeCourseSchema,
 	categories: z.array(RecipeCategorySchema),
-	authorId: z.string(),
+	authorId: z.string().nullable(),
 	authorUsername: z.string(),
 	createdAt: z.date(),
 	updatedAt: z.date(),
 	images: z.array(z.string()).optional(),
 	sourceUrls: z.array(z.string().url()).optional(),
+	visibility: RecipeVisibilitySchema,
+	locale: RecipeLocaleSchema,
 })
 
 export const ProfileSchema = z.object({

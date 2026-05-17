@@ -18,6 +18,9 @@ vi.mock('@/server/db', () => ({
 		recipe: {
 			findMany: vi.fn(),
 		},
+		recipeTranslation: {
+			deleteMany: vi.fn(),
+		},
 	},
 }))
 
@@ -55,6 +58,7 @@ const mockSession = { user: { id: 'user-1' } }
 beforeEach(() => {
 	vi.clearAllMocks()
 	mockEnv.MEDIA_MANAGEMENT_ENABLED = true
+	mockDb.recipeTranslation.deleteMany.mockResolvedValue({ count: 0 } as any)
 })
 
 describe('updateProfile', () => {
@@ -148,6 +152,14 @@ describe('deleteProfile', () => {
 			'img2.jpg',
 			'img3.jpg',
 		])
+		expect(mockDb.recipeTranslation.deleteMany).toHaveBeenCalledWith({
+			where: { recipeId: { in: ['recipe-1', 'recipe-2'] } },
+		})
+		expect(
+			mockDb.user.delete.mock.invocationCallOrder[0],
+		).toBeLessThan(
+			mockDb.recipeTranslation.deleteMany.mock.invocationCallOrder[0],
+		)
 	})
 
 	it('deletes profile without S3 cleanup when media management is disabled', async () => {

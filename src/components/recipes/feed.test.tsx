@@ -98,12 +98,12 @@ beforeEach(() => {
 })
 
 function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
-	return {
+	const base: RecipeSchema = {
 		id: '1',
 		name: 'Pasta Carbonara',
 		slug: 'pasta-carbonara',
-		course: 'FirstCourse',
-		categories: ['Pasta'],
+		course: 'first_course',
+		categories: ['pasta'],
 		time: 30,
 		ingredients: ['pasta', 'egg', 'bacon'],
 		complements: [],
@@ -114,7 +114,14 @@ function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
 		authorUsername: 'chef',
 		createdAt: new Date('2025-01-01'),
 		updatedAt: new Date('2025-01-01'),
+		visibility: 'public',
+		locale: 'en',
+	}
+	return {
+		...base,
 		...overrides,
+		visibility: overrides.visibility ?? base.visibility,
+		locale: overrides.locale ?? base.locale,
 	}
 }
 
@@ -204,7 +211,7 @@ describe('RecipesFeed', () => {
 			totalCount: 5,
 		})
 
-		renderWithProviders(<RecipesFeed courseParam='FirstCourse' />)
+		renderWithProviders(<RecipesFeed courseParam='first_course' />)
 
 		await waitFor(() => {
 			expect(screen.getByText('5 recipes')).toBeInTheDocument()
@@ -242,14 +249,14 @@ describe('RecipesFeed', () => {
 	})
 
 	it('uses the no-results component when filters have no results', async () => {
-		navigationState.query = 'course=FirstCourse'
+		navigationState.query = 'course=first_course'
 		mockFetchRecipes.mockResolvedValue({
 			recipes: [],
 			nextCursor: null,
 			totalCount: 0,
 		})
 
-		renderWithProviders(<RecipesFeed courseParam='FirstCourse' />)
+		renderWithProviders(<RecipesFeed courseParam='first_course' />)
 
 		await waitFor(() => {
 			expect(screen.getByText('No recipes found')).toBeInTheDocument()
@@ -276,7 +283,7 @@ describe('RecipesFeed', () => {
 	})
 
 	it('uses a clear-all action when search and filters have no results', async () => {
-		navigationState.query = 'search=missing&course=FirstCourse'
+		navigationState.query = 'search=missing&course=first_course'
 		mockFetchRecipes.mockResolvedValue({
 			recipes: [],
 			nextCursor: null,
@@ -284,7 +291,7 @@ describe('RecipesFeed', () => {
 		})
 
 		renderWithProviders(
-			<RecipesFeed searchParam='missing' courseParam='FirstCourse' />,
+			<RecipesFeed searchParam='missing' courseParam='first_course' />,
 		)
 
 		await waitFor(() => {

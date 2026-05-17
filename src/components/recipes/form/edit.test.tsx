@@ -59,12 +59,14 @@ const recipe: Recipe = {
 	complements: [],
 	createdAt: new Date('2026-01-01T00:00:00.000Z'),
 	updatedAt: new Date('2026-01-01T00:00:00.000Z'),
-	course: 'SecondCourse',
-	categories: ['Fish'],
+	course: 'second_course',
+	categories: ['fish'],
 	authorId: 'user-1',
 	authorUsername: 'testuser',
 	images: [],
 	sourceUrls: [],
+	visibility: 'public',
+	locale: 'en',
 }
 
 beforeEach(() => {
@@ -206,7 +208,7 @@ describe('EditRecipe delete flow', () => {
 		renderEditRecipe({
 			complements: [
 				{
-					type: 'Sauce',
+					type: 'sauce',
 					name: 'Romesco',
 					ingredients: ['almonds'],
 					instructions: 'Blend until smooth.',
@@ -224,7 +226,7 @@ describe('EditRecipe delete flow', () => {
 				expect.objectContaining({
 					complements: [
 						{
-							type: 'Sauce',
+							type: 'sauce',
 							name: 'Salsa brava',
 							ingredients: ['almonds'],
 							instructions: 'Blend until smooth.',
@@ -239,7 +241,7 @@ describe('EditRecipe delete flow', () => {
 		renderEditRecipe({
 			complements: [
 				{
-					type: 'Sauce',
+					type: 'sauce',
 					name: 'Romesco',
 					ingredients: ['almonds'],
 					instructions: 'Blend until smooth.',

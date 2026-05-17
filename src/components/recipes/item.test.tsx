@@ -42,12 +42,12 @@ vi.mock('next/image', () => ({
 }))
 
 function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
-	return {
+	const base: RecipeSchema = {
 		id: 'recipe-1',
 		name: 'Pasta Carbonara',
 		slug: 'pasta-carbonara',
-		course: 'FirstCourse',
-		categories: ['Pasta'],
+		course: 'first_course',
+		categories: ['pasta'],
 		time: 30,
 		ingredients: ['pasta', 'egg', 'bacon'],
 		complements: [],
@@ -58,7 +58,14 @@ function makeRecipe(overrides: Partial<RecipeSchema> = {}): RecipeSchema {
 		authorUsername: 'chef',
 		createdAt: new Date('2025-01-01'),
 		updatedAt: new Date('2025-01-01'),
+		visibility: 'public',
+		locale: 'en',
+	}
+	return {
+		...base,
 		...overrides,
+		visibility: overrides.visibility ?? base.visibility,
+		locale: overrides.locale ?? base.locale,
 	}
 }
 
@@ -117,7 +124,7 @@ describe('ItemRecipe image loading', () => {
 		renderWithProviders(
 			<ItemRecipe
 				recipe={makeRecipe({
-					categories: ['Pasta'],
+					categories: ['pasta'],
 					ingredients: [
 						'apple',
 						'banana',
