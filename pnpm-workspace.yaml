@@ -8,8 +8,13 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
 
+minimumReleaseAgeExclude:
+  - '@swc/core-linux-arm-gnueabihf@1.16.0'
+  - '@swc/core-linux-arm64-gnu@1.16.0'
+
 overrides:
   effect: ^3.20.0
+  fast-uri: 3.1.5
   fast-xml-parser: ^5.7.0
-  postcss: 8.5.12
+  postcss: 8.5.26
   vite: 8.0.16
